@@ -71,6 +71,8 @@ export const fr = {
   'palette.createTask': 'Créer la tâche « {q} »',
   'palette.ask': 'Demander à Σ : « {q} »',
   'coach.heroTitle': 'Comment puis-je vous aider ?',
+  'tasks.quickAdd': 'Ajouter une tâche… (ex. « Relancer Paul vendredi 15min »)',
+  'palette.shortcuts': 'Raccourcis : C capturer · / rechercher · Ctrl K ouvrir · ↑↓ naviguer',
   'nav.label': 'Navigation principale',
   'nav.mobile': 'Navigation rapide',
   'nav.more': 'Plus',

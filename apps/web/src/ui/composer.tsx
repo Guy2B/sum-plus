@@ -16,18 +16,21 @@ type Mode = 'task' | 'ask';
 
 /** Incremented to ask the composer to take focus (sidebar "New capture"). */
 export const composerFocus = signal(0);
+let focusHandled = 0;
 
-export async function captureTask(text: string): Promise<boolean> {
+/** Creates a task from natural language; `when` is the default horizon of the current list. */
+export async function captureTask(text: string, when?: 'today' | 'week'): Promise<boolean> {
   const c = parseCapture(text);
+  const scheduledFor = c.scheduledFor ?? (c.dueDate ? null : (when ?? null));
   let ok = false;
   await attempt(async () => {
     await create('tasks', {
       title: c.title.slice(0, 300),
       category: c.category ?? 'work',
-      status: c.dueDate || c.scheduledFor ? 'todo' : 'inbox',
+      status: c.dueDate || scheduledFor ? 'todo' : 'inbox',
       priority: c.priority,
       dueDate: c.dueDate,
-      scheduledFor: c.scheduledFor,
+      scheduledFor,
       estimateMinutes: c.estimateMinutes ?? undefined,
     });
     toast(t('capture.saved', { title: c.title }), 'good');
@@ -48,7 +51,11 @@ export function Composer({ prompts }: { prompts: [string, string][] }) {
   const mode: Mode = picked ?? (/\?\s*$/.test(text) ? 'ask' : 'task');
 
   useEffect(() => {
-    if (composerFocus.value) ref.current?.focus();
+    // Each request focuses once (not on every later visit to the home page).
+    if (composerFocus.value > focusHandled) {
+      focusHandled = composerFocus.value;
+      ref.current?.focus();
+    }
   }, [composerFocus.value]);
 
   // Auto-grow up to the CSS max-height.

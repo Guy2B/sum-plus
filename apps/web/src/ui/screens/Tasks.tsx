@@ -19,6 +19,8 @@ import {
   attempt,
 } from '../components';
 import { route } from '../router';
+import { Icon } from '../icons';
+import { captureTask } from '../composer';
 
 type View = 'today' | 'inbox' | 'all' | 'week' | 'matrix' | 'done';
 const CATEGORIES: TaskCategory[] = ['work', 'home', 'health', 'projects', 'admin', 'learning', 'family'];
@@ -230,6 +232,30 @@ function TaskEditor({ task, onClose }: { task: Partial<Task> | null; onClose: ()
   );
 }
 
+function QuickAdd({ view }: { view: View }) {
+  const [text, setText] = useState('');
+  const when = view === 'today' ? 'today' : view === 'week' ? 'week' : undefined;
+  return (
+    <form
+      class="quick-add"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (text.trim() && (await captureTask(text.trim(), when))) setText('');
+      }}
+    >
+      <Icon name="plus" size={18} />
+      <input
+        value={text}
+        maxLength={300}
+        aria-label={t('tasks.quickAdd')}
+        placeholder={t('tasks.quickAdd')}
+        onInput={(e) => setText((e.currentTarget as HTMLInputElement).value)}
+      />
+      {text.trim() && <kbd>↵</kbd>}
+    </form>
+  );
+}
+
 function TaskRow({ task, onEdit }: { task: Task; onEdit: (t: Task) => void }) {
   const now = clock.value;
   const due = toDate(task.dueDate);
@@ -370,7 +396,8 @@ export function Tasks() {
           ))}
         </div>
       ) : (
-        <Card>
+        <Card class="task-card">
+          {view !== 'done' && <QuickAdd view={view} />}
           {lists[view].length ? (
             <ul class="task-list">
               {lists[view].map((x) => (

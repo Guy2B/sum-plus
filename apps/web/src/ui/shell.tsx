@@ -209,6 +209,7 @@ function CommandPalette() {
           ))}
           {!items.length && <li class="muted">{t('palette.empty')}</li>}
         </ul>
+        <p class="palette-foot">{t('palette.shortcuts')}</p>
       </div>
     </div>
   );
@@ -220,6 +221,20 @@ export function Shell({ children, banner }: { children: ComponentChildren; banne
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         paletteOpen.value = !paletteOpen.value;
+        return;
+      }
+      // Single-key shortcuts, only when not typing.
+      const el = e.target as HTMLElement | null;
+      if (e.ctrlKey || e.metaKey || e.altKey || paletteOpen.value) return;
+      if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;
+      if (document.querySelector('dialog[open]')) return;
+      if (e.key === '/') {
+        e.preventDefault();
+        paletteOpen.value = true;
+      } else if (e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        navigate('today');
+        composerFocus.value++;
       }
     };
     window.addEventListener('keydown', onKey);

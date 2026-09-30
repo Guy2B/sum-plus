@@ -71,6 +71,8 @@ export const en: Record<MessageKey, string> = {
   'palette.createTask': 'Create task “{q}”',
   'palette.ask': 'Ask Σ: “{q}”',
   'coach.heroTitle': 'How can I help?',
+  'tasks.quickAdd': 'Add a task… (e.g. “Follow up with Paul Friday 15min”)',
+  'palette.shortcuts': 'Shortcuts: C capture · / search · Ctrl K open · ↑↓ navigate',
   'nav.label': 'Main navigation',
   'nav.mobile': 'Quick navigation',
   'nav.more': 'More',

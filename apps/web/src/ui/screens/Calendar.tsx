@@ -9,8 +9,8 @@ import { can } from '../../domain/entitlements';
 import { ingestEvents } from '../../services/connectors/ingest';
 import { googleAvailable, syncGoogleCalendar } from '../../services/connectors/google';
 import { microsoftAvailable, syncOutlookCalendar } from '../../services/connectors/microsoft';
-import { t, fmtDate, fmtTime, fmtLongDate } from '../../i18n';
-import { Badge, Button, Card, Field, Modal, PageHeader, attempt, toast } from '../components';
+import { t, fmtDate, fmtTime, fmtLongDate, locale } from '../../i18n';
+import { Badge, Button, Field, Modal, PageHeader, attempt, toast } from '../components';
 import { Icon } from '../icons';
 import { route, navigate } from '../router';
 import { deleteWithUndo } from './Tasks';
@@ -166,6 +166,26 @@ function fmtHM(d: Date) {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
+type AgendaRow =
+  { kind: 'day'; day: Date; list: CalendarEvent[]; today: boolean } | { kind: 'free'; from: Date; to: Date };
+
+/** Days with events (and today) as rows; consecutive free days collapse into one line. */
+function agendaRows(days: Date[], events: CalendarEvent[], now: Date): AgendaRow[] {
+  const rows: AgendaRow[] = [];
+  for (const day of days) {
+    const list = eventsOn(events, day);
+    const today = isoDay(day) === isoDay(now);
+    if (list.length || today) {
+      rows.push({ kind: 'day', day, list, today });
+      continue;
+    }
+    const last = rows[rows.length - 1];
+    if (last?.kind === 'free') last.to = day;
+    else rows.push({ kind: 'free', from: day, to: day });
+  }
+  return rows;
+}
+
 export function Calendar() {
   const [editing, setEditing] = useState<Partial<CalendarEvent> | null>(null);
   const [busy, setBusy] = useState('');
@@ -274,28 +294,37 @@ export function Calendar() {
         <p class="notice warn">{t('calendar.conflicts', { count: conflicts.length })}</p>
       )}
 
-      <div class="agenda">
-        {days.map((day) => {
-          const list = eventsOn(events, day);
-          return (
-            <Card
-              key={isoDay(day)}
-              title={
-                isoDay(day) === isoDay(now)
-                  ? `${t('calendar.today')} · ${fmtLongDate(day)}`
-                  : fmtLongDate(day)
-              }
-              class={list.length ? '' : 'agenda-empty'}
-            >
-              {list.length ? (
+      <ol class="agenda">
+        {agendaRows(days, events, now).map((row) =>
+          row.kind === 'free' ? (
+            <li key={`free-${isoDay(row.from)}`} class="agenda-row agenda-free">
+              <span class="agenda-when">
+                {isoDay(row.from) === isoDay(row.to)
+                  ? fmtDate(row.from)
+                  : `${fmtDate(row.from)} – ${fmtDate(row.to)}`}
+              </span>
+              <span>{t('calendar.free')}</span>
+            </li>
+          ) : (
+            <li key={isoDay(row.day)} class={`agenda-row ${row.today ? 'agenda-today' : ''}`}>
+              <h2 class="agenda-date">
+                <span class="agenda-dnum">{row.day.getDate()}</span>
+                <span class="agenda-wd">
+                  {row.today
+                    ? t('calendar.today')
+                    : `${row.day.toLocaleDateString(locale.value, { weekday: 'short' })} ${row.day.toLocaleDateString(locale.value, { month: 'short' })}`}
+                  <span class="sr-only"> · {fmtLongDate(row.day)}</span>
+                </span>
+              </h2>
+              {row.list.length ? (
                 <ul class="timeline">
-                  {list.map((e) => (
+                  {row.list.map((e) => (
                     <li key={e.id} class={conflictIds.has(e.id) ? 'conflict' : ''}>
                       <time>{e.allDay ? t('calendar.allDay') : `${fmtTime(e.start)}–${fmtTime(e.end)}`}</time>
                       <button type="button" class="link-title" onClick={() => setEditing(e)}>
                         {e.title}
                       </button>
-                      {e.source?.provider && e.source.provider !== 'local' && (
+                      {e.source?.provider && !['local', 'demo'].includes(e.source.provider) && (
                         <Badge>{e.source.provider}</Badge>
                       )}
                       {e.source?.url && (
@@ -314,12 +343,12 @@ export function Calendar() {
                   ))}
                 </ul>
               ) : (
-                <p class="muted small">{t('calendar.free')}</p>
+                <p class="muted small agenda-nothing">{t('calendar.free')}</p>
               )}
-            </Card>
-          );
-        })}
-      </div>
+            </li>
+          ),
+        )}
+      </ol>
       <p class="small muted">{t('calendar.horizon', { date: fmtDate(days[days.length - 1]!) })}</p>
       <EventEditor ev={editing} onClose={() => setEditing(null)} />
     </div>

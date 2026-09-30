@@ -20,6 +20,7 @@ export function Journal() {
   const [mood, setMood] = useState(3);
   const [text, setText] = useState('');
   const [tags, setTags] = useState('');
+  const [open, setOpen] = useState(false);
 
   const entries = snapshot.value.journal
     .filter((j) => !j.deletedAt)
@@ -39,6 +40,7 @@ export function Journal() {
     setMood(j.mood ?? 3);
     setText(j.text);
     setTags(j.tags.join(', '));
+    setOpen(true);
     document.getElementById('journal-text')?.focus();
   }
 
@@ -73,79 +75,93 @@ export function Journal() {
   };
 
   return (
-    <div class="page">
+    <div class="page page-narrow">
       <PageHeader title={t('nav.journal')} subtitle={t('journal.subtitle')} />
-      <Card title={editingId ? t('journal.edit') : t('journal.new')}>
-        <form class="form" onSubmit={save}>
-          <div class="row">
-            <Field label={t('journal.date')}>
-              {(id) => (
-                <input
-                  id={id}
-                  type="date"
-                  value={date}
-                  onInput={(e) => setDate((e.currentTarget as HTMLInputElement).value)}
-                />
-              )}
-            </Field>
-            <Field label={t('journal.kind')}>
-              {(id) => (
-                <select
-                  id={id}
-                  value={kind}
-                  onChange={(e) => setKind((e.currentTarget as HTMLSelectElement).value as Kind)}
-                >
-                  {(['reflection', 'milestone', 'learning'] as const).map((k) => (
-                    <option key={k} value={k}>
-                      {t(`journal.kindValue.${k}`)}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </Field>
-            <Field label={t('journal.mood', { value: mood })}>
-              {(id) => (
-                <input
-                  id={id}
-                  type="range"
-                  min={1}
-                  max={5}
-                  value={mood}
-                  onInput={(e) => setMood(Number((e.currentTarget as HTMLInputElement).value))}
-                />
-              )}
-            </Field>
-          </div>
-          <label class="sr-only" for="journal-text">
-            {t('journal.text')}
-          </label>
-          <textarea
-            id="journal-text"
-            rows={5}
-            maxLength={20000}
-            placeholder={t('journal.placeholder')}
-            value={text}
-            onInput={(e) => setText((e.currentTarget as HTMLTextAreaElement).value)}
-          />
-          <Field label={t('journal.tags')}>
-            {(id) => (
-              <input
-                id={id}
-                value={tags}
-                placeholder={t('journal.tagsHint')}
-                onInput={(e) => setTags((e.currentTarget as HTMLInputElement).value)}
-              />
-            )}
-          </Field>
-          <div class="modal-actions">
-            {editingId && <Button onClick={reset}>{t('common.cancel')}</Button>}
-            <Button type="submit" variant="primary" disabled={!text.trim()}>
-              {t('common.save')}
-            </Button>
-          </div>
-          <p class="small muted">{t('journal.privacy')}</p>
-        </form>
-      </Card>
+      <form
+        class="card journal-editor"
+        onSubmit={save}
+        aria-label={editingId ? t('journal.edit') : t('journal.new')}
+      >
+        <label class="sr-only" for="journal-text">
+          {t('journal.text')}
+        </label>
+        <textarea
+          id="journal-text"
+          rows={open ? 6 : 2}
+          maxLength={20000}
+          placeholder={t('journal.placeholder')}
+          value={text}
+          onFocus={() => setOpen(true)}
+          onInput={(e) => setText((e.currentTarget as HTMLTextAreaElement).value)}
+        />
+        {open && (
+          <>
+            <div class="row journal-meta">
+              <Field label={t('journal.date')}>
+                {(id) => (
+                  <input
+                    id={id}
+                    type="date"
+                    value={date}
+                    onInput={(e) => setDate((e.currentTarget as HTMLInputElement).value)}
+                  />
+                )}
+              </Field>
+              <Field label={t('journal.kind')}>
+                {(id) => (
+                  <select
+                    id={id}
+                    value={kind}
+                    onChange={(e) => setKind((e.currentTarget as HTMLSelectElement).value as Kind)}
+                  >
+                    {(['reflection', 'milestone', 'learning'] as const).map((k) => (
+                      <option key={k} value={k}>
+                        {t(`journal.kindValue.${k}`)}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </Field>
+              <Field label={t('journal.mood', { value: mood })}>
+                {(id) => (
+                  <input
+                    id={id}
+                    type="range"
+                    min={1}
+                    max={5}
+                    value={mood}
+                    onInput={(e) => setMood(Number((e.currentTarget as HTMLInputElement).value))}
+                  />
+                )}
+              </Field>
+              <Field label={t('journal.tags')}>
+                {(id) => (
+                  <input
+                    id={id}
+                    value={tags}
+                    placeholder={t('journal.tagsHint')}
+                    onInput={(e) => setTags((e.currentTarget as HTMLInputElement).value)}
+                  />
+                )}
+              </Field>
+            </div>
+            <div class="journal-actions">
+              <p class="small muted">{t('journal.privacy')}</p>
+              <Button
+                onClick={() => {
+                  reset();
+                  setOpen(false);
+                }}
+              >
+                {t('common.cancel')}
+              </Button>
+              <Button type="submit" variant="primary" disabled={!text.trim()}>
+                {t('common.save')}
+              </Button>
+            </div>
+          </>
+        )}
+      </form>
 
       <div class="toolbar">
         <Tabs
