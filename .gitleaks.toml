@@ -1,0 +1,15 @@
+# Gitleaks configuration: default rules, with explicit exceptions for
+# deliberately fake values used in tests and for masked mentions in docs.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Test fixtures and documentation examples (no real credentials)"
+paths = [
+  '''functions/test/.*''',
+  '''apps/web/tests/.*''',
+  '''apps/web/e2e/.*''',
+  '''tests/rules/.*''',
+  '''services/local-ai-gateway/server\.test\.mjs''',
+  '''docs/AUDIT-2026-09-legacy\.md''',
+]

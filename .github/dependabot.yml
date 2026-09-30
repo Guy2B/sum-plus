@@ -4,6 +4,10 @@ updates:
     directory: /
     schedule: { interval: weekly }
     open-pull-requests-limit: 5
+    # Major versions can break the API; they are upgraded deliberately, not by bot.
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
     groups:
       firebase: { patterns: ['firebase', 'firebase-*', '@firebase/*'] }
       tooling: { patterns: ['eslint*', 'typescript*', 'vite*', 'vitest', '@playwright/*', 'prettier'] }
