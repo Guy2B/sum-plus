@@ -123,3 +123,26 @@ Cloud Functions (elles exigent le plan Blaze).
 Passage au payant : plan Blaze, déployer les Functions, mettre `openAccess()` à `false`,
 `VITE_OPEN_ACCESS=false`, `VITE_FUNCTIONS_ENABLED=true`. `npm run release:check` bloque
 toute release tant que le mode de lancement est actif.
+
+## API connecteurs sur Netlify (gratuit, sans carte)
+
+IMAP (Yahoo, GMX, iCloud), LinkedIn, X et TikTok ont besoin d'un serveur. Sans plan
+Blaze, les mêmes handlers tournent sur Netlify Functions via `functions/src/netlify.ts`
+(adaptateur `functions/src/lib/http-adapter.ts` : protocole « callable » Firebase,
+vérification du jeton d'identité, CORS restreint).
+
+1. Compte de service `sum-plus-api` dans `sum-plus-app` avec le seul rôle
+   **Cloud Datastore User** ; créer une clé JSON.
+2. Site Netlify (ex. `sum-plus-api`) : `npx netlify-cli login`, puis `npx netlify-cli sites:create`.
+3. Variables d'environnement Netlify :
+   `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY` (de la clé JSON),
+   `CONNECTOR_ENCRYPTION_KEY` (32 octets aléatoires en base64),
+   `PUBLIC_APP_URL=https://guy2b.github.io/sum-plus`,
+   `ALLOWED_ORIGINS=https://sum-plus-app.web.app`, `OPEN_ACCESS=true`,
+   et pour les réseaux sociaux `OAUTH_REDIRECT_URI=https://<site>.netlify.app/api/oauth/callback`
+   + `LINKEDIN_CLIENT_ID/SECRET`, `X_CLIENT_ID/SECRET`, `TIKTOK_CLIENT_KEY/SECRET`.
+4. `npx netlify-cli deploy --prod` (bundle local de `netlify/functions/api.ts`).
+5. Web : `VITE_FUNCTIONS_URL=https://<site>.netlify.app/api` dans `apps/web/.env.production`.
+
+Limites de l'offre gratuite : 125 000 appels/mois, 10 s par appel (la synchro IMAP lit
+les 40 derniers messages des 21 derniers jours).

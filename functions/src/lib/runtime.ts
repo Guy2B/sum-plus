@@ -1,4 +1,4 @@
-import { initializeApp, getApps } from 'firebase-admin/app';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { HttpsError, type CallableRequest } from 'firebase-functions/v2/https';
@@ -6,7 +6,14 @@ import { defineSecret, defineString } from 'firebase-functions/params';
 import { logger } from 'firebase-functions';
 import { isPro, type EntitlementDoc } from './entitlements';
 
-if (!getApps().length) initializeApp();
+// On Cloud Functions the default credentials are used. Elsewhere (Netlify) a
+// least-privilege service account is passed through environment variables.
+if (!getApps().length) {
+  const { FIREBASE_PROJECT_ID: projectId, FIREBASE_CLIENT_EMAIL: clientEmail, FIREBASE_PRIVATE_KEY: key } = process.env;
+  if (projectId && clientEmail && key)
+    initializeApp({ credential: cert({ projectId, clientEmail, privateKey: key.replace(/\\n/g, '\n') }), projectId });
+  else initializeApp();
+}
 
 export const db = getFirestore();
 export const auth = getAuth();
@@ -35,7 +42,7 @@ export function allowedOrigins(): string[] {
 }
 
 export function oauthRedirectUri(): string {
-  return `${PUBLIC_APP_URL.value().replace(/\/$/, '')}/api/oauth/callback`;
+  return process.env.OAUTH_REDIRECT_URI || `${PUBLIC_APP_URL.value().replace(/\/$/, '')}/api/oauth/callback`;
 }
 
 /** App Check is enforced in production; the emulator suite runs without it. */
@@ -69,6 +76,8 @@ export async function getEntitlement(uid: string): Promise<EntitlementDoc | null
 }
 
 export async function requirePro(uid: string): Promise<void> {
+  // Launch mode (no payments yet): mirrors openAccess() in firestore.rules.
+  if (process.env.OPEN_ACCESS === 'true') return;
   if (!isPro(await getEntitlement(uid))) throw new HttpsError('failed-precondition', 'Σ Pro required');
 }
 

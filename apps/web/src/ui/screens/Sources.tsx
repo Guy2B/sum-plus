@@ -2,7 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 import type { MailAccount, RelationshipType, SocialAccount, SocialProvider } from '../../domain/types';
 import { authUser, create, entitlement, snapshot, update, clock, remove } from '../../data/store';
 import { can, withinLimit } from '../../domain/entitlements';
-import { config, cloudConfigured } from '../../config';
+import { config, connectorServerAvailable } from '../../config';
 import {
   connectGmail,
   googleAvailable,
@@ -313,7 +313,7 @@ export function Sources() {
 
   const mailStatus = (needsServer: boolean, available: boolean): Status => {
     if (!available) return 'notConfigured';
-    if (needsServer && (!cloudConfigured() || !config.functionsEnabled)) return 'notConfigured';
+    if (needsServer && !connectorServerAvailable()) return 'notConfigured';
     if (needsServer && !user) return 'needsSignIn';
     if (needsServer && !can('imap', ent)) return 'needsPro';
     if (!canMail) return 'needsPro';
@@ -328,7 +328,7 @@ export function Sources() {
             : 'needsPro'
           : 'needsSignIn'
         : 'approval';
-    if (!config.social[p] || !cloudConfigured() || !config.functionsEnabled) return 'notConfigured';
+    if (!config.social[p] || !connectorServerAvailable()) return 'notConfigured';
     if (!user) return 'needsSignIn';
     if (!can('social', ent)) return 'needsPro';
     return 'ready';

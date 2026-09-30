@@ -51,7 +51,7 @@ export function cloud(): Promise<Cloud> {
       localCache: fsMod.memoryLocalCache(),
       ignoreUndefinedProperties: true,
     });
-    const functions = fnMod.getFunctions(app, config.functionsRegion);
+    const functions = fnMod.getFunctions(app, config.functionsUrl || config.functionsRegion);
 
     if (config.useEmulators) {
       authMod.connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });

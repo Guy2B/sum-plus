@@ -19,3 +19,4 @@ Thumbs.db
 mobile/android/app/build/
 mobile/ios/App/Pods/
 !apps/web/.env.production
+.netlify/

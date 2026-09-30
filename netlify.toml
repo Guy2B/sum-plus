@@ -1,0 +1,16 @@
+# Σ connector API on Netlify Functions (free tier). The web app itself is on
+# GitHub Pages / Firebase Hosting; this site only serves /api/*.
+[build]
+  publish = "netlify/public"
+  command = "echo 'API only'"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+  external_node_modules = ["firebase-admin", "firebase-functions", "imapflow"]
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true

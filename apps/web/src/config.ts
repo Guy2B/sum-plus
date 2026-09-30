@@ -27,6 +27,8 @@ export const config = Object.freeze({
   functionsEnabled: bool(env.VITE_FUNCTIONS_ENABLED),
   /** Launch mode: every feature unlocked for everyone until payments go live. */
   openAccess: bool(env.VITE_OPEN_ACCESS),
+  /** Connector API hosted outside Cloud Functions (e.g. Netlify), same callable protocol. */
+  functionsUrl: str(env.VITE_FUNCTIONS_URL).replace(/\/$/, ''),
   google: {
     clientId: str(env.VITE_GOOGLE_CLIENT_ID),
   },
@@ -57,3 +59,7 @@ export const config = Object.freeze({
 
 export const cloudConfigured = (): boolean =>
   Boolean(config.firebase.apiKey && config.firebase.projectId && config.firebase.appId);
+
+/** Server-side connectors (IMAP, LinkedIn, X, TikTok) are reachable. */
+export const connectorServerAvailable = (): boolean =>
+  cloudConfigured() && (config.functionsEnabled || Boolean(config.functionsUrl));

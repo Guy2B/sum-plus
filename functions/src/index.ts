@@ -11,4 +11,5 @@ export { deleteMyAccount, exportMyData, reportClientError, onAuthUserDeleted } f
 export { lemonSqueezyWebhook } from './handlers/billing';
 export { imapConnect, imapSync, imapDisconnect } from './handlers/imap';
 export { socialStartAuth, socialOAuthCallback, socialSync, socialDisconnect } from './handlers/social';
+export { purgeMyConnectors } from './handlers/connectors';
 export { adminDiagnostics, adminSetEntitlement, housekeeping } from './handlers/admin';

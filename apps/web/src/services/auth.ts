@@ -117,6 +117,8 @@ export async function deleteCloudAccount(): Promise<void> {
   }
   const user = auth.currentUser;
   if (!user) throw Object.assign(new Error('unauthenticated'), { code: 'unauthenticated' });
+  // Stored connector credentials live server-side: purge them first.
+  if (config.functionsUrl) await call<Record<string, never>, { deleted: number }>('purgeMyConnectors', {});
   const fs = await import('firebase/firestore');
   for (const c of CLOUD_COLLECTIONS) {
     const snap = await fs.getDocs(fs.collection(db, 'users', user.uid, c));
