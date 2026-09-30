@@ -277,6 +277,9 @@ export interface DecisionFeedback extends Doc {
   category?: string;
   relationshipType?: string;
   hour: number;
+  /** Real minutes spent (focus timer) and the estimate at the time, for calibration. */
+  minutes?: number | null;
+  estimate?: number | null;
 }
 
 export interface CoachMessage extends Doc {
@@ -288,6 +291,9 @@ export interface CoachMessage extends Doc {
     confidence?: 'low' | 'medium' | 'high';
     enhancedBy?: string | null;
     actions?: { key: string; route: string }[];
+    /** Changes the coach proposes; applied only after confirmation. */
+    proposal?: { id: string; title: string; to: ISODate }[];
+    applied?: boolean;
   };
 }
 
@@ -334,7 +340,18 @@ export interface Settings {
     health: ISODateTime | null;
     cloudSync: ISODateTime | null;
   };
-  usage: { coachDate: ISODate; coachCount: number; eveningDone?: ISODate | null };
+  usage: {
+    coachDate: ISODate;
+    coachCount: number;
+    eveningDone?: ISODate | null;
+    /** "My day has changed": today's constraints, reset automatically the next day. */
+    day?: {
+      date: ISODate;
+      energy?: 'low' | 'normal' | 'high';
+      minutesLeft?: number | null;
+      endAt?: string | null;
+    } | null;
+  };
   schemaVersion: number;
 }
 

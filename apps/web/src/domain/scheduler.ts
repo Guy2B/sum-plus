@@ -9,6 +9,7 @@
 import type { Decision } from './decision';
 import type { CalendarEvent, ContextProfile } from './types';
 import { addDays, atTime } from './dates';
+import { calibratedMinutes, type Factors } from './calibration';
 import { eventsOn } from './planning';
 
 export interface WhatIf {
@@ -68,8 +69,8 @@ interface Gap {
 export const isMustToday = (d: Decision) =>
   Boolean(d.signal.essential) || (d.facts.hoursToDue !== null && d.facts.hoursToDue <= 24);
 
-export function effortOf(d: Decision): number {
-  return Math.max(5, Math.round(d.facts.effortMinutes / 5) * 5);
+export function effortOf(d: Decision, factors: Factors = {}): number {
+  return calibratedMinutes(d, factors);
 }
 
 function freeGaps(events: CalendarEvent[], from: Date, to: Date): Gap[] {
@@ -101,6 +102,7 @@ export function scheduleDay(
   ctx: Pick<ContextProfile, 'workStart' | 'workEnd' | 'energyPeak'>,
   now: Date,
   whatIf: WhatIf = {},
+  factors: Factors = {},
 ): DayPlan {
   // Less than 30 minutes of working time left: plan tomorrow instead.
   const todayEnd = atTime(now, ctx.workEnd || '18:00');
@@ -123,12 +125,12 @@ export function scheduleDay(
   const must = pool.filter(isMustToday);
   const rest = pool.filter((d) => !isMustToday(d));
   // Tired: among the optional work, short things first.
-  if (whatIf.tired) rest.sort((a, b) => effortOf(a) - effortOf(b) || b.score - a.score);
+  if (whatIf.tired) rest.sort((a, b) => effortOf(a, factors) - effortOf(b, factors) || b.score - a.score);
 
   const blocks: Block[] = [];
   const left: Left[] = [];
   for (const d of [...must, ...rest]) {
-    const minutes = effortOf(d);
+    const minutes = effortOf(d, factors);
     const leave = (reason: LeftReason) =>
       left.push({ decision: d, reason, atRisk: d.facts.hoursToDue !== null && d.facts.hoursToDue <= 24 });
     if (whatIf.tired && minutes > 45 && !isMustToday(d)) {

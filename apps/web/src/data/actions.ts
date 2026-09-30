@@ -48,7 +48,7 @@ export const visibleAttention = computed(() => {
   return groupAttention(visibleDecisions.value);
 });
 
-async function logFeedback(d: Decision, action: FeedbackAction) {
+async function logFeedback(d: Decision, action: FeedbackAction, minutes?: number) {
   await create('feedback', {
     signalId: d.signal.id,
     action,
@@ -57,10 +57,13 @@ async function logFeedback(d: Decision, action: FeedbackAction) {
     category: d.signal.category,
     relationshipType: d.facts.relationshipType,
     hour: new Date().getHours(),
+    minutes: minutes ?? null,
+    estimate: minutes ? d.facts.effortMinutes : null,
   });
 }
 
-export async function completeDecision(d: Decision): Promise<void> {
+/** Marks done; `minutes` = real time spent (focus timer), used to calibrate estimates. */
+export async function completeDecision(d: Decision, minutes?: number): Promise<void> {
   const { collection, id } = d.signal.ref;
   const now = new Date().toISOString();
   switch (collection) {
@@ -84,7 +87,12 @@ export async function completeDecision(d: Decision): Promise<void> {
       break;
     case 'missions': {
       const m = snapshot.value.missions.find((x) => x.id === id);
-      if (m && d.signal.session) await update('missions', id, withLoggedSession(m, d.signal.session));
+      if (m && d.signal.session)
+        await update(
+          'missions',
+          id,
+          withLoggedSession(m, minutes ? { ...d.signal.session, minutes } : d.signal.session),
+        );
       break;
     }
     case 'projects': {
@@ -99,7 +107,7 @@ export async function completeDecision(d: Decision): Promise<void> {
     default:
       await snooze(d.signal.id, 20);
   }
-  await logFeedback(d, 'completed');
+  await logFeedback(d, 'completed', minutes);
 }
 
 export async function deferDecision(d: Decision): Promise<void> {

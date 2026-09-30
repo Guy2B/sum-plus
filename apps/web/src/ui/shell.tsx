@@ -9,11 +9,15 @@ import { visibleAttention } from '../data/actions';
 import { can, isPro } from '../domain/entitlements';
 import { getEdition } from '../domain/editions';
 import { search } from '../domain/search';
-import { askCoach, captureTask, composerFocus } from './composer';
+import { askCoach, captureTask, composerFocus, describe, runCommand } from './composer';
+import { interpret } from '../domain/command';
+import { FocusBar } from './focus';
 import { domainEnabled } from '../domain/signals';
 
 export const drawerOpen = signal(false);
 export const paletteOpen = signal(false);
+/** Library (all tools) collapsed by default: the decision engine comes first. */
+const libraryOpen = signal(false);
 
 export function navLabel(r: RouteDef): string {
   const ed = getEdition(settings.value.edition, settings.value.locale);
@@ -41,39 +45,59 @@ function attentionCount(): number {
 }
 
 function NavList({ onPick }: { onPick?: () => void }) {
-  const groups: RouteDef['group'][] = ['main', 'tools', 'connected', 'settings'];
+  const groups: RouteDef['group'][] = ['main', 'library', 'settings'];
   const current = route.value.id;
   const routes = visibleRoutes();
   return (
     <nav aria-label={t('nav.label')} class="nav">
-      {groups.map((g) => (
-        <div class="nav-group" key={g}>
-          {g !== 'main' && <p class="nav-group-title">{t(`nav.group.${g}`)}</p>}
+      {groups.map((g) => {
+        const items = routes.filter((r) => r.group === g);
+        const list = (
           <ul>
-            {routes
-              .filter((r) => r.group === g)
-              .map((r) => {
-                const locked = r.feature && !can(r.feature, entitlement.value);
-                const count = r.id === 'attention' ? attentionCount() : 0;
-                return (
-                  <li key={r.id}>
-                    <a
-                      href={`#${r.id}`}
-                      class={current === r.id ? 'active' : ''}
-                      aria-current={current === r.id ? 'page' : undefined}
-                      onClick={() => onPick?.()}
-                    >
-                      <Icon name={r.icon} />
-                      <span>{navLabel(r)}</span>
-                      {count > 0 && <span class="nav-count">{count}</span>}
-                      {locked && <Icon name="lock" size={14} label={t('pro.badge')} />}
-                    </a>
-                  </li>
-                );
-              })}
+            {items.map((r) => {
+              const locked = r.feature && !can(r.feature, entitlement.value);
+              const count = r.id === 'attention' ? attentionCount() : 0;
+              return (
+                <li key={r.id}>
+                  <a
+                    href={`#${r.id}`}
+                    class={current === r.id ? 'active' : ''}
+                    aria-current={current === r.id ? 'page' : undefined}
+                    onClick={() => onPick?.()}
+                  >
+                    <Icon name={r.icon} />
+                    <span>{navLabel(r)}</span>
+                    {count > 0 && <span class="nav-count">{count}</span>}
+                    {locked && <Icon name="lock" size={14} label={t('pro.badge')} />}
+                  </a>
+                </li>
+              );
+            })}
           </ul>
-        </div>
-      ))}
+        );
+        if (g === 'library') {
+          const open = libraryOpen.value || items.some((r) => r.id === current);
+          return (
+            <div class="nav-group nav-library" key={g}>
+              <button
+                type="button"
+                class="nav-group-title nav-library-toggle"
+                aria-expanded={open}
+                onClick={() => (libraryOpen.value = !open)}
+              >
+                {t('nav.group.library')}
+              </button>
+              {open && list}
+            </div>
+          );
+        }
+        return (
+          <div class="nav-group" key={g}>
+            {g !== 'main' && <p class="nav-group-title">{t(`nav.group.${g}`)}</p>}
+            {list}
+          </div>
+        );
+      })}
     </nav>
   );
 }
@@ -130,26 +154,44 @@ function CommandPalette() {
         }))
       : [];
   const query = q.trim();
-  const commands = query
+  // The palette is also the command bar: Σ shows what the line will do before running it.
+  const interp = query ? interpret(query) : null;
+  const commands = interp
     ? [
         {
-          key: 'c:task',
-          icon: 'plus',
-          title: t('palette.createTask', { q: query }),
-          detail: t('composer.task'),
-          go: () => void captureTask(query),
+          key: 'c:run',
+          icon: interp.kind === 'ask' ? 'sigma' : interp.kind === 'event' ? 'calendar' : 'plus',
+          title: describe(interp),
+          detail: query,
+          go: () => void runCommand(query, interp),
         },
-        {
-          key: 'c:ask',
-          icon: 'sigma',
-          title: t('palette.ask', { q: query }),
-          detail: t('composer.ask'),
-          go: () => askCoach(query),
-        },
+        ...(interp.kind !== 'task'
+          ? [
+              {
+                key: 'c:task',
+                icon: 'plus',
+                title: t('palette.createTask', { q: query }),
+                detail: t('composer.task'),
+                go: () => void captureTask(query),
+              },
+            ]
+          : []),
+        ...(interp.kind !== 'ask'
+          ? [
+              {
+                key: 'c:ask',
+                icon: 'sigma',
+                title: t('palette.ask', { q: query }),
+                detail: t('composer.ask'),
+                go: () => askCoach(query),
+              },
+            ]
+          : []),
       ]
     : [];
   const items: { key: string; icon?: string; title: string; detail: string; go: () => void }[] = [
-    ...routes.slice(0, 6),
+    // A page name typed on purpose wins; otherwise the command comes first.
+    ...(routes.length ? routes.slice(0, 6) : []),
     ...commands,
     ...hits,
   ];
@@ -345,6 +387,7 @@ export function Shell({ children, banner }: { children: ComponentChildren; banne
           <span>{t('nav.more')}</span>
         </button>
       </nav>
+      <FocusBar />
       <CommandPalette />
     </div>
   );

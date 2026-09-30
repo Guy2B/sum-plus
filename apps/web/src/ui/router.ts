@@ -26,7 +26,7 @@ export type RouteId =
 export interface RouteDef {
   id: RouteId;
   icon: string;
-  group: 'main' | 'tools' | 'connected' | 'settings';
+  group: 'main' | 'library' | 'settings';
   feature?: Feature;
   domain?: Domain;
   adminOnly?: boolean;
@@ -37,18 +37,18 @@ export const ROUTES: RouteDef[] = [
   { id: 'attention', icon: 'bell', group: 'main' },
   { id: 'plan', icon: 'map', group: 'main' },
   { id: 'coach', icon: 'sigma', group: 'main' },
-  { id: 'missions', icon: 'flame', group: 'tools' },
-  { id: 'tasks', icon: 'check', group: 'tools' },
-  { id: 'projects', icon: 'folder', group: 'tools' },
-  { id: 'calendar', icon: 'calendar', group: 'tools', domain: 'calendar' },
-  { id: 'goals', icon: 'target', group: 'tools' },
-  { id: 'journal', icon: 'book', group: 'tools', domain: 'journal' },
-  { id: 'finance', icon: 'wallet', group: 'tools', feature: 'finance', domain: 'finance' },
-  { id: 'health', icon: 'heart', group: 'tools', feature: 'health', domain: 'health' },
-  { id: 'household', icon: 'home', group: 'tools', feature: 'household', domain: 'household' },
-  { id: 'mail', icon: 'mail', group: 'connected', domain: 'mail' },
-  { id: 'social', icon: 'share', group: 'connected', feature: 'social', domain: 'social' },
-  { id: 'sources', icon: 'plug', group: 'connected' },
+  { id: 'missions', icon: 'flame', group: 'library' },
+  { id: 'tasks', icon: 'check', group: 'library' },
+  { id: 'projects', icon: 'folder', group: 'library' },
+  { id: 'calendar', icon: 'calendar', group: 'library', domain: 'calendar' },
+  { id: 'goals', icon: 'target', group: 'library' },
+  { id: 'journal', icon: 'book', group: 'library', domain: 'journal' },
+  { id: 'finance', icon: 'wallet', group: 'library', feature: 'finance', domain: 'finance' },
+  { id: 'health', icon: 'heart', group: 'library', feature: 'health', domain: 'health' },
+  { id: 'household', icon: 'home', group: 'library', feature: 'household', domain: 'household' },
+  { id: 'mail', icon: 'mail', group: 'library', domain: 'mail' },
+  { id: 'social', icon: 'share', group: 'library', feature: 'social', domain: 'social' },
+  { id: 'sources', icon: 'plug', group: 'settings' },
   { id: 'context', icon: 'compass', group: 'settings' },
   { id: 'account', icon: 'user', group: 'settings' },
   { id: 'admin', icon: 'shield', group: 'settings', adminOnly: true },

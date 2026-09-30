@@ -13,6 +13,7 @@ test('mobile layout: bottom navigation, drawer, no horizontal overflow', async (
   }
   await nav.getByRole('button', { name: 'Plus' }).click();
   await expect(page.locator('.sidebar.open')).toBeVisible();
+  await page.locator('.sidebar').getByRole('button', { name: 'Bibliothèque' }).click();
   await page
     .locator('.sidebar')
     .getByRole('link', { name: /Journal/ })

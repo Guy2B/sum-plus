@@ -10,7 +10,8 @@ test.describe('core journey', () => {
     const cards = page.locator('#top3 .decision');
     await expect(cards).toHaveCount(3);
     await cards.first().getByRole('button', { name: 'Pourquoi ?' }).click();
-    await expect(cards.first().locator('.decision-explain li').first()).toBeVisible();
+    await expect(cards.first().locator('.why-row').first()).toBeVisible();
+    await expect(cards.first().locator('.why-title').first()).toHaveText('Pourquoi maintenant ?');
     await expect(page.locator('.sources-line')).toContainText('Basé sur');
     expect(errors).toEqual([]);
   });
@@ -34,7 +35,9 @@ test.describe('core journey', () => {
     await expect(page).toHaveURL(/#today/);
     const cards = page.locator('#top3 .today-card');
     await expect(cards).toHaveCount(3);
-    await expect(cards.first().getByRole('button', { name: 'Faire' })).toBeVisible();
+    await expect(cards.first().getByRole('button', { name: /Commencer|Répondre/ })).toBeVisible();
+    await expect(cards.first().getByRole('button', { name: 'Terminé' })).toBeVisible();
+    await expect(page.locator('.set-aside summary')).toContainText('Σ a écarté');
     await expect(cards.first().getByRole('button', { name: 'Planifier' })).toBeVisible();
     await cards.first().getByRole('button', { name: 'Pourquoi ?' }).click();
     await expect(cards.first().locator('.whynot li').first()).toBeVisible();
@@ -54,6 +57,26 @@ test.describe('core journey', () => {
     await page.goto('/app.html#coach');
     await page.getByRole('button', { name: 'Qu’est-ce que j’oublie ?' }).click();
     await expect(page.locator('.bubble-assistant').last()).toContainText('oublier');
+  });
+
+  test('one bar: shows what it will do, then creates an event, adjusts the day, starts focus', async ({
+    page,
+  }) => {
+    await onboard(page, { mind: ['Préparer le devis Dupont 30min'] });
+    const bar = page.getByRole('textbox', { name: 'Capture rapide' });
+    await bar.fill('déjeuner vendredi 13h avec Marc');
+    await expect(page.locator('#composer-preview')).toContainText('Événement « déjeuner avec Marc »');
+    await page.keyboard.press('Enter');
+    await expect(page.getByText(/Ajouté à l’agenda : déjeuner avec Marc à 13:00/)).toBeVisible();
+    await bar.fill('je suis épuisé aujourd’hui');
+    await expect(page.locator('#composer-preview')).toContainText('Ma journée');
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('button', { name: 'Journée ajustée : modifier' })).toBeVisible();
+    const card = page.locator('#top3 .today-card').first();
+    await card.getByRole('button', { name: 'Commencer' }).click();
+    await expect(page.locator('.focus-bar')).toBeVisible();
+    await page.locator('.focus-bar').getByRole('button', { name: 'Terminé' }).click();
+    await expect(page.getByText(/Terminé en \d+ min/)).toBeVisible();
   });
 
   test('quick capture parses natural language and persists across reloads', async ({ page }) => {
@@ -76,7 +99,7 @@ test.describe('core journey', () => {
     await onboard(page, { demo: true });
     const first = page.locator('#top3 .decision').first();
     const title = (await first.locator('.decision-title').innerText()).trim();
-    await first.locator('.decision-actions .btn-primary').click();
+    await first.getByRole('button', { name: 'Terminé' }).click();
     await expect(page.locator('#top3 .decision-title', { hasText: title })).toHaveCount(0);
   });
 

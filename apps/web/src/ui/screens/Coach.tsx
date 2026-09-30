@@ -13,11 +13,12 @@ import {
   snapshot,
   updateSettings,
   remove,
+  update,
 } from '../../data/store';
 import { visibleDecisions, visibleTop } from '../../data/actions';
 import { enhance, semanticIntent } from '../../services/ai';
-import { t } from '../../i18n';
-import { Badge, Button, confirmDialog } from '../components';
+import { t, fmtDate } from '../../i18n';
+import { Badge, Button, attempt, confirmDialog } from '../components';
 import { Icon } from '../icons';
 import { enginePrompts } from '../composer';
 import { navigate, route, type RouteId } from '../router';
@@ -99,12 +100,34 @@ export function Coach() {
           confidence: a.confidence,
           enhancedBy: better?.by ?? null,
           actions: a.actions,
+          proposal: a.proposal,
         },
       });
       await updateSettings({ usage: { coachDate: today, coachCount: used + 1 } });
     } finally {
       setBusy(false);
     }
+  };
+
+  /** Applies the coach's proposal after an explicit confirmation (tasks only, never external calendars). */
+  const applyProposal = async (m: (typeof messages)[number]) => {
+    const moves = m.meta?.proposal ?? [];
+    if (
+      !moves.length ||
+      !(await confirmDialog({
+        title: t('coach.proposal.confirmTitle'),
+        body: t('coach.proposal.confirmBody', { count: moves.length }),
+      }))
+    )
+      return;
+    await attempt(
+      async () => {
+        for (const p of moves)
+          await update('tasks', p.id, { dueDate: p.to, scheduledFor: null, essential: false });
+        await update('coachMessages', m.id, { meta: { ...m.meta, applied: true } });
+      },
+      t('coach.proposal.done', { count: moves.length }),
+    );
   };
 
   const clear = async () => {
@@ -148,6 +171,25 @@ export function Coach() {
             : t('coach.noSources')}
         </span>
         {m.meta.enhancedBy && <span class="muted small">· {t(`coach.enhanced.${m.meta.enhancedBy}`)}</span>}
+        {m.meta.proposal && m.meta.proposal.length > 0 && (
+          <div class="proposal">
+            <p class="small strong">{t('coach.proposal.title')}</p>
+            <ul>
+              {m.meta.proposal.map((p) => (
+                <li key={p.id}>
+                  {p.title} → <strong>{fmtDate(p.to)}</strong>
+                </li>
+              ))}
+            </ul>
+            {m.meta.applied ? (
+              <p class="small good-text">{t('coach.proposal.applied')}</p>
+            ) : (
+              <Button size="sm" variant="primary" icon="check" onClick={() => void applyProposal(m)}>
+                {t('coach.proposal.apply')}
+              </Button>
+            )}
+          </div>
+        )}
         {m.meta.actions?.map((a) => (
           <button key={a.key} type="button" class="chip" onClick={() => navigate(a.route as RouteId)}>
             {t(a.key)}

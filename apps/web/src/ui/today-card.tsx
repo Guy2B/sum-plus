@@ -1,10 +1,11 @@
 import { useState } from 'preact/hooks';
 import type { Decision } from '../domain/decision';
-import { freeSlot, blockMinutes, type Slot } from '../domain/today';
+import { freeSlot, freeMinutesNow, blockMinutes, type Slot } from '../domain/today';
 import type { WhyNot } from '../domain/whynot';
+import { calibration, calibratedMinutes, factorFor } from '../domain/calibration';
 import { isoDay } from '../domain/dates';
 import { t, fmtTime, fmtMinutes, fmtRelative } from '../i18n';
-import { Button, attempt, toast } from './components';
+import { Button, attempt } from './components';
 import { Icon } from './icons';
 import {
   acceptDecision,
@@ -16,6 +17,7 @@ import {
 import { clock, create, settings, snapshot } from '../data/store';
 import { decisionTitle, openDecisionSource } from './decision-card';
 import { ReplyDraft } from './reply-draft';
+import { focus, startFocus } from './focus';
 
 export type TodayRole = 'now' | 'watch' | 'protect';
 
@@ -25,9 +27,9 @@ function confidence(d: Decision): 'high' | 'medium' | 'low' {
 }
 
 /**
- * A Today card is a small cockpit: what, how long, why now (the triggering
- * fact), and three actions — Do, Plan, Ignore. Everything else (sources,
- * confidence, what was set aside and why, feedback) lives behind "Why?".
+ * A Today card: what, how long, why now — and Start / Done / Schedule / Ignore.
+ * "Why now?" is a fixed, scannable panel (deadline, unblocks, goal, effort,
+ * availability, source, confidence) followed by what was set aside and why.
  */
 export function TodayCard({
   role,
@@ -44,17 +46,18 @@ export function TodayCard({
   const [draft, setDraft] = useState(false);
   const title = decisionTitle(d);
   const now = clock.value;
+  const events = snapshot.value.events.filter((e) => !e.deletedAt);
+  const ctx = settings.value.context;
+  const factors = calibration(snapshot.value.feedback.filter((f) => !f.deletedAt));
+  const minutes = calibratedMinutes(d, factors);
+  const factor = factorFor(d, factors);
+  const freeNow = freeMinutesNow(events, ctx, now);
+  const planSlot = slot ?? freeSlot(events, ctx, now, blockMinutes(d));
   const trigger = d.reasons[0] ? t(d.reasons[0].key, d.reasons[0].params) : null;
-  const planSlot =
-    slot ??
-    freeSlot(
-      snapshot.value.events.filter((e) => !e.deletedAt),
-      settings.value.context,
-      now,
-      blockMinutes(d),
-    );
-  const freeNow = planSlot && planSlot.start.getTime() - now.getTime() <= 20 * 60_000;
   const isMail = d.signal.sourceType === 'mail' && Boolean(d.signal.senderEmail || d.signal.url);
+  const running = focus.value?.d.signal.id === d.signal.id;
+  const slotLabel = (s: Slot) =>
+    `${isoDay(s.start) !== isoDay(now) ? `${t('today.tomorrow')} ` : ''}${fmtTime(s.start)}–${fmtTime(s.end)}`;
 
   const plan = async () => {
     if (!planSlot) return;
@@ -68,9 +71,7 @@ export function TodayCard({
         });
         await deferDecision(d);
       },
-      t('today.planned', {
-        time: `${isoDay(planSlot.start) !== isoDay(now) ? `${t('today.tomorrow')} ` : ''}${fmtTime(planSlot.start)}`,
-      }),
+      t('today.planned', { time: slotLabel(planSlot) }),
     );
   };
 
@@ -86,6 +87,34 @@ export function TodayCard({
     );
   };
 
+  const rows: [string, string, string][] = [];
+  if (d.signal.dueAt) rows.push(['⏰', t('why.deadline'), fmtRelative(d.signal.dueAt, now)]);
+  if (d.signal.unblocks)
+    rows.push(['🔓', t('why.unblocks'), t('why.unblocksValue', { count: d.signal.unblocks })]);
+  if (d.signal.chain?.length) rows.push(['🎯', t('why.goal'), d.signal.chain.join(' → ')]);
+  rows.push([
+    '⏱',
+    t('why.effort'),
+    factor !== 1
+      ? t('why.effortCalibrated', { minutes, pct: Math.round((factor - 1) * 100) })
+      : fmtMinutes(minutes),
+  ]);
+  rows.push([
+    '📅',
+    t('why.availability'),
+    freeNow >= minutes
+      ? t('why.freeNow', { minutes: freeNow })
+      : planSlot
+        ? t('why.nextSlot', { slot: slotLabel(planSlot) })
+        : t('why.noSlot'),
+  ]);
+  rows.push([
+    '🧭',
+    t('why.source'),
+    `${t(`source.${d.signal.sourceType}`)}${d.signal.sender ? ` · ${d.signal.sender}` : ''}`,
+  ]);
+  rows.push(['✓', t('why.confidence'), t(`today.confidence.${confidence(d)}`)]);
+
   return (
     <article class={`decision today-card role-${role}`} aria-label={`${t(`today.role.${role}`)} : ${title}`}>
       <p class="today-role">
@@ -98,32 +127,30 @@ export function TodayCard({
         </button>
       </h3>
       <p class="today-line">
-        <span class="today-duration">{fmtMinutes(d.facts.effortMinutes)}</span>
+        <span class="today-duration">{fmtMinutes(minutes)}</span>
         {trigger && <span> · {trigger}</span>}
-        {role === 'protect' && planSlot && (
-          <span>
-            {' · '}
-            {isoDay(planSlot.start) !== isoDay(now) ? `${t('today.tomorrow')} ` : ''}
-            {fmtTime(planSlot.start)}–{fmtTime(planSlot.end)}
-          </span>
-        )}
-        {role === 'now' && freeNow && <span> · {t('today.freeNow')}</span>}
+        {role === 'protect' && planSlot && <span> · {slotLabel(planSlot)}</span>}
+        {role === 'now' && freeNow >= minutes && <span> · {t('today.freeNow')}</span>}
       </p>
 
       <div class="decision-actions">
+        {isMail ? (
+          <Button size="sm" variant="primary" icon="mail" onClick={() => setDraft(true)}>
+            {t('today.reply')}
+          </Button>
+        ) : (
+          <Button size="sm" variant="primary" icon="arrowUp" disabled={running} onClick={() => startFocus(d)}>
+            {running ? t('today.running') : t('today.start')}
+          </Button>
+        )}
         <Button
           size="sm"
-          variant="primary"
+          variant="secondary"
           icon="check"
           onClick={() => void attempt(() => completeDecision(d), t('decision.done'))}
         >
-          {t('today.do')}
+          {t('today.done')}
         </Button>
-        {isMail && (
-          <Button size="sm" variant="ghost" icon="mail" onClick={() => setDraft(true)}>
-            {t('today.reply')}
-          </Button>
-        )}
         <Button size="sm" variant="ghost" icon="calendar" disabled={!planSlot} onClick={() => void plan()}>
           {t('today.plan')}
         </Button>
@@ -141,19 +168,21 @@ export function TodayCard({
       </div>
 
       {open && (
-        <div class="decision-explain">
-          <ul>
-            {d.reasons.map((r) => (
-              <li key={r.key + JSON.stringify(r.params ?? {})}>{t(r.key, r.params)}</li>
+        <div class="decision-explain why-panel">
+          <p class="why-title">{t('why.now')}</p>
+          <dl class="why-grid">
+            {rows.map(([icon, label, value]) => (
+              <div key={label} class="why-row">
+                <dt>
+                  <span aria-hidden="true">{icon}</span> {label}
+                </dt>
+                <dd>{value}</dd>
+              </div>
             ))}
-          </ul>
-          <p class="small muted">
-            {t('today.from', { source: t(`source.${d.signal.sourceType}`) })}
-            {d.signal.sender && ` · ${d.signal.sender}`} · {t(`today.confidence.${confidence(d)}`)}
-          </p>
+          </dl>
           {alternatives.length > 0 && (
             <>
-              <p class="small strong">{t('today.whyNotTitle')}</p>
+              <p class="why-title">{t('today.whyNotTitle')}</p>
               <ul class="whynot">
                 {alternatives.map((w) => (
                   <li key={w.decision.signal.id}>
@@ -164,9 +193,19 @@ export function TodayCard({
               </ul>
             </>
           )}
-          {d.uncertainties.length > 0 && (
-            <p class="small muted">{d.uncertainties.map((u) => t(u.key, u.params)).join(' · ')}</p>
-          )}
+          <details class="why-details">
+            <summary>{t('why.details')}</summary>
+            <ul>
+              {d.reasons.map((r) => (
+                <li key={r.key + JSON.stringify(r.params ?? {})}>{t(r.key, r.params)}</li>
+              ))}
+              {d.uncertainties.map((u) => (
+                <li key={u.key} class="muted">
+                  {t(u.key, u.params)}
+                </li>
+              ))}
+            </ul>
+          </details>
           <div class="feedback-row" role="group" aria-label={t('today.feedback.label')}>
             <span class="small muted">{t('today.feedback.label')}</span>
             {(['useful', 'notUseful', 'wrongTime', 'done'] as const).map((k) => (
@@ -180,8 +219,4 @@ export function TodayCard({
       {draft && <ReplyDraft d={d} onClose={() => setDraft(false)} />}
     </article>
   );
-}
-
-export function toastPlanned(text: string) {
-  toast(text, 'good');
 }

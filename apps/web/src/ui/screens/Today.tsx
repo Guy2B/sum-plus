@@ -6,7 +6,10 @@ import { eventsOn, isTodayTask } from '../../domain/planning';
 import { habitDueOn } from '../../domain/wellbeing';
 import { isoDay } from '../../domain/dates';
 import { domainEnabled } from '../../domain/signals';
-import { pickToday } from '../../domain/today';
+import { dayOverride, pickToday, setAside as groupSetAside } from '../../domain/today';
+import { scheduleDay } from '../../domain/scheduler';
+import { calibration } from '../../domain/calibration';
+import { useState } from 'preact/hooks';
 import { whyNot } from '../../domain/whynot';
 import { daySummary } from '../../domain/review';
 import type { Decision } from '../../domain/decision';
@@ -14,6 +17,7 @@ import { t, fmtLongDate, fmtTime, fmtMinutes } from '../../i18n';
 import { Button, Empty, attempt, Progress } from '../components';
 import { Composer, composerFocus, enginePrompts } from '../composer';
 import { TodayCard } from '../today-card';
+import { decisionTitle } from '../decision-card';
 import { navigate } from '../router';
 
 function greeting(now: Date): string {
@@ -32,13 +36,37 @@ export function Today() {
 
   // Arbitrated picks first (merged, capacity-aware), then the rest of the ranking.
   const top = visibleTop.value.selected;
-  const ranked = [...top, ...visibleDecisions.value.filter((d) => !top.includes(d))];
+  const allRanked = [...top, ...visibleDecisions.value.filter((d) => !top.includes(d))];
+  const factors = calibration(snapshot.value.feedback.filter((f) => !f.deletedAt));
+
+  // "My day has changed": keep only what the planner can fit under today's constraints.
+  const override = dayOverride(s.usage, now);
+  let ranked = allRanked;
+  if (override) {
+    const fitted = scheduleDay(allRanked, events, s.context, now, override, factors);
+    const order = [...new Set(fitted.blocks.map((b) => b.decision))];
+    const atRisk = fitted.left.filter((l) => l.atRisk).map((l) => l.decision);
+    ranked = [...order, ...atRisk.filter((d) => !order.includes(d))];
+    // High energy: tackle the demanding work first.
+    if (override.energy === 'high') ranked.sort((a, b) => b.facts.effortMinutes - a.facts.effortMinutes);
+  }
   const pick = pickToday(ranked, events, s.context, now);
+  const [dayOpen, setDayOpen] = useState(false);
+  const setDay = (patch: NonNullable<typeof s.usage.day>) =>
+    void updateSettings({
+      usage: {
+        ...s.usage,
+        day: { ...(s.usage.day?.date === isoDay(now) ? s.usage.day : {}), ...patch, date: isoDay(now) },
+      },
+    });
   const shown = [pick.now, pick.watch, pick.protect?.decision].filter(Boolean);
   const sources = new Set(shown.map((d) => d!.signal.sourceType));
   // "Why not something else?": what was set aside, with the arbitration reason when there is one.
   const rejected = new Map(visibleTop.value.rejected.map((r) => [r.decision.signal.id, r.reason]));
-  const setAside = ranked.filter((d) => !shown.includes(d) && d.action !== 'ignore');
+  const setAside = allRanked.filter((d) => !shown.includes(d) && d.action !== 'ignore');
+  const removed = groupSetAside(pick.now ?? null, setAside, rejected);
+  const loadMinutes = allRanked.reduce((a, d) => a + d.facts.effortMinutes, 0);
+  const avoided = Math.max(0, loadMinutes - cap.capacityMinutes);
   const alternatives = (chosen: Decision | null | undefined, n: number) =>
     chosen ? setAside.slice(0, n).map((alt) => whyNot(chosen, alt, rejected.get(alt.signal.id))) : [];
 
@@ -62,7 +90,67 @@ export function Today() {
         <p class="eyebrow">{fmtLongDate(now)}</p>
         <h1 class="display">{`${greeting(now)}${s.name ? `, ${s.name}` : ''}`}</h1>
         <p class="muted">{shown.length ? t('today.lead') : t('today.leadEmpty')}</p>
+        <button
+          type="button"
+          class="link day-changed"
+          aria-expanded={dayOpen}
+          onClick={() => setDayOpen(!dayOpen)}
+        >
+          {override ? t('today.day.active') : t('today.day.changed')}
+        </button>
       </header>
+
+      {(dayOpen || override) && (
+        <section class="day-panel" aria-label={t('today.day.changed')}>
+          <div class="day-row">
+            <span class="small muted">{t('today.day.energy')}</span>
+            {(['low', 'normal', 'high'] as const).map((e) => (
+              <button
+                key={e}
+                type="button"
+                class={`chip ${override?.energy === e ? 'chip-on' : ''}`}
+                aria-pressed={override?.energy === e}
+                onClick={() => setDay({ date: isoDay(now), energy: e })}
+              >
+                {t(`today.day.energy.${e}`)}
+              </button>
+            ))}
+          </div>
+          <div class="day-row">
+            <span class="small muted">{t('today.day.left')}</span>
+            {[30, 60, 120, 240].map((m) => (
+              <button
+                key={m}
+                type="button"
+                class={`chip ${override?.maxMinutes === m ? 'chip-on' : ''}`}
+                aria-pressed={override?.maxMinutes === m}
+                onClick={() => setDay({ date: isoDay(now), minutesLeft: m })}
+              >
+                {fmtMinutes(m)}
+              </button>
+            ))}
+            <label class="day-end">
+              <span class="small muted">{t('today.day.endAt')}</span>
+              <input
+                type="time"
+                value={override?.endAt ?? ''}
+                onChange={(e) =>
+                  setDay({ date: isoDay(now), endAt: (e.currentTarget as HTMLInputElement).value || null })
+                }
+              />
+            </label>
+          </div>
+          {override && (
+            <button
+              type="button"
+              class="link"
+              onClick={() => void updateSettings({ usage: { ...s.usage, day: null } })}
+            >
+              {t('today.day.reset')}
+            </button>
+          )}
+        </section>
+      )}
 
       {hasDemoData() && (
         <div class="notice">
@@ -126,6 +214,30 @@ export function Today() {
           </div>
         )}
       </section>
+      {removed.total > 0 && (
+        <details class="set-aside">
+          <summary>
+            {t('today.removed.summary', { count: removed.total })}
+            {avoided > 0 && ` · ${t('today.removed.avoided', { time: fmtMinutes(avoided) })}`}
+          </summary>
+          <ul>
+            {removed.groups.map((g) => (
+              <li key={g.key}>
+                <strong>{t(`today.removed.group.${g.key}`, { count: g.items.length })}</strong>
+                <span class="muted small">
+                  {' '}
+                  {g.items
+                    .slice(0, 4)
+                    .map((w) => decisionTitle(w.decision))
+                    .join(' · ')}
+                  {g.items.length > 4 ? ' …' : ''}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+
       <p class="small muted sources-line">
         {sources.size
           ? t('today.basedOn', { sources: [...sources].map((x) => t(`source.${x}`)).join(', ') })

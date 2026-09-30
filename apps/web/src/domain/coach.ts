@@ -54,6 +54,8 @@ export interface CoachAnswer {
   question?: Line;
   actions: { key: string; route: string }[];
   disclaimer?: Line;
+  /** Task moves Σ proposes; applied only after the user confirms. */
+  proposal?: { id: string; title: string; to: string }[];
 }
 
 const INTENT_TERMS: [CoachIntent, string[]][] = [
@@ -360,7 +362,7 @@ function forgetting({ decisions, top, snap, now }: CoachInput): CoachAnswer {
 }
 
 /** "What can wait?": not essential, no deadline in the next 3 days, not critical. */
-function canWait({ decisions, top }: CoachInput): CoachAnswer {
+function canWait({ decisions, top, now }: CoachInput): CoachAnswer {
   const shown = new Set(top.selected.map((d) => d.signal.id));
   const waitable = decisions
     .filter(
@@ -372,8 +374,15 @@ function canWait({ decisions, top }: CoachInput): CoachAnswer {
     )
     .slice(0, 6);
   const used = sourcesOf(waitable);
+  const later = isoDay(addDays(now, 3));
+  const proposal = waitable
+    .filter(
+      (d) => d.signal.ref.collection === 'tasks' && (!d.signal.dueAt || d.signal.dueAt.slice(0, 10) > later),
+    )
+    .map((d) => ({ id: d.signal.ref.id, title: d.signal.title ?? '', to: later }));
   return {
     intent: 'canWait',
+    proposal: proposal.length ? proposal : undefined,
     title: { key: 'coach.wait.title' },
     lines: waitable.length
       ? [{ key: 'coach.wait.intro', params: { count: waitable.length } }]
@@ -411,6 +420,19 @@ function overload({ snap, capacity, now }: CoachInput): CoachAnswer {
   const biggest = [...tasks]
     .sort((a, b) => (b.estimateMinutes ?? 30) - (a.estimateMinutes ?? 30))
     .slice(0, 3);
+  // Proposal: push the least important, non-essential tasks by a week until the load fits.
+  const proposal: { id: string; title: string; to: string }[] = [];
+  let excess = needed - available;
+  const rank = { low: 0, medium: 1, high: 2 } as const;
+  for (const t of [...tasks]
+    .filter((x) => !x.essential && x.dueDate && x.dueDate > isoDay(addDays(now, 1)))
+    .sort(
+      (a, b) => rank[a.priority] - rank[b.priority] || (b.estimateMinutes ?? 30) - (a.estimateMinutes ?? 30),
+    )) {
+    if (excess <= 0) break;
+    proposal.push({ id: t.id, title: t.title, to: isoDay(addDays(new Date(`${t.dueDate}T12:00:00`), 7)) });
+    excess -= t.estimateMinutes ?? 30;
+  }
   const used = [
     { source: 'task', count: tasks.length },
     { source: 'event', count: events.length },
@@ -419,6 +441,7 @@ function overload({ snap, capacity, now }: CoachInput): CoachAnswer {
   return {
     intent: 'overload',
     title: { key: 'coach.overload.title' },
+    proposal: pct > 100 && proposal.length ? proposal : undefined,
     lines: [
       { key: 'coach.overload.summary', params: { needed: h(needed), available: h(available), pct } },
       {
@@ -500,6 +523,10 @@ function freeUp({ snap, now, question }: CoachInput): CoachAnswer {
     ...due.map((t) => ({ key: 'coach.free.due', params: { what: t.title } })),
     ...sessions.map((what) => ({ key: 'coach.free.session', params: { what } })),
   ];
+  const next = addDays(day, day.getDay() === 5 ? 3 : 1);
+  const proposal = due
+    .filter((t) => !t.essential)
+    .map((t) => ({ id: t.id, title: t.title, to: isoDay(next) }));
   const lines: Line[] = [
     {
       key: afternoon ? 'coach.free.dayAfternoon' : 'coach.free.day',
@@ -522,6 +549,7 @@ function freeUp({ snap, now, question }: CoachInput): CoachAnswer {
   return {
     intent: 'freeUp',
     title: { key: 'coach.free.title' },
+    proposal: proposal.length ? proposal : undefined,
     lines,
     bullets,
     usedSources: used,

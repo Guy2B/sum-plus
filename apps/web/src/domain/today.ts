@@ -8,7 +8,11 @@
  */
 import type { Decision } from './decision';
 import type { CalendarEvent, ContextProfile } from './types';
-import { addDays, atTime } from './dates';
+import { addDays, atTime, isoDay } from './dates';
+import type { Settings } from './types';
+import type { WhatIf } from './scheduler';
+import { whyNot, type WhyNot } from './whynot';
+import type { RejectionReason } from './decision';
 import { eventsOn } from './planning';
 
 export interface Slot {
@@ -90,5 +94,60 @@ export function pickToday(
     protect: protectD
       ? { decision: protectD, slot: freeSlot(events, ctx, now, blockMinutes(protectD)) }
       : null,
+  };
+}
+
+/** Minutes free from now until the next meeting or the end of the work day (0 if busy now). */
+export function freeMinutesNow(
+  events: CalendarEvent[],
+  ctx: Pick<ContextProfile, 'workStart' | 'workEnd'>,
+  now: Date,
+): number {
+  const end = atTime(now, ctx.workEnd || '18:00').getTime();
+  const start = atTime(now, ctx.workStart || '09:00').getTime();
+  if (now.getTime() < start || now.getTime() >= end) return 0;
+  const today = eventsOn(events, now).filter((e) => !e.allDay && !e.deletedAt);
+  if (today.some((e) => new Date(e.start) <= now && new Date(e.end) > now)) return 0;
+  const next = today
+    .map((e) => new Date(e.start).getTime())
+    .filter((t) => t > now.getTime())
+    .sort((a, b) => a - b)[0];
+  return Math.round((Math.min(next ?? end, end) - now.getTime()) / 60_000);
+}
+
+/** Today's "my day has changed" constraints as a planner what-if (null when not set today). */
+export function dayOverride(usage: Settings['usage'], now: Date): (WhatIf & { energy?: string }) | null {
+  const d = usage.day;
+  if (!d || d.date !== isoDay(now)) return null;
+  return {
+    maxMinutes: d.minutesLeft ?? null,
+    endAt: d.endAt ?? null,
+    tired: d.energy === 'low',
+    energy: d.energy,
+  };
+}
+
+export interface SetAside {
+  total: number;
+  groups: { key: string; items: WhyNot[] }[];
+}
+
+/** Everything Σ deliberately did not put on the three cards, grouped by reason. */
+export function setAside(
+  chosen: Decision | null,
+  rest: Decision[],
+  rejected: Map<string, RejectionReason>,
+): SetAside {
+  if (!chosen) return { total: 0, groups: [] };
+  const items = rest
+    .filter((d) => d.action !== 'ignore')
+    .map((d) => whyNot(chosen, d, rejected.get(d.signal.id)));
+  const groups = new Map<string, WhyNot[]>();
+  for (const w of items) groups.set(w.key, [...(groups.get(w.key) ?? []), w]);
+  return {
+    total: items.length,
+    groups: [...groups.entries()]
+      .map(([key, list]) => ({ key, items: list }))
+      .sort((a, b) => b.items.length - a.items.length),
   };
 }
