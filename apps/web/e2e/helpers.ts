@@ -16,12 +16,13 @@ export async function onboard(
   opts: { name?: string; profileIndex?: number; demo?: boolean; mind?: string[] } = {},
 ) {
   await page.goto('/app.html');
+  await page.getByRole('button', { name: /Commencer avec mes données/ }).click();
   await expect(
     page.getByRole('heading', { name: 'Qu’est-ce qui occupe votre esprit aujourd’hui ?' }),
   ).toBeVisible();
-  for (const [i, text] of (opts.mind ?? []).entries()) await page.getByLabel(`Chose ${i + 1}`).fill(text);
-  await page.getByLabel('Prénom ou nom affiché').fill(opts.name ?? 'Camille');
+  if (opts.mind?.length) await page.getByLabel('Ce qui vous occupe').fill(opts.mind.join('\n'));
   await page.getByRole('button', { name: 'Continuer' }).click();
+  await page.getByLabel('Prénom ou nom affiché').fill(opts.name ?? 'Camille');
   await page
     .getByRole('radio')
     .nth(opts.profileIndex ?? 1)

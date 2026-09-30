@@ -132,7 +132,10 @@ describe('program model (fitness)', () => {
     expect(loadFactor(0)).toBe(1);
     expect(loadFactor(2)).toBeCloseTo(1.2);
     expect(loadFactor(3)).toBe(0.7);
-    const plan = planMission(mission({ kind: 'fitness', title: 'Forme', daysPerWeek: 3, level: 'beginner' }), NOW);
+    const plan = planMission(
+      mission({ kind: 'fitness', title: 'Forme', daysPerWeek: 3, level: 'beginner' }),
+      NOW,
+    );
     expect(plan.today?.kind).toBe('endurance'); // Wednesday is a training day
     expect(plan.sessions.map((s) => s.kind).slice(0, 3)).toEqual(['endurance', 'strength', 'mobility']);
   });
@@ -199,7 +202,9 @@ describe('pipeline model (job search)', () => {
     const s = planMission(m, NOW).today!;
     const patch = withLoggedSession(m, sessionToLog(s));
     expect(patch.pipeline?.[0]?.followedUpAt).toBe(day(0));
-    expect(planMission({ ...m, ...patch }, NOW).sessions.find((x) => x.kind === 'followup')?.date).toBe(day(7));
+    expect(planMission({ ...m, ...patch }, NOW).sessions.find((x) => x.kind === 'followup')?.date).toBe(
+      day(7),
+    );
   });
 });
 

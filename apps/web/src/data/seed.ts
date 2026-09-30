@@ -16,6 +16,9 @@ export async function seedDemo(edition: EditionKey, locale: Locale, now: Date = 
   const demo = editionDemo(edition, locale);
   const src = { provider: DEMO_PROVIDER };
   const d = (n: number) => isoDay(addDays(now, n));
+  // Fixed ids so the demo shows a goal → project → action chain.
+  const goalId = newId('demo');
+  const projectId = newId('demo');
 
   await createMany(
     'tasks',
@@ -28,6 +31,7 @@ export async function seedDemo(edition: EditionKey, locale: Locale, now: Date = 
       essential: i === 0,
       dueDate: i === 0 ? d(0) : i === 1 ? d(1) : i === 2 ? d(4) : null,
       estimateMinutes: [45, 30, 20, 15][i] ?? 30,
+      projectId: i === 1 ? projectId : null,
       source: src,
     })),
   );
@@ -35,7 +39,8 @@ export async function seedDemo(edition: EditionKey, locale: Locale, now: Date = 
   const [projectName, ...steps] = demo.project;
   await createMany('projects', [
     {
-      id: newId('demo'),
+      id: projectId,
+      goalId,
       name: projectName ?? '—',
       description: '',
       status: 'active',
@@ -106,7 +111,7 @@ export async function seedDemo(edition: EditionKey, locale: Locale, now: Date = 
   await createMany(
     'goals',
     demo.goals.slice(0, 3).map((title, i) => ({
-      id: newId('demo'),
+      id: i === 0 ? goalId : newId('demo'),
       title,
       horizon: i === 0 ? 'week' : i === 1 ? 'month' : 'quarter',
       status: 'active',
@@ -167,6 +172,97 @@ export async function seedDemo(edition: EditionKey, locale: Locale, now: Date = 
         { date: d(-1), minutes: 25, page: 80, rating: 'good' },
       ],
     },
+  ]);
+
+  // A realistic week: two mails waiting for an answer, a busy afternoon, a conflict tomorrow.
+  const mails = {
+    fr: [
+      [
+        'Marc Dubois',
+        'marc.dubois@example.com',
+        'Devis pour lundi ?',
+        'Pouvez-vous m’envoyer le devis avant lundi ? On valide mardi.',
+      ],
+      [
+        'Sophie Martin',
+        'sophie@example.com',
+        'Point rapide cette semaine ?',
+        'J’aimerais caler 30 min pour parler du partenariat.',
+      ],
+    ],
+    en: [
+      [
+        'Marc Dubois',
+        'marc.dubois@example.com',
+        'Quote for Monday?',
+        'Could you send the quote before Monday? We decide on Tuesday.',
+      ],
+      [
+        'Sophie Martin',
+        'sophie@example.com',
+        'Quick call this week?',
+        'I would like 30 minutes to discuss the partnership.',
+      ],
+    ],
+    de: [
+      [
+        'Marc Dubois',
+        'marc.dubois@example.com',
+        'Angebot bis Montag?',
+        'Können Sie mir das Angebot vor Montag schicken? Wir entscheiden am Dienstag.',
+      ],
+      [
+        'Sophie Martin',
+        'sophie@example.com',
+        'Kurzer Termin diese Woche?',
+        'Ich hätte gern 30 Minuten für die Partnerschaft.',
+      ],
+    ],
+    es: [
+      [
+        'Marc Dubois',
+        'marc.dubois@example.com',
+        '¿Presupuesto para el lunes?',
+        '¿Puedes enviarme el presupuesto antes del lunes? Decidimos el martes.',
+      ],
+      [
+        'Sophie Martin',
+        'sophie@example.com',
+        '¿Llamada rápida esta semana?',
+        'Me gustaría hablar 30 minutos sobre la colaboración.',
+      ],
+    ],
+  }[locale];
+  await createMany(
+    'mailMessages',
+    mails.map(([sender, senderEmail, subject, snippet], i) => ({
+      id: newId('demo'),
+      accountId: 'demo',
+      provider: 'gmail' as const,
+      externalId: `demo-${i}`,
+      subject: subject!,
+      sender: sender!,
+      senderEmail,
+      snippet: snippet!,
+      receivedAt: addDays(now, i === 0 ? -2 : -1).toISOString(),
+      unread: true,
+      needsReply: true,
+      importance: i === 0 ? ('high' as const) : ('normal' as const),
+    })),
+  );
+  const busy = {
+    fr: ['Réunion équipe', 'Appel fournisseur'],
+    en: ['Team meeting', 'Supplier call'],
+    de: ['Teammeeting', 'Lieferantengespräch'],
+    es: ['Reunión de equipo', 'Llamada proveedor'],
+  }[locale];
+  const slot = (day: number, hhmm: string, minutes: number) => {
+    const start = atTime(addDays(now, day), hhmm);
+    return { start: start.toISOString(), end: new Date(start.getTime() + minutes * 60_000).toISOString() };
+  };
+  await createMany('events', [
+    { id: newId('demo'), title: busy[0]!, ...slot(0, '14:00', 90), source: src },
+    { id: newId('demo'), title: busy[1]!, ...slot(1, '10:30', 60), source: src },
   ]);
 
   await createMany('health', [

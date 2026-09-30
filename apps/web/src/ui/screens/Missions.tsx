@@ -80,6 +80,7 @@ function MissionEditor({ draft, onClose }: { draft: Draft | null; onClose: () =>
       startPage: kind === 'book' ? Number(form.startPage) || 0 : null,
       level: kind === 'fitness' ? (form.level ?? 'beginner') : null,
       forName: kind === 'exam' ? form.forName || null : null,
+      goalId: form.goalId || null,
       ...(kind === 'jobsearch' && !form.id ? { pipeline: [] } : {}),
     };
     await attempt(
@@ -173,6 +174,21 @@ function MissionEditor({ draft, onClose }: { draft: Draft | null; onClose: () =>
               </Field>
             )}
           </div>
+
+          <Field label={t('goal.serves')} hint={t('goal.servesHint')}>
+            {(id) => (
+              <select id={id} value={form.goalId ?? ''} onChange={(e) => set({ goalId: v(e) || null })}>
+                <option value="">{t('goal.none')}</option>
+                {snapshot.value.goals
+                  .filter((g) => !g.deletedAt && g.status === 'active')
+                  .map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.title}
+                    </option>
+                  ))}
+              </select>
+            )}
+          </Field>
 
           {kind === 'exam' && members.length > 0 && (
             <Field label={t('mission.field.forWho')}>

@@ -1,4 +1,4 @@
-import { settings, snapshot, capacity, clock, create, remove } from '../../data/store';
+import { settings, snapshot, capacity, clock, create, remove, updateSettings } from '../../data/store';
 import { visibleTop, visibleDecisions } from '../../data/actions';
 import { hasDemoData, clearDemo } from '../../data/seed';
 import { getEdition } from '../../domain/editions';
@@ -7,9 +7,12 @@ import { habitDueOn } from '../../domain/wellbeing';
 import { isoDay } from '../../domain/dates';
 import { domainEnabled } from '../../domain/signals';
 import { pickToday } from '../../domain/today';
+import { whyNot } from '../../domain/whynot';
+import { daySummary } from '../../domain/review';
+import type { Decision } from '../../domain/decision';
 import { t, fmtLongDate, fmtTime, fmtMinutes } from '../../i18n';
 import { Button, Empty, attempt, Progress } from '../components';
-import { Composer } from '../composer';
+import { Composer, composerFocus, enginePrompts } from '../composer';
 import { TodayCard } from '../today-card';
 import { navigate } from '../router';
 
@@ -33,6 +36,20 @@ export function Today() {
   const pick = pickToday(ranked, events, s.context, now);
   const shown = [pick.now, pick.watch, pick.protect?.decision].filter(Boolean);
   const sources = new Set(shown.map((d) => d!.signal.sourceType));
+  // "Why not something else?": what was set aside, with the arbitration reason when there is one.
+  const rejected = new Map(visibleTop.value.rejected.map((r) => [r.decision.signal.id, r.reason]));
+  const setAside = ranked.filter((d) => !shown.includes(d) && d.action !== 'ignore');
+  const alternatives = (chosen: Decision | null | undefined, n: number) =>
+    chosen ? setAside.slice(0, n).map((alt) => whyNot(chosen, alt, rejected.get(alt.signal.id))) : [];
+
+  // Evening ritual (10 seconds): what happened today, anything important changed?
+  const endHour = Number((s.context.workEnd || '18:00').slice(0, 2));
+  const evening = now.getHours() >= Math.min(endHour, 18) && s.usage.eveningDone !== isoDay(now);
+  const summary = daySummary(snapshot.value, now);
+  const closeEvening = (note: boolean) =>
+    void updateSettings({ usage: { ...s.usage, eveningDone: isoDay(now) } }).then(() => {
+      if (note) composerFocus.value++;
+    });
 
   const upcoming = eventsOn(events, now).filter((e) => !e.allDay && e.end >= now.toISOString());
   const todayTasks = snapshot.value.tasks.filter((x) => isTodayTask(x, now));
@@ -56,12 +73,39 @@ export function Today() {
         </div>
       )}
 
+      {evening && (
+        <div class="ritual" role="status">
+          <p>
+            <strong>{t('today.ritual.title')}</strong>{' '}
+            {t('today.ritual.summary', { done: summary.done, deferred: summary.deferred })}{' '}
+            {t('today.ritual.question')}
+          </p>
+          <div class="row-actions">
+            <Button size="sm" onClick={() => closeEvening(false)}>
+              {t('today.ritual.nothing')}
+            </Button>
+            <Button size="sm" variant="primary" onClick={() => closeEvening(true)}>
+              {t('today.ritual.note')}
+            </Button>
+          </div>
+        </div>
+      )}
+
       <section id="top3" class="today-cards" aria-label={t('today.cardsLabel')}>
         {shown.length ? (
           <>
-            {pick.now && <TodayCard role="now" d={pick.now} />}
-            {pick.watch && <TodayCard role="watch" d={pick.watch} />}
-            {pick.protect && <TodayCard role="protect" d={pick.protect.decision} slot={pick.protect.slot} />}
+            {pick.now && <TodayCard role="now" d={pick.now} alternatives={alternatives(pick.now, 2)} />}
+            {pick.watch && (
+              <TodayCard role="watch" d={pick.watch} alternatives={alternatives(pick.watch, 1)} />
+            )}
+            {pick.protect && (
+              <TodayCard
+                role="protect"
+                d={pick.protect.decision}
+                slot={pick.protect.slot}
+                alternatives={alternatives(pick.protect.decision, 1)}
+              />
+            )}
           </>
         ) : (
           <div class="tile">
@@ -90,10 +134,14 @@ export function Today() {
         <a href="#attention" class="link">
           {t('today.seeAll')}
         </a>
+        {' · '}
+        <a href="#plan" class="link">
+          {t('today.whatIf')}
+        </a>
       </p>
 
       <section class="section" aria-label={t('capture.label')}>
-        <Composer prompts={ed.prompts} />
+        <Composer prompts={enginePrompts()} />
       </section>
 
       <details class="section day-details">

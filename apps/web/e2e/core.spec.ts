@@ -25,6 +25,37 @@ test.describe('core journey', () => {
     );
   });
 
+  test('sample week: Σ decides in seconds, explains what it set aside and learns from feedback', async ({
+    page,
+  }) => {
+    const errors = watchErrors(page);
+    await page.goto('/app.html');
+    await page.getByRole('button', { name: /Voir Σ décider sur une semaine fictive/ }).click();
+    await expect(page).toHaveURL(/#today/);
+    const cards = page.locator('#top3 .today-card');
+    await expect(cards).toHaveCount(3);
+    await expect(cards.first().getByRole('button', { name: 'Faire' })).toBeVisible();
+    await expect(cards.first().getByRole('button', { name: 'Planifier' })).toBeVisible();
+    await cards.first().getByRole('button', { name: 'Pourquoi ?' }).click();
+    await expect(cards.first().locator('.whynot li').first()).toBeVisible();
+    await cards.first().getByRole('button', { name: 'mauvais moment' }).click();
+    await expect(page.getByText('Noté : Σ évitera ce moment pour ce type d’action')).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+
+  test('what if: the planner replans the day under a new constraint', async ({ page }) => {
+    await page.goto('/app.html');
+    await page.getByRole('button', { name: /Voir Σ décider sur une semaine fictive/ }).click();
+    await expect(page.locator('#top3 .today-card')).toHaveCount(3);
+    await page.goto('/app.html#plan');
+    await expect(page.locator('#blocks')).toBeVisible();
+    await page.getByRole('button', { name: 'Je n’ai que 2 h' }).click();
+    await expect(page.locator('.whatif-result')).toBeVisible();
+    await page.goto('/app.html#coach');
+    await page.getByRole('button', { name: 'Qu’est-ce que j’oublie ?' }).click();
+    await expect(page.locator('.bubble-assistant').last()).toContainText('oublier');
+  });
+
   test('quick capture parses natural language and persists across reloads', async ({ page }) => {
     await onboard(page);
     await page.getByRole('textbox', { name: 'Capture rapide' }).fill('Appeler Marc demain 30min !');

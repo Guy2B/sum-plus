@@ -58,6 +58,10 @@ export interface Signal {
   explain?: { key: string; params?: Record<string, string | number> }[];
   /** Mission session this signal stands for; recorded in the mission log when done. */
   session?: MissionLogEntry;
+  /** Why it matters upstream: [goal, project] titles this action serves. */
+  chain?: string[];
+  /** Number of later steps this action unblocks (next step of a project). */
+  unblocks?: number;
 }
 
 const alive = <T extends { deletedAt?: string | null }>(rows: T[]): T[] => rows.filter((r) => !r.deletedAt);
@@ -75,6 +79,32 @@ export function buildSignals(
   const out: Signal[] = [];
   const today = isoDay(now);
   const in7 = addDays(now, 7);
+  const goals = new Map(
+    alive(snap.goals ?? [])
+      .filter((g) => g.status === 'active')
+      .map((g) => [g.id, g]),
+  );
+  const projects = new Map(alive(snap.projects ?? []).map((p) => [p.id, p]));
+  const openTasks = alive(snap.tasks).filter((t) => t.status !== 'done');
+  /** Goal → project chain of a task, and how many steps it unblocks in its project. */
+  const lineage = (goalId?: string | null, projectId?: string | null, taskId?: string) => {
+    const project = projectId ? projects.get(projectId) : undefined;
+    const goal = goals.get(goalId ?? '') ?? goals.get(project?.goalId ?? '');
+    const chain = [goal?.title, project?.name].filter((x): x is string => Boolean(x));
+    let unblocks = 0;
+    if (project && project.status === 'active' && taskId) {
+      const steps = openTasks
+        .filter((t) => t.projectId === project.id)
+        .sort(
+          (a, b) =>
+            (a.dueDate ?? '9999').localeCompare(b.dueDate ?? '9999') ||
+            a.createdAt.localeCompare(b.createdAt),
+        );
+      if (steps[0]?.id === taskId)
+        unblocks = steps.length - 1 + project.milestones.filter((m) => !m.done).length;
+    }
+    return { chain: chain.length ? chain : undefined, unblocks: unblocks || undefined };
+  };
 
   for (const t of alive(snap.tasks)) {
     if (t.status === 'done') continue;
@@ -92,6 +122,7 @@ export function buildSignals(
       important: Boolean(t.important) || t.priority === 'high',
       essential: t.essential,
       estimateMinutes: t.estimateMinutes,
+      ...lineage(t.goalId, t.projectId, t.id),
       userCreated: !t.source,
       provider: t.source?.provider,
       url: t.source?.url,
@@ -343,6 +374,7 @@ export function buildSignals(
       essential: !plan.forecast.onTrack,
       estimateMinutes: s.minutes,
       explain: [plan.forecast.headline, ...plan.forecast.reasons].slice(0, 3),
+      chain: goals.get(m.goalId ?? '') ? [goals.get(m.goalId ?? '')!.title] : undefined,
       session: sessionToLog(s),
     });
   }

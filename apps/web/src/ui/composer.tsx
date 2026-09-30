@@ -39,6 +39,12 @@ export async function captureTask(text: string, when?: 'today' | 'week'): Promis
   return ok;
 }
 
+/** Questions that query the engine directly (not a generic chat). */
+export const ENGINE_QUESTIONS = ['plan', 'forget', 'wait', 'overload', 'blocked', 'free'] as const;
+export function enginePrompts(): [string, string][] {
+  return ENGINE_QUESTIONS.map((k) => [t(`coach.ask.${k}`), t(`coach.ask.${k}`)]);
+}
+
 export function askCoach(question: string): void {
   navigate('coach', question.trim().slice(0, 1000));
 }

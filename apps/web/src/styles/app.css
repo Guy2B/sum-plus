@@ -1321,6 +1321,22 @@ main {
   border-bottom: 0;
 }
 
+.start-choice {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.start-choice h1 {
+  margin-bottom: 0;
+}
+.start-demo {
+  border-color: var(--ink);
+}
+.start-foot {
+  align-items: flex-end;
+  margin-top: 8px;
+}
+
 /* ---------------------------------- today ---------------------------------- */
 
 .today-cards {
@@ -1396,6 +1412,65 @@ main {
 }
 .day-details .tiles {
   margin-top: 14px;
+}
+
+.ritual {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+}
+.ritual p {
+  margin: 0;
+}
+.today-line {
+  margin: 4px 0 0;
+  color: var(--text-2);
+  font-size: 0.9rem;
+}
+.today-duration {
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.whynot {
+  margin: 4px 0 8px;
+  padding-left: 18px;
+}
+.feedback-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+.feedback-row .chip {
+  padding: 3px 10px;
+  font-size: 0.8rem;
+}
+.whatif {
+  margin-bottom: 20px;
+}
+.whatif h2 {
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+.chip-on {
+  background: var(--ink) !important;
+  color: var(--ink-text) !important;
+  border-color: var(--ink) !important;
+}
+.whatif-result {
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: 0.9rem;
 }
 
 /* -------------------------------- missions -------------------------------- */

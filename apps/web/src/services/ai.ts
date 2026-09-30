@@ -118,6 +118,21 @@ export async function enhance(
 /* --------------------------- semantic routing ----------------------------- */
 
 const EXAMPLES: Record<Exclude<CoachIntent, 'help'>, string[]> = {
+  forgetting: ['what am I forgetting', 'qu’est-ce que j’oublie', 'was vergesse ich', 'qué estoy olvidando'],
+  canWait: ['what can wait', 'qu’est-ce qui peut attendre', 'was kann warten', 'qué puede esperar'],
+  overload: [
+    'why is my week so busy',
+    'pourquoi ma semaine est surchargée',
+    'warum ist meine Woche so voll',
+    'por qué mi semana está sobrecargada',
+  ],
+  blocked: ['what is blocking me', 'qu’est-ce qui me bloque', 'was blockiert mich', 'qué me está bloqueando'],
+  freeUp: [
+    'free up my friday afternoon',
+    'libère-moi vendredi après-midi',
+    'mach meinen Freitagnachmittag frei',
+    'libérame el viernes por la tarde',
+  ],
   plan_day: ['organise my day', 'plan today', 'organise ma journée', 'was steht heute an', 'organiza mi día'],
   prioritize: [
     'what should I do first',

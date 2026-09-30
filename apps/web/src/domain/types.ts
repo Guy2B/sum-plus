@@ -63,6 +63,8 @@ export interface Project extends Doc {
   dueDate?: ISODate | null;
   value?: number | null; // expected revenue, in minor units
   milestones: Milestone[];
+  /** The goal this project serves (goal → project → action chain). */
+  goalId?: string | null;
 }
 
 export interface FinanceEntry extends Doc {
@@ -265,7 +267,7 @@ export interface Checkin extends Doc {
   focusNext: string;
 }
 
-export type FeedbackAction = 'accepted' | 'rejected' | 'deferred' | 'completed';
+export type FeedbackAction = 'accepted' | 'rejected' | 'deferred' | 'completed' | 'wrongTime';
 
 export interface DecisionFeedback extends Doc {
   signalId: string;
@@ -332,7 +334,7 @@ export interface Settings {
     health: ISODateTime | null;
     cloudSync: ISODateTime | null;
   };
-  usage: { coachDate: ISODate; coachCount: number };
+  usage: { coachDate: ISODate; coachCount: number; eveningDone?: ISODate | null };
   schemaVersion: number;
 }
 
@@ -390,6 +392,8 @@ export interface Mission extends Doc {
   forName?: string | null;
   /** Job search: the applications being tracked. */
   pipeline?: PipelineItem[];
+  /** The goal this mission serves. */
+  goalId?: string | null;
   log: MissionLogEntry[];
   notes?: string;
 }

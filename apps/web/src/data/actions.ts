@@ -123,6 +123,12 @@ export async function acceptDecision(d: Decision): Promise<void> {
   await logFeedback(d, 'accepted');
 }
 
+/** "Wrong time": hide it for a few hours and teach Σ not to propose this kind of item now. */
+export async function wrongTimeDecision(d: Decision): Promise<void> {
+  await snooze(d.signal.id, 4);
+  await logFeedback(d, 'wrongTime');
+}
+
 /** Turns a message or social item into a task linked to its source. */
 export async function toTask(collection: CollectionName, id: string): Promise<void> {
   if (collection === 'mailMessages') {

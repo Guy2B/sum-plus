@@ -12,7 +12,9 @@ import { isTodayTask } from './planning';
 import { summarizeMonth, formatMoney } from './finance';
 import { healthTrend, habitStreak } from './wellbeing';
 import { isStalled, projectNextStep, projectProgress } from './learning';
-import { addDays, isoDay, monthKey, startOfWeek, toDate } from './dates';
+import { addDays, isoDay, monthKey, startOfWeek, toDate, WEEKDAY_KEYS } from './dates';
+import { planMission } from './missions';
+import { normalizeText } from './text';
 import { includesAny } from './text';
 import { domainEnabled } from './signals';
 
@@ -28,6 +30,11 @@ export type CoachIntent =
   | 'goals'
   | 'household'
   | 'career'
+  | 'forgetting'
+  | 'canWait'
+  | 'overload'
+  | 'blocked'
+  | 'freeUp'
   | 'help';
 
 export interface Line {
@@ -50,6 +57,11 @@ export interface CoachAnswer {
 }
 
 const INTENT_TERMS: [CoachIntent, string[]][] = [
+  // Engine questions first: they are more specific than the topical intents below.
+  ['forgetting', ['oubli', 'forget', 'vergess', 'olvid']],
+  ['canWait', ['peut attendre', 'can wait', 'warten', 'puede esperar']],
+  ['overload', ['surcharg', 'overload', 'too much', 'uberlast', 'sobrecarg']],
+  ['freeUp', ['libere', 'free up', 'free my', 'freimachen', 'frei machen', 'liberame', 'libera']],
   [
     'finance',
     [
@@ -226,9 +238,16 @@ const INTENT_TERMS: [CoachIntent, string[]][] = [
       'important',
     ],
   ],
+  // Generic "what blocks me": after the topical "project" intent.
+  ['blocked', ['bloqu', 'block', 'stuck', 'coince', 'stagn', 'atasc']],
 ];
 
+const PROJECT_NOUNS = ['projet', 'project', 'proyecto', 'projekt'];
+const BLOCK_TERMS = ['bloqu', 'block', 'stuck', 'coince', 'atasc'];
+
 export function detectIntent(question: string): CoachIntent {
+  // "What is blocking me?" is about everything; "which project is stuck?" stays a project question.
+  if (includesAny(question, BLOCK_TERMS) && !includesAny(question, PROJECT_NOUNS)) return 'blocked';
   for (const [intent, terms] of INTENT_TERMS) {
     if (includesAny(question, terms)) return intent;
   }
@@ -236,6 +255,7 @@ export function detectIntent(question: string): CoachIntent {
 }
 
 export interface CoachInput {
+  question?: string;
   snap: Snapshot;
   settings: Settings;
   decisions: Decision[];
@@ -267,12 +287,255 @@ function confidenceFor(used: { count: number }[]): CoachAnswer['confidence'] {
 export function answer(question: string, input: CoachInput, forced?: CoachIntent): CoachAnswer {
   const intent = forced ?? detectIntent(question);
   const builder = BUILDERS[intent] ?? BUILDERS.help;
-  const a = builder(input);
+  const a = builder({ ...input, question });
   if (a.confidence === 'low' && !a.question) a.question = { key: 'coach.q.lowData' };
   return a;
 }
 
+const WEEKDAY_WORDS: Record<string, number> = {
+  lundi: 1,
+  mardi: 2,
+  mercredi: 3,
+  jeudi: 4,
+  vendredi: 5,
+  samedi: 6,
+  dimanche: 0,
+  monday: 1,
+  tuesday: 2,
+  wednesday: 3,
+  thursday: 4,
+  friday: 5,
+  saturday: 6,
+  sunday: 0,
+  montag: 1,
+  dienstag: 2,
+  mittwoch: 3,
+  donnerstag: 4,
+  freitag: 5,
+  samstag: 6,
+  sonntag: 0,
+  lunes: 1,
+  martes: 2,
+  miercoles: 3,
+  jueves: 4,
+  viernes: 5,
+  sabado: 6,
+  domingo: 0,
+};
+
+/** "What am I forgetting?": overdue items, replies waiting 2+ days, missions behind, stale inbox, stalled projects. */
+function forgetting({ decisions, top, snap, now }: CoachInput): CoachAnswer {
+  const shown = new Set(top.selected.map((d) => d.signal.id));
+  const risky = decisions.filter(
+    (d) =>
+      !shown.has(d.signal.id) &&
+      (d.firedRules.includes('overdue') ||
+        (d.signal.sourceType === 'mail' && d.facts.waitingHours >= 48) ||
+        (d.signal.sourceType === 'mission' && Boolean(d.signal.essential))),
+  );
+  const staleInbox = alive(snap.tasks).filter(
+    (t) => t.status === 'inbox' && t.createdAt < addDays(now, -7).toISOString(),
+  );
+  const stalled = alive(snap.projects).filter((p) => isStalled(p, snap.tasks));
+  const lines: Line[] = [];
+  if (risky.length) lines.push({ key: 'coach.forget.risky', params: { count: risky.length } });
+  if (staleInbox.length) lines.push({ key: 'coach.forget.inbox', params: { count: staleInbox.length } });
+  for (const p of stalled.slice(0, 3))
+    lines.push({ key: 'coach.forget.stalled', params: { project: p.name } });
+  if (!lines.length) lines.push({ key: 'coach.forget.none' });
+  const used = [
+    ...sourcesOf(risky),
+    ...(staleInbox.length ? [{ source: 'task', count: staleInbox.length }] : []),
+    ...(stalled.length ? [{ source: 'project', count: stalled.length }] : []),
+  ];
+  return {
+    intent: 'forgetting',
+    title: { key: 'coach.forget.title' },
+    lines,
+    bullets: risky.slice(0, 6).map(decisionLine),
+    usedSources: used,
+    confidence: confidenceFor(used),
+    actions: [{ key: 'coach.action.openAttention', route: 'attention' }],
+  };
+}
+
+/** "What can wait?": not essential, no deadline in the next 3 days, not critical. */
+function canWait({ decisions, top }: CoachInput): CoachAnswer {
+  const shown = new Set(top.selected.map((d) => d.signal.id));
+  const waitable = decisions
+    .filter(
+      (d) =>
+        !shown.has(d.signal.id) &&
+        !d.signal.essential &&
+        (d.facts.hoursToDue === null || d.facts.hoursToDue > 72) &&
+        d.band !== 'critical',
+    )
+    .slice(0, 6);
+  const used = sourcesOf(waitable);
+  return {
+    intent: 'canWait',
+    title: { key: 'coach.wait.title' },
+    lines: waitable.length
+      ? [{ key: 'coach.wait.intro', params: { count: waitable.length } }]
+      : [{ key: 'coach.wait.none' }],
+    bullets: waitable.map(decisionLine),
+    usedSources: used,
+    confidence: confidenceFor(used),
+    actions: [{ key: 'coach.action.openPlan', route: 'plan' }],
+  };
+}
+
+/** "Why is my week overloaded?": needed hours (tasks due, meetings, mission sessions) vs available. */
+function overload({ snap, capacity, now }: CoachInput): CoachAnswer {
+  const endIso = addDays(now, 7).toISOString();
+  const tasks = alive(snap.tasks).filter(
+    (t) => t.status !== 'done' && t.dueDate && t.dueDate <= isoDay(addDays(now, 7)),
+  );
+  const taskMinutes = tasks.reduce((a, t) => a + (t.estimateMinutes ?? 30), 0);
+  const events = alive(snap.events).filter(
+    (e) => !e.allDay && e.start >= now.toISOString() && e.start <= endIso,
+  );
+  const meetingMinutes = events.reduce(
+    (a, e) => a + Math.max(0, (new Date(e.end).getTime() - new Date(e.start).getTime()) / 60_000),
+    0,
+  );
+  const missions = alive(snap.missions ?? []).filter((m) => m.status === 'active');
+  const missionMinutes = missions.reduce(
+    (a, m) => a + planMission(m, now, 7).sessions.reduce((s, x) => s + x.minutes, 0),
+    0,
+  );
+  const available = Math.max(60, capacity.capacityMinutes) * 5;
+  const needed = taskMinutes + meetingMinutes + missionMinutes;
+  const pct = Math.round((needed / available) * 100);
+  const h = (m: number) => Math.round(m / 60);
+  const biggest = [...tasks]
+    .sort((a, b) => (b.estimateMinutes ?? 30) - (a.estimateMinutes ?? 30))
+    .slice(0, 3);
+  const used = [
+    { source: 'task', count: tasks.length },
+    { source: 'event', count: events.length },
+    { source: 'mission', count: missions.length },
+  ].filter((u) => u.count);
+  return {
+    intent: 'overload',
+    title: { key: 'coach.overload.title' },
+    lines: [
+      { key: 'coach.overload.summary', params: { needed: h(needed), available: h(available), pct } },
+      {
+        key: 'coach.overload.split',
+        params: { tasks: h(taskMinutes), meetings: h(meetingMinutes), missions: h(missionMinutes) },
+      },
+      { key: pct > 100 ? 'coach.overload.yes' : 'coach.overload.no' },
+    ],
+    bullets: biggest.map((t) => ({
+      key: 'coach.overload.big',
+      params: { what: t.title, minutes: t.estimateMinutes ?? 30 },
+    })),
+    usedSources: used,
+    confidence: confidenceFor(used),
+    actions: [{ key: 'coach.action.openPlan', route: 'plan' }],
+  };
+}
+
+/** "What is blocking?": projects without a next step or with an overdue step, missions behind. */
+function blocked({ snap, now }: CoachInput): CoachAnswer {
+  const today = isoDay(now);
+  const stalled = alive(snap.projects).filter((p) => isStalled(p, snap.tasks));
+  const late = alive(snap.projects).filter(
+    (p) =>
+      p.status === 'active' &&
+      alive(snap.tasks).some(
+        (t) => t.projectId === p.id && t.status !== 'done' && t.dueDate && t.dueDate < today,
+      ),
+  );
+  const behind = alive(snap.missions ?? [])
+    .filter((m) => m.status === 'active')
+    .map((m) => ({ m, f: planMission(m, now).forecast }))
+    .filter((x) => !x.f.onTrack);
+  const bullets: Line[] = [
+    ...stalled.map((p) => ({ key: 'coach.blocked.noNext', params: { what: p.name } })),
+    ...late.map((p) => ({ key: 'coach.blocked.late', params: { what: p.name } })),
+    ...behind.map((x) => ({ key: 'coach.blocked.mission', params: { what: x.m.title } })),
+  ];
+  const used = [
+    { source: 'project', count: stalled.length + late.length },
+    { source: 'mission', count: behind.length },
+  ].filter((u) => u.count);
+  return {
+    intent: 'blocked',
+    title: { key: 'coach.blocked.title' },
+    lines: bullets.length ? [] : [{ key: 'coach.blocked.none' }],
+    bullets,
+    usedSources: used,
+    confidence: bullets.length ? 'high' : 'medium',
+    actions: [{ key: 'coach.action.openProjects', route: 'projects' }],
+  };
+}
+
+/** "Free up my Friday afternoon": what occupies that window and how much must move. */
+function freeUp({ snap, now, question }: CoachInput): CoachAnswer {
+  const q = normalizeText(question ?? '');
+  const wd =
+    q
+      .split(/[^a-z]+/)
+      .map((w) => WEEKDAY_WORDS[w])
+      .find((x) => x !== undefined) ?? 5;
+  const afternoon = /apres|afternoon|nachmittag|tarde/.test(q);
+  let day = new Date(now);
+  for (let i = 0; i < 7 && day.getDay() !== wd; i++) day = addDays(day, 1);
+  const iso = isoDay(day);
+  const events = alive(snap.events).filter(
+    (e) => !e.allDay && e.start.startsWith(iso) && (!afternoon || new Date(e.start).getHours() >= 12),
+  );
+  const due = alive(snap.tasks).filter((t) => t.status !== 'done' && t.dueDate === iso);
+  const sessions = alive(snap.missions ?? [])
+    .filter((m) => m.status === 'active')
+    .flatMap((m) =>
+      planMission(m, now, 10)
+        .sessions.filter((s) => s.date === iso)
+        .map(() => m.title),
+    );
+  const bullets: Line[] = [
+    ...events.map((e) => ({ key: 'coach.free.event', params: { what: e.title } })),
+    ...due.map((t) => ({ key: 'coach.free.due', params: { what: t.title } })),
+    ...sessions.map((what) => ({ key: 'coach.free.session', params: { what } })),
+  ];
+  const lines: Line[] = [
+    {
+      key: afternoon ? 'coach.free.dayAfternoon' : 'coach.free.day',
+      params: { day: `@weekday.${WEEKDAY_KEYS[wd]}` },
+    },
+  ];
+  lines.push(
+    bullets.length
+      ? {
+          key: 'coach.free.advice',
+          params: { events: events.length, due: due.length, sessions: sessions.length },
+        }
+      : { key: 'coach.free.already' },
+  );
+  const used = [
+    { source: 'event', count: events.length },
+    { source: 'task', count: due.length },
+    { source: 'mission', count: sessions.length },
+  ].filter((u) => u.count);
+  return {
+    intent: 'freeUp',
+    title: { key: 'coach.free.title' },
+    lines,
+    bullets,
+    usedSources: used,
+    confidence: used.length ? 'high' : 'medium',
+    actions: [{ key: 'coach.action.openCalendar', route: 'calendar' }],
+  };
+}
+
 const BUILDERS: Record<CoachIntent, (i: CoachInput) => CoachAnswer> = {
+  forgetting,
+  canWait,
+  overload,
+  blocked,
+  freeUp,
   plan_day: ({ top, capacity }) => {
     const used = sourcesOf(top.selected);
     if (capacity.meetingMinutes > 0) used.push({ source: 'event', count: 1 });

@@ -42,6 +42,7 @@ function ProjectEditor({ project, onClose }: { project: Partial<Project> | null;
       dueDate: form.dueDate || null,
       value: value ? parseAmount(value) : null,
       milestones: form.milestones ?? [],
+      goalId: form.goalId || null,
     };
     await attempt(async () => {
       if (form.id) await update('projects', form.id, fields);
@@ -78,6 +79,24 @@ function ProjectEditor({ project, onClose }: { project: Partial<Project> | null;
             {(id) => <input id={id} inputMode="decimal" value={value} onInput={(e) => setValue(v(e))} />}
           </Field>
         </div>
+        <Field label={t('goal.serves')} hint={t('goal.servesHint')}>
+          {(id) => (
+            <select
+              id={id}
+              value={form.goalId ?? ''}
+              onChange={(e) => setForm({ ...form, goalId: v(e) || null })}
+            >
+              <option value="">{t('goal.none')}</option>
+              {snapshot.value.goals
+                .filter((g) => !g.deletedAt && g.status === 'active')
+                .map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.title}
+                  </option>
+                ))}
+            </select>
+          )}
+        </Field>
         <div class="row">
           <Field label={t('projects.due')}>
             {(id) => (

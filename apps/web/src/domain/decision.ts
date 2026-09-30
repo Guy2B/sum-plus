@@ -469,10 +469,54 @@ export interface BehaviorProfile {
     rejection: number;
     confidence: number;
   }[];
+  /** "Not at this time of day" rules learned from wrong-time / deferred / rejected feedback. */
+  timeRules: TimeRule[];
+}
+
+export type DayPeriod = 'morning' | 'afternoon' | 'evening';
+export const periodOf = (hour: number): DayPeriod =>
+  hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+
+export interface TimeRule {
+  dimension: 'category' | 'sourceType';
+  value: string;
+  period: DayPeriod;
+  total: number;
+  avoidRate: number;
+}
+
+/** Minimum feedback on one (category, period) pair before Σ changes its behaviour. */
+export const MIN_TIME_OBSERVATIONS = 3;
+
+export function learnTimeRules(feedback: DecisionContext['feedback'] = []): TimeRule[] {
+  const groups = new Map<
+    string,
+    { rule: Omit<TimeRule, 'total' | 'avoidRate'>; total: number; avoid: number }
+  >();
+  for (const r of feedback ?? []) {
+    const period = periodOf(r.hour);
+    for (const dimension of ['category', 'sourceType'] as const) {
+      const value = r[dimension];
+      if (!value) continue;
+      const key = `${dimension}|${value}|${period}`;
+      const g = groups.get(key) ?? { rule: { dimension, value, period }, total: 0, avoid: 0 };
+      g.total += 1;
+      if (r.action === 'wrongTime' || r.action === 'deferred' || r.action === 'rejected') g.avoid += 1;
+      groups.set(key, g);
+    }
+  }
+  return (
+    [...groups.values()]
+      .filter((g) => g.total >= MIN_TIME_OBSERVATIONS && g.avoid / g.total >= 0.6)
+      .map((g) => ({ ...g.rule, total: g.total, avoidRate: g.avoid / g.total }))
+      // A category rule is more specific than the source rule it overlaps.
+      .sort((a, b) => b.avoidRate - a.avoidRate || b.total - a.total)
+  );
 }
 
 export function learnProfile(feedback: DecisionContext['feedback'] = []): BehaviorProfile {
   const rows = feedback ?? [];
+  const timeRules = learnTimeRules(rows);
   if (rows.length < MIN_OBSERVATIONS) {
     return {
       ready: false,
@@ -480,6 +524,7 @@ export function learnProfile(feedback: DecisionContext['feedback'] = []): Behavi
       confidence: rows.length / MIN_OBSERVATIONS,
       preferredHour: null,
       patterns: [],
+      timeRules,
     };
   }
   const hours = new Map<number, number>();
@@ -517,13 +562,24 @@ export function learnProfile(feedback: DecisionContext['feedback'] = []): Behavi
     confidence: clamp(rows.length / 30, 0.2, 1),
     preferredHour,
     patterns,
+    timeRules,
   };
 }
 
 function behaviorAdjustment(signal: Signal, facts: Facts, profile: BehaviorProfile, now: Date) {
-  if (!profile.ready) return { adjustment: 0, reasons: [] as Reason[] };
   let adjustment = 0;
   const reasons: Reason[] = [];
+  // Learned "not now" rules apply as soon as they exist (explicit user feedback).
+  const period = periodOf(now.getHours());
+  const rule = (profile.timeRules ?? []).find(
+    (r) =>
+      r.period === period && (r.dimension === 'category' ? signal.category : signal.sourceType) === r.value,
+  );
+  if (rule && !(facts.hoursToDue !== null && facts.hoursToDue <= 4)) {
+    adjustment -= 18 * rule.avoidRate;
+    reasons.push({ key: 'reason.behavior.avoidPeriod' });
+  }
+  if (!profile.ready) return { adjustment: clamp(adjustment, -18, 0), reasons };
   const values: Record<string, string | undefined> = {
     sourceType: signal.sourceType,
     intent: facts.intent,
@@ -624,12 +680,26 @@ export function decide(signal: Signal, ctx: DecisionContext, profile: BehaviorPr
     priority += editionDelta;
   }
 
+  // Explicit lineage: serving an active goal, or unblocking later steps, raises the priority.
+  const lineageReasons: Reason[] = [];
+  if (action !== 'ignore') {
+    if (signal.chain?.length) {
+      priority += 8;
+      lineageReasons.push({ key: 'reason.chain', params: { chain: signal.chain.join(' → ') } });
+    }
+    if (signal.unblocks) {
+      priority += Math.min(12, 4 * signal.unblocks);
+      lineageReasons.push({ key: 'reason.unblocks', params: { count: signal.unblocks } });
+    }
+  }
+
   const score = toScore(priority);
   const band = rules.band ?? bandFor(score);
   const ruleReasons: Reason[] = rules.fired.map((id) => ({ key: `reason.rule.${id}` }));
   const reasons = dedupeReasons([
     ...(signal.explain ?? []),
     ...ruleReasons,
+    ...lineageReasons,
     ...dimensionReasons(facts),
     ...behavior.reasons,
     ...editionReasons.slice(0, 1),

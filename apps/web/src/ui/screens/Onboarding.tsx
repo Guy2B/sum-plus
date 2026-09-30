@@ -57,14 +57,14 @@ function understand(lines: string[]): Understood[] {
 
 export function Onboarding() {
   const s = settings.value;
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(-1);
   const [name, setName] = useState(s.name);
-  const [lines, setLines] = useState(['', '', '']);
+  const [mind, setMind] = useState('');
   const [profile, setProfile] = useState('employee');
   const [peak, setPeak] = useState(s.context.energyPeak);
   const [busy, setBusy] = useState(false);
   const [calendar, setCalendar] = useState<number | null>(null);
-  const items = understand(lines);
+  const items = understand(mind.split('\n'));
 
   const saveProfile = () => {
     const p = PROFILES.find((x) => x.key === profile) ?? PROFILES[0]!;
@@ -120,6 +120,17 @@ export function Onboarding() {
     setBusy(false);
   };
 
+  /** Fictional week: see Σ decide in 30 seconds, without sharing anything. */
+  const tryDemo = async () => {
+    setBusy(true);
+    await attempt(async () => {
+      await seedDemo(settings.value.edition, settings.value.locale);
+      await updateSettings({ onboardingComplete: true });
+      navigate('today');
+    });
+    setBusy(false);
+  };
+
   const connectCalendar = async () => {
     setBusy(true);
     await attempt(async () => {
@@ -140,55 +151,37 @@ export function Onboarding() {
           <strong>Σ Life OS</strong>
         </div>
         <ol class="steps" aria-label={t('onboarding.progress')}>
-          {[0, 1, 2].map((i) => (
-            <li
-              key={i}
-              class={i === step ? 'current' : i < step ? 'done' : ''}
-              aria-current={i === step ? 'step' : undefined}
-            >
-              {t(`onboarding.stepNew${i}`)}
-            </li>
-          ))}
+          {step >= 0 &&
+            [0, 1, 2].map((i) => (
+              <li
+                key={i}
+                class={i === step ? 'current' : i < step ? 'done' : ''}
+                aria-current={i === step ? 'step' : undefined}
+              >
+                {t(`onboarding.stepNew${i}`)}
+              </li>
+            ))}
         </ol>
 
-        {step === 0 && (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              setStep(1);
-            }}
-          >
-            <h1>{t('onboarding.mindTitle')}</h1>
-            <p class="muted">{t('onboarding.mindBody')}</p>
-            {lines.map((value, i) => (
-              <Field key={i} label={t('onboarding.mindLabel', { n: i + 1 })}>
-                {(id) => (
-                  <input
-                    id={id}
-                    value={value}
-                    maxLength={300}
-                    placeholder={t(`onboarding.mindExample${i + 1}`)}
-                    onInput={(e) => {
-                      const next = [...lines];
-                      next[i] = (e.currentTarget as HTMLInputElement).value;
-                      setLines(next);
-                    }}
-                  />
-                )}
-              </Field>
-            ))}
-            <div class="row">
-              <Field label={t('onboarding.name')}>
-                {(id) => (
-                  <input
-                    id={id}
-                    value={name}
-                    maxLength={60}
-                    autoComplete="given-name"
-                    onInput={(e) => setName((e.currentTarget as HTMLInputElement).value)}
-                  />
-                )}
-              </Field>
+        {step === -1 && (
+          <div class="start-choice">
+            <h1>{t('onboarding.startTitle')}</h1>
+            <p class="muted">{t('onboarding.startBody')}</p>
+            <button type="button" class="kind-card start-demo" onClick={() => void tryDemo()} disabled={busy}>
+              <span class="kind-icon" aria-hidden="true">
+                ▶
+              </span>
+              <strong>{t('onboarding.tryWeek')}</strong>
+              <small class="muted">{t('onboarding.tryWeekHint')}</small>
+            </button>
+            <button type="button" class="kind-card" onClick={() => setStep(0)}>
+              <span class="kind-icon" aria-hidden="true">
+                ✎
+              </span>
+              <strong>{t('onboarding.startMine')}</strong>
+              <small class="muted">{t('onboarding.startMineHint')}</small>
+            </button>
+            <div class="row start-foot">
               <Field label={t('settings.language')}>
                 {(id) => (
                   <select
@@ -206,8 +199,6 @@ export function Onboarding() {
                   </select>
                 )}
               </Field>
-            </div>
-            <div class="modal-actions">
               {cloudConfigured() && (
                 <Button
                   variant="ghost"
@@ -218,6 +209,35 @@ export function Onboarding() {
                   {t('onboarding.haveAccount')}
                 </Button>
               )}
+            </div>
+          </div>
+        )}
+
+        {step === 0 && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              setStep(1);
+            }}
+          >
+            <h1>{t('onboarding.mindTitle')}</h1>
+            <p class="muted">{t('onboarding.mindBody')}</p>
+            <Field label={t('onboarding.mindField')}>
+              {(id) => (
+                <textarea
+                  id={id}
+                  rows={4}
+                  value={mind}
+                  maxLength={1000}
+                  placeholder={[1, 2, 3].map((n) => t(`onboarding.mindExample${n}`)).join('\n')}
+                  onInput={(e) => setMind((e.currentTarget as HTMLTextAreaElement).value)}
+                />
+              )}
+            </Field>
+            <div class="modal-actions">
+              <Button variant="ghost" onClick={() => setStep(-1)}>
+                {t('common.back')}
+              </Button>
               <Button variant="primary" type="submit">
                 {t('common.continue')}
               </Button>
@@ -229,6 +249,17 @@ export function Onboarding() {
           <div>
             <h1>{t('onboarding.profileTitle')}</h1>
             <p class="muted">{t('onboarding.profileBody')}</p>
+            <Field label={t('onboarding.name')}>
+              {(id) => (
+                <input
+                  id={id}
+                  value={name}
+                  maxLength={60}
+                  autoComplete="given-name"
+                  onInput={(e) => setName((e.currentTarget as HTMLInputElement).value)}
+                />
+              )}
+            </Field>
             <div class="edition-grid compact" role="radiogroup" aria-label={t('onboarding.profileTitle')}>
               {PROFILES.map((p) => (
                 <button

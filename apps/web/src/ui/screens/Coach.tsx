@@ -19,11 +19,23 @@ import { enhance, semanticIntent } from '../../services/ai';
 import { t } from '../../i18n';
 import { Badge, Button, confirmDialog } from '../components';
 import { Icon } from '../icons';
+import { enginePrompts } from '../composer';
 import { navigate, route, type RouteId } from '../router';
+
+/** Params starting with "@" are i18n references (e.g. "@weekday.fri"), translated here. */
+function localParams(params?: Line['params']): Line['params'] {
+  if (!params) return params;
+  return Object.fromEntries(
+    Object.entries(params).map(([k, v]) => [
+      k,
+      typeof v === 'string' && v.startsWith('@') ? t(v.slice(1)) : v,
+    ]),
+  );
+}
 
 function lineText(l: Line): string {
   if (l.text != null && !l.key) return l.text;
-  const base = t(l.key, l.params);
+  const base = t(l.key, localParams(l.params));
   return l.text ? `${base} ${l.text}` : base;
 }
 
@@ -188,7 +200,7 @@ export function Coach() {
       <div class="coach-dock">
         {!messages.length && (
           <div class="chips composer-chips" role="group" aria-label={t('coach.suggestions')}>
-            {ed.prompts.map(([label, prompt]) => (
+            {enginePrompts().map(([label, prompt]) => (
               <button
                 key={label}
                 type="button"

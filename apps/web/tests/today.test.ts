@@ -12,7 +12,11 @@ const at = (h: number, m = 0) => {
   return d;
 };
 const event = (start: Date, minutes: number): CalendarEvent =>
-  doc({ title: 'Meeting', start: start.toISOString(), end: new Date(start.getTime() + minutes * 60_000).toISOString() });
+  doc({
+    title: 'Meeting',
+    start: start.toISOString(),
+    end: new Date(start.getTime() + minutes * 60_000).toISOString(),
+  });
 
 const task = (id: string, over: Partial<Signal> = {}): Signal => ({
   id: `tasks:${id}`,
