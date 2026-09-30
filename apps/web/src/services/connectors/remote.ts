@@ -75,7 +75,7 @@ export async function disconnectImap(account: MailAccount): Promise<void> {
 /* -------------------------------- social ---------------------------------- */
 
 export async function startSocialAuth(provider: Exclude<SocialProvider, 'youtube'>): Promise<void> {
-  const returnUrl = `${location.origin}/app.html#sources`;
+  const returnUrl = new URL('app.html#sources', location.href).toString();
   const res = await call<{ provider: string; returnUrl: string }, { authUrl: string }>('socialStartAuth', {
     provider,
     returnUrl,

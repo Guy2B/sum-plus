@@ -22,7 +22,7 @@ async function client(): Promise<IPublicClientApplication> {
       auth: {
         clientId: config.microsoft.clientId,
         authority: `https://login.microsoftonline.com/${config.microsoft.tenant}`,
-        redirectUri: `${location.origin}/app.html`,
+        redirectUri: new URL('app.html', location.href).toString().replace(/#.*$/, ''),
       },
       cache: { cacheLocation: 'sessionStorage' },
     });

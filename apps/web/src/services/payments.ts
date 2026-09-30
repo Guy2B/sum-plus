@@ -19,6 +19,6 @@ export function checkoutUrl(billing: Billing): string | null {
   const url = new URL(base);
   url.searchParams.set('checkout[custom][uid]', user.uid);
   if (user.email) url.searchParams.set('checkout[email]', user.email);
-  url.searchParams.set('checkout[custom][return]', `${location.origin}/app.html#account`);
+  url.searchParams.set('checkout[custom][return]', new URL('app.html#account', location.href).toString());
   return url.toString();
 }

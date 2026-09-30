@@ -20,7 +20,7 @@ function notify(key: string, title: string, body: string) {
   if (shown.has(k)) return;
   shown.add(k);
   try {
-    new Notification(title, { body, tag: key, icon: '/icons/icon-192.png' });
+    new Notification(title, { body, tag: key, icon: `${import.meta.env.BASE_URL}icons/icon-192.png` });
   } catch {
     /* some platforms only allow notifications from a service worker */
   }

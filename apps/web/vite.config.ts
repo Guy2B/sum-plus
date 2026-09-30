@@ -4,10 +4,44 @@ import preact from '@preact/preset-vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { resolve } from 'node:path';
 import { readFileSync } from 'node:fs';
+import type { Plugin } from 'vite';
 
 const pkg = JSON.parse(readFileSync(resolve(__dirname, '../../package.json'), 'utf8')) as { version: string };
 
+/**
+ * Hosts without custom headers (GitHub Pages) still get the Content Security
+ * Policy: at build time it is copied from firebase.json into a <meta> tag
+ * (frame-ancestors is header-only and is dropped there).
+ */
+function cspMeta(): Plugin {
+  const firebase = JSON.parse(readFileSync(resolve(__dirname, '../../firebase.json'), 'utf8')) as {
+    hosting: { headers: { headers: { key: string; value: string }[] }[] };
+  };
+  const policy = firebase.hosting.headers
+    .flatMap((h) => h.headers)
+    .find((h) => h.key === 'Content-Security-Policy')
+    ?.value.split(';')
+    .map((d) => d.trim())
+    .filter((d) => d && !d.startsWith('frame-ancestors'))
+    .join('; ');
+  return {
+    name: 'sigma-csp-meta',
+    apply: 'build',
+    transformIndexHtml: (html) =>
+      policy
+        ? html.replace(
+            '<meta name="viewport"',
+            `<meta http-equiv="Content-Security-Policy" content="${policy}" />\n    <meta name="viewport"`,
+          )
+        : html,
+  };
+}
+
+// GitHub Pages serves the app under /<repo>/; Firebase Hosting serves it at the root.
+const base = process.env.VITE_BASE ?? '/';
+
 export default defineConfig({
+  base,
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
@@ -16,6 +50,7 @@ export default defineConfig({
   },
   plugins: [
     preact(),
+    cspMeta(),
     VitePWA({
       registerType: 'prompt',
       injectRegister: false,
@@ -24,15 +59,15 @@ export default defineConfig({
         short_name: 'Σ Life OS',
         description: 'Explainable daily decisions from your tasks, calendar, mail and life signals.',
         lang: 'fr',
-        start_url: '/app.html',
-        scope: '/',
+        start_url: 'app.html',
+        scope: './',
         display: 'standalone',
         background_color: '#0f1222',
         theme_color: '#4f46e5',
         icons: [
-          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {
@@ -40,7 +75,7 @@ export default defineConfig({
         // The optional semantic-model chunk is large; it is fetched on demand only.
         globIgnores: ['**/transformers*.js', '**/ort*.wasm'],
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
-        navigateFallback: '/app.html',
+        navigateFallback: `${base}app.html`,
         navigateFallbackDenylist: [/^\/legal\//, /^\/__\//, /^\/api\//],
         cleanupOutdatedCaches: true,
       },

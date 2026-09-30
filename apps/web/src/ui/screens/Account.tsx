@@ -566,15 +566,15 @@ export function Account() {
       <Card title={t('account.about')}>
         <p class="small muted">
           Σ Life OS {APP_VERSION} ·{' '}
-          <a href="/legal/privacy.html" target="_blank" rel="noopener">
+          <a href="legal/privacy.html" target="_blank" rel="noopener">
             {t('legal.privacy')}
           </a>{' '}
           ·{' '}
-          <a href="/legal/terms.html" target="_blank" rel="noopener">
+          <a href="legal/terms.html" target="_blank" rel="noopener">
             {t('legal.terms')}
           </a>{' '}
           ·{' '}
-          <a href="/legal/support.html" target="_blank" rel="noopener">
+          <a href="legal/support.html" target="_blank" rel="noopener">
             {t('legal.support')}
           </a>
         </p>
