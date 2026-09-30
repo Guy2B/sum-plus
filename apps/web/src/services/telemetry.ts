@@ -90,7 +90,7 @@ export async function track(e: TelemetryEvent, now = new Date()): Promise<void> 
       src: e === 'onboarding_started' ? s.usage.startedFrom : null,
     });
     const [{ db }, fs] = await Promise.all([cloud(), import('firebase/firestore')]);
-    // Deleted automatically after 13 months (Firestore TTL on expireAt).
+    // Kept 13 months at most: expired counters are purged by the admin funnel.
     await fs.addDoc(fs.collection(db, 'telemetry'), {
       ...record,
       expireAt: fs.Timestamp.fromMillis(now.getTime() + 395 * DAY),
@@ -104,6 +104,15 @@ export async function track(e: TelemetryEvent, now = new Date()): Promise<void> 
 export async function funnel(days = 30, now = new Date()) {
   const [{ db }, fs] = await Promise.all([cloud(), import('firebase/firestore')]);
   const since = isoDay(new Date(now.getTime() - days * DAY));
+  // Retention: remove counters past their 13-month expiry first.
+  const expired = await fs.getDocs(
+    fs.query(
+      fs.collection(db, 'telemetry'),
+      fs.where('expireAt', '<', fs.Timestamp.fromDate(now)),
+      fs.limit(400),
+    ),
+  );
+  await Promise.all(expired.docs.map((d) => fs.deleteDoc(d.ref)));
   const snap = await fs.getDocs(fs.query(fs.collection(db, 'telemetry'), fs.where('day', '>=', since)));
   const counts: Record<string, number> = {};
   const openByAge = new Map<number, number>();

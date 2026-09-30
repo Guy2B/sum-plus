@@ -108,7 +108,10 @@ service cloud.firestore {
         && request.resource.data.expireAt is timestamp
         && request.resource.data.expireAt < request.time + duration.value(400, 'd');
       allow read: if signedIn() && request.auth.token.admin == true;
-      allow update, delete: if false;
+      // Retention (13 months) without paid TTL: the admin funnel purges expired counters.
+      allow delete: if signedIn() && request.auth.token.admin == true
+        && resource.data.expireAt < request.time;
+      allow update: if false;
     }
 
     match /entitlements/{uid} {
