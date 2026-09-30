@@ -26,7 +26,8 @@
     "release:check": "node scripts/release-check.mjs",
     "emulators": "firebase emulators:start --project demo-sigma",
     "admin:grant": "node functions/scripts/set-admin.mjs",
-    "deploy:static": "npm run build -w apps/web && firebase deploy --only firestore,hosting --config firebase.static.json --project sum-plus-app"
+    "deploy:static": "npm run build -w apps/web && firebase deploy --only firestore,hosting --config firebase.static.json --project sum-plus-app",
+    "deploy:api": "netlify deploy --prod --filter @sigma/functions --dir netlify/public --functions netlify/functions --no-build --site sum-plus-api"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",
