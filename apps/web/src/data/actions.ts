@@ -4,8 +4,8 @@
  */
 import { computed, signal } from '@preact/signals';
 import type { Decision } from '../domain/decision';
-import type { CollectionName, FeedbackAction } from '../domain/types';
-import { create, snapshot, update } from './store';
+import type { CollectionName, FeedbackAction, DecisionOutcome, DecisionRecord } from '../domain/types';
+import { create, createMany, snapshot, update } from './store';
 import { withLoggedSession } from '../domain/missions';
 import { getKV, setKV } from './db';
 import { isoDay } from '../domain/dates';
@@ -47,6 +47,30 @@ export const visibleAttention = computed(() => {
   void attention.value;
   return groupAttention(visibleDecisions.value);
 });
+
+/* ----------------------------- decision memory ----------------------------- */
+
+const recordId = (d: Decision) => `${isoDay()}:${d.signal.id}`;
+
+/** Updates today's memory of a decision shown on Today (no-op if it was not shown there). */
+async function markOutcome(d: Decision, outcome: DecisionOutcome, extra: Partial<DecisionRecord> = {}) {
+  const id = recordId(d);
+  const rec = snapshot.value.decisionLog.find((r) => r.id === id && !r.deletedAt);
+  if (!rec || rec.outcome === 'completed') return;
+  if (outcome === 'accepted' && rec.outcome !== 'shown') return;
+  await update('decisionLog', id, { outcome, ...extra });
+}
+
+export async function markStarted(d: Decision): Promise<void> {
+  await markOutcome(d, 'started', { startedAt: new Date().toISOString() });
+}
+
+/** Remembers the cards shown today, once per decision and day. */
+export async function rememberShown(rows: Omit<DecisionRecord, 'createdAt' | 'updatedAt' | 'deletedAt'>[]) {
+  const known = new Set(snapshot.value.decisionLog.map((r) => r.id));
+  const fresh = rows.filter((r) => !known.has(r.id));
+  if (fresh.length) await createMany('decisionLog', fresh);
+}
 
 async function logFeedback(d: Decision, action: FeedbackAction, minutes?: number) {
   await create('feedback', {
@@ -108,6 +132,7 @@ export async function completeDecision(d: Decision, minutes?: number): Promise<v
       await snooze(d.signal.id, 20);
   }
   await logFeedback(d, 'completed', minutes);
+  await markOutcome(d, 'completed', { completedAt: new Date().toISOString(), minutes: minutes ?? null });
 }
 
 export async function deferDecision(d: Decision): Promise<void> {
@@ -116,6 +141,7 @@ export async function deferDecision(d: Decision): Promise<void> {
   }
   await snooze(d.signal.id, 24);
   await logFeedback(d, 'deferred');
+  await markOutcome(d, 'deferred');
 }
 
 export async function dismissDecision(d: Decision): Promise<void> {
@@ -125,16 +151,19 @@ export async function dismissDecision(d: Decision): Promise<void> {
     await update('socialItems', d.signal.ref.id, { resolved: true });
   else await snooze(d.signal.id, 24 * 7);
   await logFeedback(d, 'rejected');
+  await markOutcome(d, 'rejected');
 }
 
 export async function acceptDecision(d: Decision): Promise<void> {
   await logFeedback(d, 'accepted');
+  await markOutcome(d, 'accepted');
 }
 
 /** "Wrong time": hide it for a few hours and teach Σ not to propose this kind of item now. */
 export async function wrongTimeDecision(d: Decision): Promise<void> {
   await snooze(d.signal.id, 4);
   await logFeedback(d, 'wrongTime');
+  await markOutcome(d, 'wrongTime');
 }
 
 /** Turns a message or social item into a task linked to its source. */

@@ -29,7 +29,11 @@ function localParams(params?: Line['params']): Line['params'] {
   return Object.fromEntries(
     Object.entries(params).map(([k, v]) => [
       k,
-      typeof v === 'string' && v.startsWith('@') ? t(v.slice(1)) : v,
+      typeof v === 'string' && v.startsWith('@date:')
+        ? fmtDate(v.slice(6))
+        : typeof v === 'string' && v.startsWith('@')
+          ? t(v.slice(1))
+          : v,
     ]),
   );
 }
@@ -48,6 +52,9 @@ export function renderAnswer(a: CoachAnswer): string {
   if (a.disclaimer) parts.push(lineText(a.disclaimer));
   return parts.join('\n\n');
 }
+
+/** Finance and health answers are never sent to a language model. */
+const SENSITIVE_INTENTS = new Set(['finance', 'energy']);
 
 export function Coach() {
   const s = settings.value;
@@ -90,7 +97,9 @@ export function Coach() {
       );
       const plain = renderAnswer(a);
       const better =
-        a.confidence !== 'low' ? await enhance(plain, s.locale, s.context.coachingTone, s.ai) : null;
+        a.confidence !== 'low' && !SENSITIVE_INTENTS.has(a.intent)
+          ? await enhance(plain, s.locale, s.context.coachingTone, s.ai)
+          : null;
       await create('coachMessages', {
         role: 'assistant',
         text: better?.text ?? plain,

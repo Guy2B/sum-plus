@@ -6,6 +6,7 @@
  */
 import type { CoachIntent } from '../domain/coach';
 import type { AiPreferences, Locale } from '../domain/types';
+import { aiMode, allowed, complete } from './llm';
 
 /* --------------------------- fact preservation ---------------------------- */
 
@@ -101,14 +102,16 @@ export async function enhance(
   prefs: AiPreferences,
 ): Promise<{ text: string; by: 'browser' | 'gateway' } | null> {
   try {
-    if (prefs.browserModel) {
-      const out = await rewriteWithBrowser(text, locale, tone);
-      if (out && preservesFacts(text, out)) return { text: out.trim(), by: 'browser' };
-    }
-    if (prefs.gateway && prefs.gatewayUrl) {
-      const out = await rewriteWithGateway(prefs.gatewayUrl, text, locale, tone);
-      if (out && preservesFacts(text, out)) return { text: out.trim(), by: 'gateway' };
-    }
+    const mode = aiMode(prefs);
+    if (!allowed(prefs, 'coach')) return null;
+    let out: string | null = null;
+    if (mode === 'browser') out = await rewriteWithBrowser(text, locale, tone);
+    else if (prefs.mode === 'local')
+      out = await complete(prefs, 'coach', rewritePrompt('', locale, tone), text);
+    else if (prefs.gateway && prefs.gatewayUrl)
+      out = await rewriteWithGateway(prefs.gatewayUrl, text, locale, tone);
+    if (out && preservesFacts(text, out))
+      return { text: out.trim(), by: mode === 'browser' ? 'browser' : 'gateway' };
   } catch {
     /* enhancement is best-effort */
   }
@@ -118,6 +121,12 @@ export async function enhance(
 /* --------------------------- semantic routing ----------------------------- */
 
 const EXAMPLES: Record<Exclude<CoachIntent, 'help'>, string[]> = {
+  memory: [
+    'why did we postpone this',
+    'pourquoi avait-on repoussé ce projet',
+    'warum haben wir das verschoben',
+    'por qué aplazamos esto',
+  ],
   forgetting: ['what am I forgetting', 'qu’est-ce que j’oublie', 'was vergesse ich', 'qué estoy olvidando'],
   canWait: ['what can wait', 'qu’est-ce qui peut attendre', 'was kann warten', 'qué puede esperar'],
   overload: [

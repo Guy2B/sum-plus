@@ -44,6 +44,8 @@ export interface Task extends Doc {
   scheduledFor?: 'today' | 'week' | null;
   projectId?: string | null;
   goalId?: string | null;
+  /** A promise made to someone ("promised Müller the quote by Friday"): high cost of inaction. */
+  promisedTo?: string | null;
   source?: SourceRef | null;
   completedAt?: ISODateTime | null;
 }
@@ -318,11 +320,19 @@ export interface ContextProfile {
   includedDomains: Record<Domain, boolean>;
 }
 
+export type AiMode = 'core' | 'browser' | 'local';
+
 export interface AiPreferences {
   semantic: boolean;
   browserModel: boolean;
   gateway: boolean;
   gatewayUrl: string;
+  /** Σ Core = deterministic only; browser = built-in model; local = Ollama / LM Studio / OpenAI-compatible. */
+  mode?: AiMode;
+  localUrl?: string;
+  localModel?: string;
+  /** What a model may see. Finance and health data are never sent, whatever the settings. */
+  allow?: { coach: boolean; capture: boolean };
 }
 
 export interface Settings {
@@ -415,6 +425,36 @@ export interface Mission extends Doc {
   notes?: string;
 }
 
+/**
+ * Decision memory (local only): what Σ proposed, why, what it set aside, in
+ * which context — and what actually happened. Powers "why did we decide
+ * that?" and the decision-quality metrics.
+ */
+export type DecisionOutcome =
+  'shown' | 'accepted' | 'started' | 'completed' | 'deferred' | 'rejected' | 'wrongTime';
+
+export interface DecisionRecord extends Doc {
+  signalId: string;
+  date: ISODate;
+  title: string;
+  role: 'now' | 'watch' | 'protect';
+  reasons: { key: string; params?: Record<string, string | number> }[];
+  setAside: { title: string; key: string; params?: Record<string, string | number> }[];
+  context: {
+    freeMinutes: number;
+    capacityMinutes: number;
+    energy?: string | null;
+    minutesLeft?: number | null;
+  };
+  category?: string | null;
+  sourceType: string;
+  estimate: number;
+  outcome: DecisionOutcome;
+  startedAt?: ISODateTime | null;
+  completedAt?: ISODateTime | null;
+  minutes?: number | null;
+}
+
 export interface CollectionMap {
   tasks: Task;
   projects: Project;
@@ -438,6 +478,7 @@ export interface CollectionMap {
   feedback: DecisionFeedback;
   coachMessages: CoachMessage;
   missions: Mission;
+  decisionLog: DecisionRecord;
 }
 
 export type CollectionName = keyof CollectionMap;
@@ -465,6 +506,7 @@ export const COLLECTIONS: readonly CollectionName[] = [
   'feedback',
   'coachMessages',
   'missions',
+  'decisionLog',
 ] as const;
 
 /**
@@ -475,6 +517,8 @@ export const LOCAL_ONLY_COLLECTIONS: ReadonlySet<CollectionName> = new Set([
   'mailMessages',
   'socialItems',
   'coachMessages',
+  // Decision memory contains titles of mails and tasks: it stays on the device.
+  'decisionLog',
 ]);
 
 /** Collections containing special-category data (GDPR art. 9); synced only with explicit consent. */

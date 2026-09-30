@@ -1638,6 +1638,39 @@ main {
   }
 }
 
+.stagnation h2 {
+  font-size: 0.95rem;
+}
+.stagnant {
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}
+.stagnant:first-child {
+  border-top: 0;
+}
+.stagnant-head {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+.stagnant-head p {
+  margin: 2px 0 0;
+}
+.ritual-compact {
+  padding: 8px 12px;
+  font-size: 0.88rem;
+  margin-top: 12px;
+}
+.kind-card.selected {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 1px var(--ink);
+}
+.kind-card:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* -------------------------------- missions -------------------------------- */
 
 .kind-grid {

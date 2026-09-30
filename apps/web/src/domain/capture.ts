@@ -9,6 +9,8 @@ export interface Captured {
   estimateMinutes: number | null;
   category: TaskCategory | null;
   scheduledFor: 'today' | null;
+  /** Person the item was promised to, if it reads as a commitment. */
+  promisedTo: string | null;
 }
 
 const TODAY = ["aujourd'hui", 'aujourdhui', 'today', 'heute', 'hoy'];
@@ -141,7 +143,15 @@ export function parseCapture(input: string, now: Date = new Date()): Captured {
     kept.push(w);
   }
   title = kept.join(' ').trim() || input.trim();
-  return { title, dueDate, priority, estimateMinutes, category, scheduledFor };
+  return {
+    title,
+    dueDate,
+    priority,
+    estimateMinutes,
+    category,
+    scheduledFor,
+    promisedTo: detectCommitment(input),
+  };
 }
 
 const MISSION_WORDS: Record<'exam' | 'interview' | 'presentation', string[]> = {
@@ -158,5 +168,25 @@ export function detectMission(text: string): 'exam' | 'interview' | 'presentatio
   const words = new Set(normalizeText(text).split(/[^a-z0-9]+/));
   for (const [kind, list] of Object.entries(MISSION_WORDS) as [keyof typeof MISSION_WORDS, string[]][])
     if (list.some((w) => words.has(w))) return kind;
+  return null;
+}
+
+/**
+ * A promise made to someone: "j'ai promis à Müller le devis vendredi",
+ * "promised Anna the report", "Müller versprochen", "prometí a Ana…".
+ * Returns the person, or null.
+ */
+export function detectCommitment(text: string): string | null {
+  const patterns = [
+    /(?:promis|promise|dit)\s+(?:à|a)\s+([A-ZÀ-ÖØ-Þ][\p{L}'-]+)/u,
+    /promised\s+(?:to\s+)?([A-ZÀ-ÖØ-Þ][\p{L}'-]+)/u,
+    /([A-ZÀ-ÖØ-Þ][\p{L}'-]+)\s+(?:versprochen|zugesagt)/u,
+    /(?:versprochen|zugesagt)\s+(?:an\s+)?([A-ZÀ-ÖØ-Þ][\p{L}'-]+)/u,
+    /promet[ií]\s+a\s+([A-ZÀ-ÖØ-Þ][\p{L}'-]+)/u,
+  ];
+  for (const re of patterns) {
+    const m = re.exec(text);
+    if (m?.[1]) return m[1];
+  }
   return null;
 }

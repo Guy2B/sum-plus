@@ -687,6 +687,11 @@ export function decide(signal: Signal, ctx: DecisionContext, profile: BehaviorPr
       priority += 8;
       lineageReasons.push({ key: 'reason.chain', params: { chain: signal.chain.join(' → ') } });
     }
+    if (signal.commitment) {
+      // A promise to someone has a real cost of inaction (trust), beyond the task itself.
+      priority += 14;
+      lineageReasons.push({ key: 'reason.commitment', params: { to: signal.commitment } });
+    }
     if (signal.unblocks) {
       priority += Math.min(12, 4 * signal.unblocks);
       lineageReasons.push({ key: 'reason.unblocks', params: { count: signal.unblocks } });

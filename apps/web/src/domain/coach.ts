@@ -35,6 +35,7 @@ export type CoachIntent =
   | 'overload'
   | 'blocked'
   | 'freeUp'
+  | 'memory'
   | 'help';
 
 export interface Line {
@@ -60,6 +61,27 @@ export interface CoachAnswer {
 
 const INTENT_TERMS: [CoachIntent, string[]][] = [
   // Engine questions first: they are more specific than the topical intents below.
+  [
+    'memory',
+    [
+      'pourquoi avait',
+      'pourquoi avons',
+      'pourquoi a-t-on',
+      'pourquoi on a',
+      "pourquoi j'ai",
+      'pourquoi j’ai',
+      'why did',
+      'why was',
+      'why had',
+      'why have we',
+      'warum hatten',
+      'warum haben',
+      'warum wurde',
+      'por que habiamos',
+      'por que se',
+      'por que decid',
+    ],
+  ],
   ['forgetting', ['oubli', 'forget', 'vergess', 'olvid']],
   ['canWait', ['peut attendre', 'can wait', 'warten', 'puede esperar']],
   ['overload', ['surcharg', 'overload', 'too much', 'uberlast', 'sobrecarg']],
@@ -558,7 +580,99 @@ function freeUp({ snap, now, question }: CoachInput): CoachAnswer {
   };
 }
 
+const MEMORY_STOP = new Set([
+  'pourquoi',
+  'avait',
+  'avons',
+  'avez',
+  'decide',
+  'decider',
+  'repousse',
+  'reporte',
+  'ecarte',
+  'choisi',
+  'cela',
+  'cette',
+  'why',
+  'did',
+  'was',
+  'had',
+  'have',
+  'decide',
+  'decided',
+  'postpone',
+  'postponed',
+  'that',
+  'this',
+  'the',
+  'warum',
+  'hatten',
+  'haben',
+  'wurde',
+  'verschoben',
+  'entschieden',
+  'por',
+  'que',
+  'habiamos',
+  'decidimos',
+  'aplazado',
+]);
+
+function keywords(text: string): string[] {
+  return normalizeText(text)
+    .split(/[^a-z0-9]+/)
+    .filter((w) => w.length >= 4 && !MEMORY_STOP.has(w));
+}
+
+function matches(title: string, words: string[]): boolean {
+  const t = normalizeText(title);
+  const hits = words.filter((w) => t.includes(w)).length;
+  return hits >= Math.min(2, words.length) && hits > 0;
+}
+
+/** "Why did we postpone X?": answers from the decision memory, never from guesses. */
+function memory({ snap, question }: CoachInput): CoachAnswer {
+  const words = keywords(question ?? '');
+  const records = alive(snap.decisionLog ?? []).sort((a, b) => b.date.localeCompare(a.date));
+  const chosen = words.length ? records.find((r) => matches(r.title, words)) : undefined;
+  const setAside = words.length
+    ? records.flatMap((r) => r.setAside.filter((s) => matches(s.title, words)).map((s) => ({ r, s })))[0]
+    : undefined;
+  const base = {
+    intent: 'memory' as const,
+    title: { key: 'coach.memory.title' },
+    bullets: [] as Line[],
+    actions: [],
+  };
+  if (!chosen && !setAside)
+    return { ...base, lines: [{ key: 'coach.memory.none' }], usedSources: [], confidence: 'low' };
+  const lines: Line[] = [];
+  const r = setAside && (!chosen || setAside.r.date >= chosen.date) ? setAside.r : chosen!;
+  if (setAside && r === setAside.r) {
+    lines.push({
+      key: 'coach.memory.setAside',
+      params: { date: `@date:${r.date}`, what: setAside.s.title, chosen: r.title },
+    });
+    lines.push({ key: setAside.s.key, params: setAside.s.params });
+  } else {
+    lines.push({
+      key: 'coach.memory.chosen',
+      params: { date: `@date:${r.date}`, what: r.title, role: `@today.role.${r.role}` },
+    });
+    for (const reason of r.reasons.slice(0, 2)) lines.push({ key: reason.key, params: reason.params });
+  }
+  lines.push({
+    key: 'coach.memory.context',
+    params: { free: r.context.freeMinutes, capacity: r.context.capacityMinutes },
+  });
+  if (r.context.energy)
+    lines.push({ key: 'coach.memory.energy', params: { energy: `@today.day.energy.${r.context.energy}` } });
+  if (r === chosen) lines.push({ key: `coach.memory.outcome.${r.outcome}` });
+  return { ...base, lines, usedSources: [{ source: r.sourceType, count: 1 }], confidence: 'high' };
+}
+
 const BUILDERS: Record<CoachIntent, (i: CoachInput) => CoachAnswer> = {
+  memory,
   forgetting,
   canWait,
   overload,

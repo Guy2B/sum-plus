@@ -211,6 +211,7 @@ test.describe('accessibility', () => {
     'journal',
     'sources',
     'context',
+    'intelligence',
     'account',
   ]) {
     test(`no serious a11y violations on #${route}`, async ({ page }) => {

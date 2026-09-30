@@ -62,6 +62,8 @@ export interface Signal {
   chain?: string[];
   /** Number of later steps this action unblocks (next step of a project). */
   unblocks?: number;
+  /** Promised to this person: a commitment, not just a task. */
+  commitment?: string;
 }
 
 const alive = <T extends { deletedAt?: string | null }>(rows: T[]): T[] => rows.filter((r) => !r.deletedAt);
@@ -123,6 +125,7 @@ export function buildSignals(
       essential: t.essential,
       estimateMinutes: t.estimateMinutes,
       ...lineage(t.goalId, t.projectId, t.id),
+      commitment: t.promisedTo ?? undefined,
       userCreated: !t.source,
       provider: t.source?.provider,
       url: t.source?.url,

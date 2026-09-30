@@ -59,6 +59,7 @@ function TaskEditor({ task, onClose }: { task: Partial<Task> | null; onClose: ()
       projectId: form.projectId || null,
       goalId: form.goalId || null,
       scheduledFor: form.scheduledFor ?? null,
+      promisedTo: (form.promisedTo ?? '').trim().slice(0, 80) || null,
     };
     await attempt(
       async () => {
@@ -198,6 +199,16 @@ function TaskEditor({ task, onClose }: { task: Partial<Task> | null; onClose: ()
             {t('tasks.essential')}
           </label>
         </fieldset>
+        <Field label={t('tasks.promisedTo')} hint={t('tasks.promisedToHint')}>
+          {(id) => (
+            <input
+              id={id}
+              maxLength={80}
+              value={form.promisedTo ?? ''}
+              onInput={(e) => set('promisedTo', v(e))}
+            />
+          )}
+        </Field>
         <Field label={t('tasks.notes')}>
           {(id) => (
             <textarea
@@ -283,6 +294,7 @@ function TaskRow({ task, onEdit }: { task: Task; onEdit: (t: Task) => void }) {
         {task.title}
       </button>
       <span class="task-meta">
+        {task.promisedTo && <Badge tone="accent">🤝 {task.promisedTo}</Badge>}
         {task.priority === 'high' && <Badge tone="warn">{t('priority.high')}</Badge>}
         {task.source?.provider && task.source.provider !== 'demo' && <Badge>{task.source.provider}</Badge>}
         {due && <span class={overdue ? 'bad-text small' : 'muted small'}>{fmtDate(due)}</span>}

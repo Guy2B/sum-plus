@@ -190,3 +190,95 @@ export function interpret(input: string, now: Date = new Date()): Interpretation
 
   return { kind: 'task', captured: c };
 }
+
+/* ----------------------- model output → validated action ----------------------- */
+
+/** Instructions for a language model: structure only, never invention. */
+export function structurePrompt(now: Date): string {
+  const day = now.toLocaleDateString('en-GB', { weekday: 'long' });
+  return [
+    `Today is ${day} ${isoDay(now)}. Convert the user's sentence into ONE JSON object and nothing else.`,
+    'Fields: kind ("task" | "event" | "day" | "ask"), title (short, in the user\'s language, words taken from the sentence),',
+    'date ("YYYY-MM-DD" or null), time ("HH:MM" or null), minutes (number or null), promisedTo (person or null),',
+    'energy ("low" | "normal" | "high" or null), endAt ("HH:MM" or null), minutesLeft (number or null).',
+    '"day" = the user describes their energy or how much time they have today. "ask" = a question.',
+    'Use null for anything not stated. Never invent people, dates or times.',
+  ].join(' ');
+}
+
+const HHMM = /^([01]?\d|2[0-3]):([0-5]\d)$/;
+const YMD = /^\d{4}-\d{2}-\d{2}$/;
+
+function wordsOf(text: string): string[] {
+  return normalizeText(text)
+    .split(/[^a-z0-9]+/)
+    .filter((w) => w.length >= 3);
+}
+
+/**
+ * Accepts a model's structure only if it is consistent with the sentence:
+ * title words and people must come from the input, dates must be real and
+ * within a year. Anything else falls back to the deterministic interpreter.
+ */
+export function fromModel(raw: unknown, input: string, now: Date): Interpretation | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const o = raw as Record<string, unknown>;
+  const str = (k: string) =>
+    typeof o[k] === 'string' && (o[k] as string).trim() ? (o[k] as string).trim() : null;
+  const num = (k: string) =>
+    typeof o[k] === 'number' && Number.isFinite(o[k]) && (o[k] as number) > 0
+      ? Math.round(o[k] as number)
+      : null;
+  const inputWords = new Set(wordsOf(input));
+  const title = str('title');
+  if (title) {
+    const tw = wordsOf(title);
+    if (tw.length && tw.filter((w) => inputWords.has(w)).length / tw.length < 0.6) return null;
+  }
+  const promisedTo = str('promisedTo');
+  if (promisedTo && !normalizeText(input).includes(normalizeText(promisedTo))) return null;
+  const date = str('date');
+  if (date) {
+    const d = new Date(`${date}T12:00:00`);
+    if (!YMD.test(date) || Number.isNaN(d.getTime())) return null;
+    const days = (d.getTime() - now.getTime()) / 86_400_000;
+    if (days < -1 || days > 366) return null;
+  }
+  const time = str('time');
+  if (time && !HHMM.test(time)) return null;
+  switch (o.kind) {
+    case 'ask':
+      return { kind: 'ask', question: input.trim() };
+    case 'day': {
+      const energy = str('energy');
+      const endAt = str('endAt');
+      const out: Extract<Interpretation, { kind: 'day' }> = { kind: 'day' };
+      if (energy === 'low' || energy === 'normal' || energy === 'high') out.energy = energy;
+      if (num('minutesLeft')) out.minutesLeft = Math.min(720, num('minutesLeft')!);
+      if (endAt && HHMM.test(endAt)) out.endAt = endAt.padStart(5, '0');
+      return out.energy || out.minutesLeft || out.endAt ? out : null;
+    }
+    case 'event': {
+      if (!title || !time) return null;
+      const start = atTime(date ? new Date(`${date}T12:00:00`) : now, time.padStart(5, '0'));
+      const minutes = Math.min(600, num('minutes') ?? 60);
+      return { kind: 'event', title, start, end: new Date(start.getTime() + minutes * 60_000) };
+    }
+    case 'task': {
+      if (!title) return null;
+      const base = parseCapture(input, now);
+      return {
+        kind: 'task',
+        captured: {
+          ...base,
+          title,
+          dueDate: date ?? base.dueDate,
+          estimateMinutes: num('minutes') ?? base.estimateMinutes,
+          promisedTo: promisedTo ?? base.promisedTo,
+        },
+      };
+    }
+    default:
+      return null;
+  }
+}

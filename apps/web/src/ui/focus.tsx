@@ -7,7 +7,7 @@ import { signal } from '@preact/signals';
 import { useEffect, useState } from 'preact/hooks';
 import type { Decision } from '../domain/decision';
 import { calibratedMinutes, calibration } from '../domain/calibration';
-import { completeDecision } from '../data/actions';
+import { completeDecision, markStarted } from '../data/actions';
 import { snapshot } from '../data/store';
 import { t } from '../i18n';
 import { Button, attempt } from './components';
@@ -27,6 +27,7 @@ export function startFocus(d: Decision): void {
   const planned = calibratedMinutes(d, calibration(snapshot.value.feedback.filter((f) => !f.deletedAt)));
   const s = { d, startedAt: Date.now(), pausedMs: 0, pausedAt: null, planned };
   focus.value = s;
+  void markStarted(d);
   if (d.signal.url && d.signal.sourceType !== 'mail') window.open(d.signal.url, '_blank', 'noopener');
 }
 

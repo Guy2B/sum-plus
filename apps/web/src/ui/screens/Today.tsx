@@ -1,22 +1,22 @@
 import { settings, snapshot, capacity, clock, create, remove, updateSettings } from '../../data/store';
-import { visibleTop, visibleDecisions } from '../../data/actions';
+import { rememberShown, visibleTop, visibleDecisions } from '../../data/actions';
 import { hasDemoData, clearDemo } from '../../data/seed';
 import { getEdition } from '../../domain/editions';
 import { eventsOn, isTodayTask } from '../../domain/planning';
 import { habitDueOn } from '../../domain/wellbeing';
 import { isoDay } from '../../domain/dates';
 import { domainEnabled } from '../../domain/signals';
-import { dayOverride, pickToday, setAside as groupSetAside } from '../../domain/today';
+import { dayOverride, freeMinutesNow, pickToday, setAside as groupSetAside } from '../../domain/today';
 import { scheduleDay } from '../../domain/scheduler';
 import { calibration } from '../../domain/calibration';
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { whyNot } from '../../domain/whynot';
 import { daySummary } from '../../domain/review';
 import type { Decision } from '../../domain/decision';
-import { t, fmtLongDate, fmtTime, fmtMinutes } from '../../i18n';
+import { t, fmtDate, fmtLongDate, fmtTime, fmtMinutes } from '../../i18n';
 import { Button, Empty, attempt, Progress } from '../components';
 import { Composer, composerFocus, enginePrompts } from '../composer';
-import { TodayCard } from '../today-card';
+import { TodayCard, type TodayRole } from '../today-card';
 import { decisionTitle } from '../decision-card';
 import { navigate } from '../router';
 
@@ -79,6 +79,44 @@ export function Today() {
       if (note) composerFocus.value++;
     });
 
+  // Decision memory: what Σ proposed today, why, what it set aside and in which context.
+  const freeNow = freeMinutesNow(events, s.context, now);
+  const shownKey = shown.map((d) => d!.signal.id).join('|');
+  useEffect(() => {
+    const roles: [TodayRole, Decision | null | undefined][] = [
+      ['now', pick.now],
+      ['watch', pick.watch],
+      ['protect', pick.protect?.decision],
+    ];
+    void rememberShown(
+      roles
+        .filter((x): x is [TodayRole, Decision] => Boolean(x[1]))
+        .map(([role, d]) => ({
+          id: `${isoDay(now)}:${d.signal.id}`,
+          signalId: d.signal.id,
+          date: isoDay(now),
+          title: decisionTitle(d),
+          role,
+          reasons: d.reasons.slice(0, 4),
+          setAside: alternatives(d, 3).map((w) => ({
+            title: decisionTitle(w.decision),
+            key: w.key,
+            params: { ...w.params, when: w.until ? fmtDate(w.until) : '' },
+          })),
+          context: {
+            freeMinutes: freeNow,
+            capacityMinutes: cap.capacityMinutes,
+            energy: override?.energy ?? null,
+            minutesLeft: override?.maxMinutes ?? null,
+          },
+          category: d.signal.category ?? null,
+          sourceType: d.signal.sourceType,
+          estimate: d.facts.effortMinutes,
+          outcome: 'shown' as const,
+        })),
+    );
+  }, [shownKey]);
+
   const upcoming = eventsOn(events, now).filter((e) => !e.allDay && e.end >= now.toISOString());
   const todayTasks = snapshot.value.tasks.filter((x) => isTodayTask(x, now));
   const today = isoDay(now);
@@ -90,67 +128,7 @@ export function Today() {
         <p class="eyebrow">{fmtLongDate(now)}</p>
         <h1 class="display">{`${greeting(now)}${s.name ? `, ${s.name}` : ''}`}</h1>
         <p class="muted">{shown.length ? t('today.lead') : t('today.leadEmpty')}</p>
-        <button
-          type="button"
-          class="link day-changed"
-          aria-expanded={dayOpen}
-          onClick={() => setDayOpen(!dayOpen)}
-        >
-          {override ? t('today.day.active') : t('today.day.changed')}
-        </button>
       </header>
-
-      {(dayOpen || override) && (
-        <section class="day-panel" aria-label={t('today.day.changed')}>
-          <div class="day-row">
-            <span class="small muted">{t('today.day.energy')}</span>
-            {(['low', 'normal', 'high'] as const).map((e) => (
-              <button
-                key={e}
-                type="button"
-                class={`chip ${override?.energy === e ? 'chip-on' : ''}`}
-                aria-pressed={override?.energy === e}
-                onClick={() => setDay({ date: isoDay(now), energy: e })}
-              >
-                {t(`today.day.energy.${e}`)}
-              </button>
-            ))}
-          </div>
-          <div class="day-row">
-            <span class="small muted">{t('today.day.left')}</span>
-            {[30, 60, 120, 240].map((m) => (
-              <button
-                key={m}
-                type="button"
-                class={`chip ${override?.maxMinutes === m ? 'chip-on' : ''}`}
-                aria-pressed={override?.maxMinutes === m}
-                onClick={() => setDay({ date: isoDay(now), minutesLeft: m })}
-              >
-                {fmtMinutes(m)}
-              </button>
-            ))}
-            <label class="day-end">
-              <span class="small muted">{t('today.day.endAt')}</span>
-              <input
-                type="time"
-                value={override?.endAt ?? ''}
-                onChange={(e) =>
-                  setDay({ date: isoDay(now), endAt: (e.currentTarget as HTMLInputElement).value || null })
-                }
-              />
-            </label>
-          </div>
-          {override && (
-            <button
-              type="button"
-              class="link"
-              onClick={() => void updateSettings({ usage: { ...s.usage, day: null } })}
-            >
-              {t('today.day.reset')}
-            </button>
-          )}
-        </section>
-      )}
 
       {hasDemoData() && (
         <div class="notice">
@@ -158,24 +136,6 @@ export function Today() {
           <Button size="sm" variant="ghost" onClick={() => void attempt(clearDemo, t('today.demoCleared'))}>
             {t('today.clearDemo')}
           </Button>
-        </div>
-      )}
-
-      {evening && (
-        <div class="ritual" role="status">
-          <p>
-            <strong>{t('today.ritual.title')}</strong>{' '}
-            {t('today.ritual.summary', { done: summary.done, deferred: summary.deferred })}{' '}
-            {t('today.ritual.question')}
-          </p>
-          <div class="row-actions">
-            <Button size="sm" onClick={() => closeEvening(false)}>
-              {t('today.ritual.nothing')}
-            </Button>
-            <Button size="sm" variant="primary" onClick={() => closeEvening(true)}>
-              {t('today.ritual.note')}
-            </Button>
-          </div>
         </div>
       )}
 
@@ -252,7 +212,81 @@ export function Today() {
         <a href="#plan" class="link">
           {t('today.whatIf')}
         </a>
+        {' · '}
+        <button type="button" class="link" aria-expanded={dayOpen} onClick={() => setDayOpen(!dayOpen)}>
+          {override ? t('today.day.active') : t('today.day.changed')}
+        </button>
       </p>
+
+      {(dayOpen || override) && (
+        <section class="day-panel" aria-label={t('today.day.changed')}>
+          <div class="day-row">
+            <span class="small muted">{t('today.day.energy')}</span>
+            {(['low', 'normal', 'high'] as const).map((e) => (
+              <button
+                key={e}
+                type="button"
+                class={`chip ${override?.energy === e ? 'chip-on' : ''}`}
+                aria-pressed={override?.energy === e}
+                onClick={() => setDay({ date: isoDay(now), energy: e })}
+              >
+                {t(`today.day.energy.${e}`)}
+              </button>
+            ))}
+          </div>
+          <div class="day-row">
+            <span class="small muted">{t('today.day.left')}</span>
+            {[30, 60, 120, 240].map((m) => (
+              <button
+                key={m}
+                type="button"
+                class={`chip ${override?.maxMinutes === m ? 'chip-on' : ''}`}
+                aria-pressed={override?.maxMinutes === m}
+                onClick={() => setDay({ date: isoDay(now), minutesLeft: m })}
+              >
+                {fmtMinutes(m)}
+              </button>
+            ))}
+            <label class="day-end">
+              <span class="small muted">{t('today.day.endAt')}</span>
+              <input
+                type="time"
+                value={override?.endAt ?? ''}
+                onChange={(e) =>
+                  setDay({ date: isoDay(now), endAt: (e.currentTarget as HTMLInputElement).value || null })
+                }
+              />
+            </label>
+          </div>
+          {override && (
+            <button
+              type="button"
+              class="link"
+              onClick={() => void updateSettings({ usage: { ...s.usage, day: null } })}
+            >
+              {t('today.day.reset')}
+            </button>
+          )}
+        </section>
+      )}
+
+      {evening && (
+        <div class="ritual ritual-compact" role="status">
+          <p>
+            <strong>{t('today.ritual.title')}</strong>{' '}
+            {t('today.ritual.summary', { done: summary.done, deferred: summary.deferred })}{' '}
+            {t('today.ritual.question')}
+          </p>
+          <div class="row-actions">
+            <Button size="sm" onClick={() => closeEvening(false)}>
+              {t('today.ritual.nothing')}
+            </Button>
+            <Button size="sm" variant="primary" onClick={() => closeEvening(true)}>
+              {t('today.ritual.note')}
+            </Button>
+          </div>
+        </div>
+      )}
 
       <section class="section" aria-label={t('capture.label')}>
         <Composer prompts={enginePrompts()} />

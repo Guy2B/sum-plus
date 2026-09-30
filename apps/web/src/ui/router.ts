@@ -20,6 +20,7 @@ export type RouteId =
   | 'mail'
   | 'social'
   | 'context'
+  | 'intelligence'
   | 'account'
   | 'admin';
 
@@ -50,6 +51,7 @@ export const ROUTES: RouteDef[] = [
   { id: 'social', icon: 'share', group: 'library', feature: 'social', domain: 'social' },
   { id: 'sources', icon: 'plug', group: 'settings' },
   { id: 'context', icon: 'compass', group: 'settings' },
+  { id: 'intelligence', icon: 'sparkles', group: 'settings' },
   { id: 'account', icon: 'user', group: 'settings' },
   { id: 'admin', icon: 'shield', group: 'settings', adminOnly: true },
 ];

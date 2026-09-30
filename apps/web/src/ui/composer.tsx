@@ -8,6 +8,8 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { create, settings, updateSettings } from '../data/store';
 import { parseCapture } from '../domain/capture';
 import { interpret, type Interpretation } from '../domain/command';
+import { allowed } from '../services/llm';
+import { structureWithModel } from '../services/structure';
 import { isoDay } from '../domain/dates';
 import { t, fmtDate, fmtTime } from '../i18n';
 import { attempt, toast } from './components';
@@ -28,7 +30,8 @@ export async function captureTask(text: string, when?: 'today' | 'week'): Promis
       title: c.title.slice(0, 300),
       category: c.category ?? 'work',
       status: c.dueDate || scheduledFor ? 'todo' : 'inbox',
-      priority: c.priority,
+      priority: c.promisedTo ? 'high' : c.priority,
+      promisedTo: c.promisedTo,
       dueDate: c.dueDate,
       scheduledFor,
       estimateMinutes: c.estimateMinutes ?? undefined,
@@ -70,10 +73,10 @@ export function describe(i: Interpretation): string {
     case 'ask':
       return t('command.ask');
     default:
-      return t('command.task', {
+      return `${t('command.task', {
         when: i.captured.dueDate ? ` · ${fmtDate(i.captured.dueDate)}` : '',
         minutes: i.captured.estimateMinutes ? ` · ${i.captured.estimateMinutes} min` : '',
-      });
+      })}${i.captured.promisedTo ? ` · ${t('command.promised', { to: i.captured.promisedTo })}` : ''}`;
   }
 }
 
@@ -135,7 +138,11 @@ export function Composer({ prompts }: { prompts: [string, string][] }) {
   const [forced, setForced] = useState<'task' | 'ask' | null>(null);
   const [busy, setBusy] = useState(false);
   const ref = useRef<HTMLTextAreaElement>(null);
-  const detected = text.trim() ? interpret(text) : null;
+  const [model, setModel] = useState<{ text: string; interp: Interpretation } | null>(null);
+  const deterministic = text.trim() ? interpret(text) : null;
+  // The optional model only refines what the rules left as a plain task.
+  const fromAi = model && model.text === text ? model.interp : null;
+  const detected = fromAi ?? deterministic;
   const action: Interpretation | null = !detected
     ? null
     : forced === 'task'
@@ -143,6 +150,18 @@ export function Composer({ prompts }: { prompts: [string, string][] }) {
       : forced === 'ask'
         ? { kind: 'ask', question: text }
         : detected;
+
+  useEffect(() => {
+    const prefs = settings.value.ai;
+    const value = text.trim();
+    if (!value || value.length < 12 || deterministic?.kind !== 'task' || !allowed(prefs, 'capture')) return;
+    const timer = setTimeout(() => {
+      void structureWithModel(prefs, value).then((interp) => {
+        if (interp) setModel({ text, interp });
+      });
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [text]);
 
   useEffect(() => {
     // Each request focuses once (not on every later visit to the home page).
@@ -202,7 +221,7 @@ export function Composer({ prompts }: { prompts: [string, string][] }) {
         />
         <div class="composer-bar">
           <span id="composer-preview" class="composer-preview" aria-live="polite">
-            {action ? `→ ${describe(action)}` : t('command.hint')}
+            {action ? `${fromAi && !forced ? '✨ ' : ''}→ ${describe(action)}` : t('command.hint')}
           </span>
           {action && action.kind !== 'task' && (
             <button type="button" class="link small" onClick={() => setForced('task')}>

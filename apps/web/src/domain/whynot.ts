@@ -23,6 +23,8 @@ export function whyNot(chosen: Decision, alt: Decision, arbitration?: RejectionR
   if (b.hoursToDue !== null && (a.hoursToDue === null || b.hoursToDue > a.hoursToDue + 12))
     return { ...base, key: 'whynot.canWait', until: alt.signal.dueAt ?? null };
   if (b.hoursToDue === null && a.hoursToDue !== null) return { ...base, key: 'whynot.noDeadline' };
+  if (chosen.signal.commitment && !alt.signal.commitment)
+    return { ...base, key: 'whynot.commitment', params: { to: chosen.signal.commitment } };
   if (chosen.signal.unblocks && !alt.signal.unblocks)
     return { ...base, key: 'whynot.unblocks', params: { count: chosen.signal.unblocks } };
   if (chosen.signal.chain?.length && !alt.signal.chain?.length)

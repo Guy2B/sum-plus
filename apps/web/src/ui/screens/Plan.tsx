@@ -5,9 +5,10 @@ import { findConflicts, eventsOn } from '../../domain/planning';
 import { comparePlans, scheduleDay, type WhatIf } from '../../domain/scheduler';
 import { learnTimeRules, periodOf, type TimeRule } from '../../domain/decision';
 import { weeklyReview } from '../../domain/review';
+import { decisionQuality } from '../../domain/quality';
 import { isoDay } from '../../domain/dates';
 import { t, fmtTime, fmtMinutes, fmtLongDate } from '../../i18n';
-import { Badge, Button, Card, PageHeader, Progress, attempt } from '../components';
+import { Badge, Button, Card, PageHeader, Progress, Stat, attempt } from '../components';
 import { decisionTitle, openDecisionSource } from '../decision-card';
 
 type Scenario = 'short' | 'early' | 'tired';
@@ -64,6 +65,7 @@ export function Plan() {
   const review = weeklyReview(snapshot.value, now);
   const feedback = snapshot.value.feedback.filter((f) => !f.deletedAt);
   const rules = learnTimeRules(feedback);
+  const quality = decisionQuality(snapshot.value.decisionLog, snapshot.value.feedback, now);
   const forget = (r: TimeRule) =>
     void attempt(async () => {
       for (const f of feedback)
@@ -207,6 +209,57 @@ export function Plan() {
         ) : (
           <p class="muted small">{t('plan.week.empty')}</p>
         )}
+      </Card>
+
+      <Card id="quality" title={t('quality.title')}>
+        {quality.proposed ? (
+          <>
+            <div class="stats">
+              <Stat label={t('quality.proposed')} value={quality.proposed} />
+              <Stat
+                label={t('quality.acceptance')}
+                value={`${quality.acceptance} %`}
+                detail={t('quality.topOne', { pct: quality.topOneAcceptance })}
+              />
+              <Stat
+                label={t('quality.completion')}
+                value={`${quality.completion} %`}
+                detail={t('quality.sameDay', { count: quality.completedSameDay })}
+              />
+              <Stat
+                label={t('quality.wrongTime')}
+                value={`${quality.wrongTimeRate} %`}
+                tone={quality.wrongTimeRate > 20 ? 'warn' : undefined}
+              />
+            </div>
+            <p class="small muted">
+              {t('quality.funnel', {
+                started: quality.started,
+                completed: quality.completed,
+                deferred: quality.deferred,
+                rejected: quality.rejected,
+              })}
+            </p>
+          </>
+        ) : (
+          <p class="muted small">{t('quality.empty')}</p>
+        )}
+        <p class="label">{t('quality.knowsYou')}</p>
+        <ul class="mission-reasons">
+          <li>{t('quality.observed', { count: quality.observations })}</li>
+          <li>{t('quality.learned', { count: quality.learnedPreferences })}</li>
+          <li>
+            {quality.estimateError === null
+              ? t('quality.estimateNone')
+              : quality.calibratedError !== null && quality.calibratedError < quality.estimateError
+                ? t('quality.estimateBetter', {
+                    before: quality.estimateError,
+                    after: quality.calibratedError,
+                    count: quality.timedSamples,
+                  })
+                : t('quality.estimateSame', { error: quality.estimateError, count: quality.timedSamples })}
+          </li>
+        </ul>
       </Card>
 
       <Card id="learned" title={t('plan.learned.title')}>

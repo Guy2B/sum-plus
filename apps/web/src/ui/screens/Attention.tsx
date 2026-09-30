@@ -5,6 +5,7 @@ import type { Decision } from '../../domain/decision';
 import { t } from '../../i18n';
 import { Card, Empty, PageHeader, Tabs } from '../components';
 import { DecisionCard } from '../decision-card';
+import { StagnationPanel } from '../stagnation';
 
 type Filter = 'all' | AttentionGroup;
 const GROUPS: AttentionGroup[] = ['reply', 'opportunity', 'admin', 'execution', 'capacity'];
@@ -22,6 +23,7 @@ export function Attention() {
   return (
     <div class="page">
       <PageHeader title={t('nav.attention')} subtitle={t('attention.subtitle')} />
+      <StagnationPanel />
       <div class="toolbar">
         <Tabs
           label={t('attention.filter')}

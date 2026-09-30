@@ -17,6 +17,7 @@ import { Calendar } from './screens/Calendar';
 import { Goals } from './screens/Goals';
 import { Journal } from './screens/Journal';
 import { Missions } from './screens/Missions';
+import { Intelligence } from './screens/Intelligence';
 import { Finance } from './screens/Finance';
 import { Health } from './screens/Health';
 import { Household } from './screens/Household';
@@ -39,6 +40,7 @@ const SCREENS: Record<RouteId, FunctionComponent> = {
   goals: Goals,
   journal: Journal,
   missions: Missions,
+  intelligence: Intelligence,
   finance: Finance,
   health: Health,
   household: Household,

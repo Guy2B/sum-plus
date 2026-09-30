@@ -26,7 +26,6 @@ import {
 } from '../../services/auth';
 import { flush } from '../../services/sync';
 import { checkoutConfigured, checkoutUrl } from '../../services/payments';
-import { browserModelStatus } from '../../services/ai';
 import { driveBackup, driveRestore, googleAvailable } from '../../services/connectors/google';
 import { requestNotificationPermission } from '../../services/reminders';
 import { t, fmtDate, fmtRelative } from '../../i18n';
@@ -340,45 +339,12 @@ function Sync() {
 }
 
 function Ai() {
-  const s = settings.value;
-  const [status, setStatus] = useState<string>('unavailable');
-  useEffect(() => void browserModelStatus().then(setStatus), []);
-  const set = (patch: Partial<Settings['ai']>) => void updateSettings({ ai: { ...s.ai, ...patch } });
   return (
     <Card title={t('account.ai')} id="ai">
       <p class="small muted">{t('account.aiPrinciple')}</p>
-      <Toggle
-        label={t('account.aiSemantic')}
-        hint={t('account.aiSemanticHint')}
-        checked={s.ai.semantic}
-        onChange={(v) => set({ semantic: v })}
-      />
-      <Toggle
-        label={t('account.aiBrowser')}
-        hint={t('account.aiBrowserHint', { status: t(`account.aiStatus.${status}`) })}
-        disabled={status === 'unavailable'}
-        checked={s.ai.browserModel}
-        onChange={(v) => set({ browserModel: v })}
-      />
-      <Toggle
-        label={t('account.aiGateway')}
-        hint={t('account.aiGatewayHint')}
-        checked={s.ai.gateway}
-        onChange={(v) => set({ gateway: v })}
-      />
-      {s.ai.gateway && (
-        <Field label={t('account.aiGatewayUrl')} hint={t('account.aiGatewayUrlHint')}>
-          {(id) => (
-            <input
-              id={id}
-              type="url"
-              placeholder="http://localhost:8790"
-              value={s.ai.gatewayUrl}
-              onChange={(e) => set({ gatewayUrl: (e.currentTarget as HTMLInputElement).value.trim() })}
-            />
-          )}
-        </Field>
-      )}
+      <a class="btn btn-secondary btn-md" href="#intelligence">
+        {t('ai.open')}
+      </a>
     </Card>
   );
 }
