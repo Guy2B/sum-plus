@@ -186,6 +186,24 @@ export function scheduleDay(
   };
 }
 
+/** Work that competes for today: essential, or due within three days. */
+export const competesForToday = (d: Decision) =>
+  isMustToday(d) || (d.facts.hoursToDue !== null && d.facts.hoursToDue <= 72);
+
+/**
+ * "Overload avoided": the calibrated minutes of work that competes for today
+ * but does not fit in what is left of the day (after meetings, energy and any
+ * "my day has changed" limits). Someday items never count — only real pressure.
+ */
+export function overloadAvoided(plan: DayPlan, factors: Factors = {}): number {
+  if (plan.tomorrow) return 0;
+  return Math.round(
+    plan.left
+      .filter((l) => competesForToday(l.decision))
+      .reduce((a, l) => a + effortOf(l.decision, factors), 0),
+  );
+}
+
 /** Items that moved between two plans (for "what if?" feedback). */
 export function comparePlans(before: DayPlan, after: DayPlan) {
   const placed = (p: DayPlan) => new Set(p.blocks.map((b) => b.decision.signal.id));

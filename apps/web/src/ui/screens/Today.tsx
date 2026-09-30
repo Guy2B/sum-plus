@@ -7,7 +7,7 @@ import { habitDueOn } from '../../domain/wellbeing';
 import { isoDay } from '../../domain/dates';
 import { domainEnabled } from '../../domain/signals';
 import { dayOverride, freeMinutesNow, pickToday, setAside as groupSetAside } from '../../domain/today';
-import { scheduleDay } from '../../domain/scheduler';
+import { overloadAvoided, scheduleDay } from '../../domain/scheduler';
 import { calibration } from '../../domain/calibration';
 import { useEffect, useState } from 'preact/hooks';
 import { whyNot } from '../../domain/whynot';
@@ -65,8 +65,10 @@ export function Today() {
   const rejected = new Map(visibleTop.value.rejected.map((r) => [r.decision.signal.id, r.reason]));
   const setAside = allRanked.filter((d) => !shown.includes(d) && d.action !== 'ignore');
   const removed = groupSetAside(pick.now ?? null, setAside, rejected);
-  const loadMinutes = allRanked.reduce((a, d) => a + d.facts.effortMinutes, 0);
-  const avoided = Math.max(0, loadMinutes - cap.capacityMinutes);
+  const avoided = overloadAvoided(
+    scheduleDay(allRanked, events, s.context, now, override ?? {}, factors),
+    factors,
+  );
   const alternatives = (chosen: Decision | null | undefined, n: number) =>
     chosen ? setAside.slice(0, n).map((alt) => whyNot(chosen, alt, rejected.get(alt.signal.id))) : [];
 

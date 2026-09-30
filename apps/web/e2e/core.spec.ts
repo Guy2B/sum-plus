@@ -233,6 +233,8 @@ test.describe('accessibility', () => {
   }
 
   test('landing and legal pages are accessible', async ({ page }) => {
+    // Scroll-reveal fades would be measured mid-animation otherwise.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     for (const path of [
       '/',
       '/legal/privacy.html',

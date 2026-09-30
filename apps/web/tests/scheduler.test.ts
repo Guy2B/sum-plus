@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Signal } from '../src/domain/signals';
 import type { CalendarEvent } from '../src/domain/types';
 import { rankSignals } from '../src/domain/decision';
-import { comparePlans, scheduleDay } from '../src/domain/scheduler';
+import { comparePlans, overloadAvoided, scheduleDay } from '../src/domain/scheduler';
 import { NOW, doc, hoursFrom } from './fixtures';
 
 const ctx = { workStart: '09:00', workEnd: '18:00', energyPeak: 'morning' as const };
@@ -64,6 +64,18 @@ describe('day planner', () => {
     expect(short.left.find((l) => l.decision.signal.title === 'deep')?.reason).toBe('budget');
     expect(comparePlans(base, short).dropped.map((d) => d.signal.title)).toContain('deep');
     expect(comparePlans(base, short).dropped.map((d) => d.signal.title)).not.toContain('urgent');
+  });
+
+  it('counts as overload avoided only pressing work that does not fit, never someday items', () => {
+    expect(overloadAvoided(scheduleDay(ranked, events, ctx, at(9)))).toBe(0);
+    const pressing = [...signals, task('report', 120, { dueAt: hoursFrom(NOW, 30) }), task('someday', 240)];
+    const plan = scheduleDay(rankSignals(pressing, { edition: 'solo' }, NOW), events, ctx, at(9), {
+      maxMinutes: 60,
+    });
+    const avoided = overloadAvoided(plan);
+    // Only work due within three days counts; the 240-minute "someday" item never does.
+    expect(avoided).toBeGreaterThanOrEqual(120);
+    expect(avoided).toBeLessThan(120 + 90 + 20 + 10 + 240);
   });
 
   it("what if I'm tired: no long deep work, short things first", () => {

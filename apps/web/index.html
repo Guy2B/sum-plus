@@ -5,170 +5,654 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Σ Life OS transforme vos signaux (tâches, agenda, mails, énergie) en trois actions utiles et expliquées par jour. Local d'abord, multilingue."
+      content="Σ Life OS filtre vos tâches, agenda, mails et contexte pour vous montrer les trois décisions qui comptent aujourd’hui — avec une explication vérifiable."
     />
-    <meta property="og:title" content="Σ Life OS — vos signaux, une prochaine action utile" />
+    <meta property="og:title" content="Σ Life OS — 3 décisions. Le reste peut attendre." />
     <meta
       property="og:description"
-      content="Une couche de décision calme au-dessus de vos outils. Trois recommandations expliquées par jour."
+      content="Le moteur de décision personnel, local-first et explicable qui vous montre quoi faire maintenant — et pourquoi."
     />
     <meta property="og:type" content="website" />
     <meta name="theme-color" content="#fbfaf8" />
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
-    <title>Σ Life OS — vos signaux, une prochaine action utile</title>
+    <title>Σ Life OS — 3 décisions. Le reste peut attendre.</title>
   </head>
   <body class="site">
+    <a class="skip-link" href="#main" data-i18n="skip">Aller au contenu</a>
     <header class="site-header">
-      <a class="brand" href="./">
+      <a class="brand" href="./" aria-label="Σ Life OS">
         <span class="brand-mark" aria-hidden="true">Σ</span>
         <strong>Σ Life OS</strong>
       </a>
-      <nav aria-label="Site">
-        <a href="#features" data-i18n="nav.features">Fonctionnalités</a>
-        <a href="#editions" data-i18n="nav.editions">Éditions</a>
+      <nav class="desktop-nav" aria-label="Navigation">
+        <a href="#demo" data-i18n="nav.product">Produit</a>
+        <a href="#how" data-i18n="nav.why">Pourquoi Σ</a>
+        <a href="#privacy" data-i18n="nav.privacy">Local-first</a>
         <a href="#pricing" data-i18n="nav.pricing">Tarifs</a>
-        <select id="lang" aria-label="Langue / Language">
+      </nav>
+      <div class="header-actions">
+        <select id="lang" aria-label="Langue / Language / Sprache / Idioma">
           <option value="fr">FR</option>
           <option value="en">EN</option>
           <option value="de">DE</option>
           <option value="es">ES</option>
         </select>
-        <a class="btn btn-primary btn-sm" href="app.html" data-i18n="cta.open">Ouvrir Σ</a>
-      </nav>
+        <a class="btn btn-quiet hide-mobile" href="app.html" data-i18n="cta.signin">Se connecter</a>
+        <a class="btn btn-primary btn-sm" href="app.html" data-i18n="cta.try">Essayer Σ</a>
+      </div>
     </header>
 
-    <main>
-      <section class="hero">
-        <p class="eyebrow" data-i18n="hero.eyebrow">Décision d'abord · Multilingue · Local d'abord</p>
-        <h1 data-i18n="hero.title">Transformez des signaux dispersés en la prochaine action utile.</h1>
-        <p class="lead" data-i18n="hero.lead">
-          Σ observe les sources que vous autorisez, relie travail et vie personnelle, et explique ce qui
-          mérite votre attention — trois recommandations par jour, pas quinze indicateurs.
+    <main id="main">
+      <section class="hero section-shell">
+        <div class="hero-copy reveal">
+          <p class="eyebrow-pill">
+            <span class="status-dot" aria-hidden="true"></span
+            ><span data-i18n="hero.pill">Moteur de décision personnel · local-first</span>
+          </p>
+          <h1 data-i18n-html="hero.title">
+            Vous avez 37 choses à gérer.<br /><span>Σ vous montre les 3 qui comptent.</span>
+          </h1>
+          <p class="hero-lead" data-i18n="hero.lead">
+            Tâches, agenda, mails et contexte deviennent trois décisions expliquées. Pas une nouvelle liste à
+            organiser. Pas un chatbot qui improvise.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary btn-lg" href="app.html" data-i18n="cta.free">Essayer Σ gratuitement</a>
+            <a class="btn btn-secondary btn-lg" href="#how" data-i18n="cta.how">Voir comment ça marche ↓</a>
+          </div>
+          <ul class="trust-row">
+            <li><b aria-hidden="true">✓</b> <span data-i18n="trust.1">Sans compte obligatoire</span></li>
+            <li><b aria-hidden="true">✓</b> <span data-i18n="trust.2">Fonctionne sans IA cloud</span></li>
+            <li>
+              <b aria-hidden="true">✓</b> <span data-i18n="trust.3">Français, English, Deutsch, Español</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="hero-product reveal" id="demo">
+          <div class="product-window" role="region" aria-labelledby="demo-title">
+            <div class="window-top">
+              <div class="window-brand">
+                <span class="mini-sigma" aria-hidden="true">Σ</span>
+                <span data-i18n="demo.today">Aujourd’hui</span>
+              </div>
+              <div class="window-date" id="demo-date">Mercredi 30 septembre</div>
+            </div>
+            <div class="product-intro">
+              <div>
+                <p class="overline" data-i18n="demo.hello">Bonjour, Alex</p>
+                <h2 id="demo-title" data-i18n="demo.title">Voici ce qui mérite votre attention.</h2>
+              </div>
+              <button
+                class="text-button"
+                id="dayChangedButton"
+                type="button"
+                aria-expanded="false"
+                aria-controls="dayChangePanel"
+                data-i18n="demo.dayChanged"
+              >
+                Ma journée a changé
+              </button>
+            </div>
+
+            <div class="day-change-panel" id="dayChangePanel" hidden>
+              <div>
+                <p class="panel-label" id="energy-label" data-i18n="demo.energy">Énergie</p>
+                <div class="segmented" role="group" aria-labelledby="energy-label">
+                  <button type="button" aria-pressed="false" data-i18n="demo.low">Faible</button>
+                  <button class="active" type="button" aria-pressed="true" data-i18n="demo.normal">
+                    Normale
+                  </button>
+                  <button type="button" aria-pressed="false" data-i18n="demo.high">Forte</button>
+                </div>
+              </div>
+              <div>
+                <p class="panel-label" id="time-label" data-i18n="demo.timeLeft">Temps restant</p>
+                <div class="segmented" role="group" aria-labelledby="time-label">
+                  <button type="button" aria-pressed="false">30 min</button>
+                  <button type="button" aria-pressed="false">1 h</button>
+                  <button class="active" type="button" aria-pressed="true">2 h</button>
+                  <button type="button" aria-pressed="false">4 h</button>
+                </div>
+              </div>
+              <button class="mini-btn primary" id="recalculateButton" type="button" data-i18n="demo.recalc">
+                Recalculer ma journée
+              </button>
+            </div>
+
+            <div class="decision-list">
+              <article class="decision-card accent">
+                <p class="role">
+                  <span aria-hidden="true">☀</span> <span data-i18n="role.now">Faire maintenant</span>
+                </p>
+                <div class="decision-content">
+                  <h3 data-i18n="demo.c1">Envoyer le devis promis à Müller</h3>
+                  <p data-i18n-html="demo.c1d"><b>25 min</b> · échéance demain · débloque 2 actions</p>
+                </div>
+                <div class="decision-actions">
+                  <button class="mini-btn primary" type="button" data-i18n="demo.start">Commencer</button>
+                  <button class="mini-btn" type="button" data-i18n="demo.done">Terminé</button>
+                  <button
+                    class="why-link"
+                    type="button"
+                    data-why-toggle
+                    aria-expanded="false"
+                    aria-controls="why-1"
+                    data-i18n="demo.why"
+                  >
+                    Pourquoi ?
+                  </button>
+                </div>
+                <div class="why-drawer" id="why-1" hidden>
+                  <div>
+                    <span aria-hidden="true">🤝</span><small data-i18n="why.promise">Promesse</small
+                    ><strong>Müller</strong>
+                  </div>
+                  <div>
+                    <span aria-hidden="true">⏰</span><small data-i18n="why.due">Échéance</small
+                    ><strong data-i18n="why.dueV">Demain 17:00</strong>
+                  </div>
+                  <div>
+                    <span aria-hidden="true">🔓</span><small data-i18n="why.unblocks">Débloque</small
+                    ><strong data-i18n="why.unblocksV">2 actions</strong>
+                  </div>
+                  <div>
+                    <span aria-hidden="true">⏱</span><small data-i18n="why.effort">Effort</small
+                    ><strong>25 min</strong>
+                  </div>
+                  <div>
+                    <span aria-hidden="true">📅</span><small data-i18n="why.free">Disponibilité</small
+                    ><strong data-i18n="why.freeV">42 min libres</strong>
+                  </div>
+                  <div>
+                    <span aria-hidden="true">🎯</span><small data-i18n="why.goal">Objectif</small
+                    ><strong data-i18n="why.goalV">Signer Müller</strong>
+                  </div>
+                  <div class="why-not">
+                    <small data-i18n="why.notQ">Pourquoi pas « Refaire la homepage » ?</small>
+                    <p data-i18n="why.notA">Pas d’échéance · 90 min nécessaires · peut attendre vendredi.</p>
+                  </div>
+                </div>
+              </article>
+
+              <article class="decision-card">
+                <p class="role">
+                  <span aria-hidden="true">◉</span> <span data-i18n="role.watch">À surveiller</span>
+                </p>
+                <div class="decision-content">
+                  <h3 data-i18n="demo.c2">Réponse de Léa attendue depuis 3 jours</h3>
+                  <p data-i18n-html="demo.c2d"><b>Pas d’action maintenant</b> · revoir cet après-midi</p>
+                </div>
+              </article>
+
+              <article class="decision-card">
+                <p class="role">
+                  <span aria-hidden="true">◷</span> <span data-i18n="role.protect">Protéger ce créneau</span>
+                </p>
+                <div class="decision-content">
+                  <h3 data-i18n="demo.c3">Préparer la réunion de jeudi</h3>
+                  <p data-i18n-html="demo.c3d"><b>14:10–15:00</b> · 50 min libres</p>
+                </div>
+                <div class="decision-actions">
+                  <button class="mini-btn" type="button" data-i18n="demo.schedule">Planifier</button>
+                </div>
+              </article>
+            </div>
+
+            <details class="set-aside-demo">
+              <summary>
+                <b data-i18n="demo.aside">Σ a écarté 18 autres éléments</b>
+                <span data-i18n="demo.avoided"> · 2 h 10 de surcharge évitée</span>
+              </summary>
+              <div class="aside-grid">
+                <span data-i18n-html="demo.a1"><b>7</b> peuvent attendre</span>
+                <span data-i18n-html="demo.a2"><b>4</b> dépassent votre capacité</span>
+                <span data-i18n-html="demo.a3"><b>3</b> moins d’impact</span>
+                <span data-i18n-html="demo.a4"><b>2</b> doublons regroupés</span>
+              </div>
+              <p class="aside-note" data-i18n="demo.avoidedHow">
+                Surcharge évitée : le travail dû sous 3 jours qui ne tient plus dans votre journée, après vos
+                réunions.
+              </p>
+            </details>
+          </div>
+          <div class="float-note float-note-one" aria-hidden="true">
+            <span class="float-icon">−18</span>
+            <div>
+              <strong data-i18n="float.1">Moins à gérer</strong
+              ><small data-i18n="float.1d">Σ filtre avant de vous montrer.</small>
+            </div>
+          </div>
+          <div class="float-note float-note-two" aria-hidden="true">
+            <span class="float-icon">↗</span>
+            <div>
+              <strong data-i18n="float.2">S’adapte à vous</strong
+              ><small data-i18n="float.2d">Temps réel, retours, habitudes.</small>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="proof-strip" aria-label="Σ">
+        <p>
+          <span data-i18n="proof.todo">Todo-list</span>
+          <span class="proof-sub" data-i18n="proof.todoD">→ organise tout</span>
         </p>
+        <p>
+          <span data-i18n="proof.cal">Agenda IA</span>
+          <span class="proof-sub" data-i18n="proof.calD">→ place tout</span>
+        </p>
+        <p class="sigma-proof">
+          Σ <span class="proof-sub" data-i18n="proof.sigmaD">→ décide ce qui peut attendre</span>
+        </p>
+      </section>
+
+      <section class="section-shell why-section" id="how">
+        <div class="section-heading reveal">
+          <p class="eyebrow" data-i18n="how.eyebrow">Pas de boîte noire</p>
+          <h2 data-i18n="how.title">Une recommandation n’est utile que si vous pouvez la contester.</h2>
+          <p data-i18n="how.lead">
+            Σ montre les faits qui ont conduit à chaque décision — et pourquoi une autre chose a été laissée
+            de côté.
+          </p>
+        </div>
+        <div class="explain-layout reveal">
+          <div class="explain-copy">
+            <button class="explain-step active" type="button" aria-pressed="true">
+              <span>01</span>
+              <span
+                ><strong data-i18n="how.1t">Pourquoi maintenant ?</strong
+                ><small data-i18n="how.1d"
+                  >Échéance, promesses, effort, disponibilité, dépendances et objectifs sont visibles.</small
+                ></span
+              >
+            </button>
+            <button class="explain-step" type="button" aria-pressed="false">
+              <span>02</span>
+              <span
+                ><strong data-i18n="how.2t">Pourquoi pas autre chose ?</strong
+                ><small data-i18n="how.2d"
+                  >Σ compare ce qui a été choisi à ce qui a été écarté, sans cacher l’arbitrage.</small
+                ></span
+              >
+            </button>
+            <button class="explain-step" type="button" aria-pressed="false">
+              <span>03</span>
+              <span
+                ><strong data-i18n="how.3t">Et si ma journée change ?</strong
+                ><small data-i18n="how.3d"
+                  >Modifiez énergie, temps restant ou heure de fin. Les trois décisions sont
+                  recalculées.</small
+                ></span
+              >
+            </button>
+          </div>
+          <div class="reason-card">
+            <div class="reason-top">
+              <span data-i18n="how.1t">Pourquoi maintenant ?</span
+              ><span class="confidence" data-i18n="how.conf">Confiance élevée</span>
+            </div>
+            <h3 data-i18n="demo.c1">Envoyer le devis promis à Müller</h3>
+            <div class="reason-rows">
+              <div>
+                <span aria-hidden="true">🤝</span>
+                <p data-i18n="why.promise">Promesse</p>
+                <strong>Müller</strong>
+              </div>
+              <div>
+                <span aria-hidden="true">⏰</span>
+                <p data-i18n="why.due">Échéance</p>
+                <strong data-i18n="why.dueV">Demain 17:00</strong>
+              </div>
+              <div>
+                <span aria-hidden="true">🔓</span>
+                <p data-i18n="why.unblocks">Débloque</p>
+                <strong data-i18n="why.unblocksV">2 actions</strong>
+              </div>
+              <div>
+                <span aria-hidden="true">⏱</span>
+                <p data-i18n="why.effort">Effort</p>
+                <strong data-i18n="how.effortV">25 min (calibré sur vos temps réels)</strong>
+              </div>
+              <div>
+                <span aria-hidden="true">📅</span>
+                <p data-i18n="why.free">Disponibilité</p>
+                <strong data-i18n="why.freeV">42 min libres</strong>
+              </div>
+            </div>
+            <div class="counterfactual">
+              <p class="cf-q" data-i18n="why.notQ">Pourquoi pas « Refaire la homepage » ?</p>
+              <p data-i18n="how.cf">Pas d’échéance · 90 min · ne bloque personne · peut attendre vendredi.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-shell adaptive-section">
+        <div class="adaptive-card reveal">
+          <div class="adaptive-copy">
+            <p class="eyebrow" data-i18n="adapt.eyebrow">Votre journée n’est pas un planning figé</p>
+            <h2 data-i18n="adapt.title">« Je suis épuisé et je dois partir à 15 h. »</h2>
+            <p data-i18n="adapt.lead">
+              Σ réduit la charge, protège ce qui compte et laisse le reste attendre. Le plan s’adapte à votre
+              réalité, pas l’inverse.
+            </p>
+          </div>
+          <div class="adaptive-demo">
+            <span class="signal-chip" data-i18n="adapt.s1">😫 Énergie faible</span>
+            <span class="signal-chip" data-i18n="adapt.s2">⏳ 2 h restantes</span>
+            <span class="signal-chip" data-i18n="adapt.s3">🚪 Départ 15:00</span>
+            <div class="adaptive-arrow" aria-hidden="true">↓</div>
+            <div class="new-plan">
+              <p class="np-label" data-i18n="adapt.plan">Nouveau plan</p>
+              <p>
+                <b data-i18n="adapt.now">Maintenant</b
+                ><span data-i18n="adapt.nowV">Répondre au client · 12 min</span>
+              </p>
+              <p>
+                <b data-i18n="adapt.watch">Surveiller</b
+                ><span data-i18n="adapt.watchV">Facture due demain</span>
+              </p>
+              <p>
+                <b data-i18n="adapt.protect">Protéger</b
+                ><span data-i18n="adapt.protectV">13:30–14:15 · préparation</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-shell coach-section">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Σ Coach</p>
+          <h2 data-i18n="coach.title">Posez une question à votre système, pas à un chatbot généraliste.</h2>
+          <p data-i18n="coach.lead">
+            Les réponses partent de vos données structurées, citent leurs sources et peuvent proposer un plan
+            à confirmer.
+          </p>
+        </div>
+        <div class="coach-shell reveal">
+          <div class="prompt-grid">
+            <button type="button" data-q="q1" aria-pressed="false" data-i18n="coach.q1">
+              Que dois-je faire maintenant ?
+            </button>
+            <button type="button" data-q="q2" aria-pressed="false" data-i18n="coach.q2">
+              Qu’est-ce qui peut attendre ?
+            </button>
+            <button type="button" data-q="q3" aria-pressed="true" data-i18n="coach.q3">
+              Pourquoi suis-je surchargé ?
+            </button>
+            <button type="button" data-q="q4" aria-pressed="false" data-i18n="coach.q4">
+              Qu’est-ce qui n’avance plus ?
+            </button>
+            <button type="button" data-q="q5" aria-pressed="false" data-i18n="coach.q5">
+              Libère-moi 2 h demain.
+            </button>
+            <button type="button" data-q="q6" aria-pressed="false" data-i18n="coach.q6">
+              Pourquoi avait-on décidé ça ?
+            </button>
+          </div>
+          <div class="coach-answer">
+            <div class="coach-symbol" aria-hidden="true">Σ</div>
+            <div>
+              <p id="coach-answer" aria-live="polite" data-i18n="coach.a3">
+                Vendredi dépasse votre capacité d’environ 1 h 35. Je peux déplacer « Comptabilité » à jeudi et
+                « Homepage » à lundi sans toucher aux échéances client.
+              </p>
+              <p class="coach-sources" data-i18n="coach.sources">
+                Sources : Agenda (6) · Tâches (14) · Projets (3)
+              </p>
+              <button class="mini-btn primary" type="button" data-i18n="coach.apply">
+                Appliquer ce plan
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-shell command-section">
+        <div class="command-window reveal">
+          <div class="command-copy">
+            <p class="eyebrow" data-i18n="cmd.eyebrow">Une seule barre</p>
+            <h2 data-i18n="cmd.title">Capturez, planifiez ou demandez, en langage naturel.</h2>
+          </div>
+          <div class="command-box">
+            <div class="command-input">
+              <span aria-hidden="true">⌘</span
+              ><span data-i18n="cmd.input">déjeuner vendredi 13h avec Marc</span
+              ><span class="caret" aria-hidden="true"></span>
+            </div>
+            <div class="command-result">
+              <span class="result-icon" aria-hidden="true">◷</span>
+              <div>
+                <small data-i18n="cmd.kind">Événement détecté</small
+                ><strong data-i18n="cmd.result">Déjeuner avec Marc · vendredi 13:00</strong>
+              </div>
+              <button class="mini-btn" type="button" data-i18n="cmd.create">Créer</button>
+            </div>
+          </div>
+          <div class="command-examples">
+            <span data-i18n="cmd.e1">« j’ai promis à Müller le devis vendredi »</span>
+            <span data-i18n="cmd.e2">« je suis crevé et je pars à 15h »</span>
+            <span data-i18n="cmd.e3">« contrôle de maths le 14 »</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-shell privacy-section" id="privacy">
+        <div class="privacy-panel reveal">
+          <div>
+            <p class="eyebrow" data-i18n="priv.eyebrow">Local-first par conception</p>
+            <h2 data-i18n="priv.title">Votre vie n’a pas besoin de devenir les données d’une IA cloud.</h2>
+            <p data-i18n="priv.lead">
+              Le moteur de décision Σ fonctionne sans modèle de langage. L’IA est une couche facultative pour
+              comprendre ou reformuler — jamais pour décider de vos priorités.
+            </p>
+          </div>
+          <div class="ai-stack">
+            <article>
+              <div class="stack-head">
+                <span aria-hidden="true">Σ</span>
+                <h3>Σ Core</h3>
+              </div>
+              <p data-i18n="priv.core">Moteur déterministe, explicable, utilisable hors ligne.</p>
+              <span class="badge badge-good" data-i18n="priv.coreB">Toujours disponible</span>
+            </article>
+            <article>
+              <div class="stack-head">
+                <span aria-hidden="true">⌁</span>
+                <h3 data-i18n="priv.local">IA du navigateur ou IA locale</h3>
+              </div>
+              <p data-i18n="priv.localD">
+                Modèle intégré au navigateur, Ollama ou LM Studio, sur votre machine. Σ vérifie chaque
+                réponse.
+              </p>
+              <span class="badge" data-i18n="priv.localB">Facultatif</span>
+            </article>
+            <article>
+              <div class="stack-head">
+                <span aria-hidden="true">🔒</span>
+                <h3 data-i18n="priv.never">Ce qui ne part jamais</h3>
+              </div>
+              <p data-i18n="priv.neverD">
+                Finances, santé et contenu des mails ne sont jamais envoyés à un modèle.
+              </p>
+              <span class="badge badge-good" data-i18n="priv.neverB">Garanti</span>
+            </article>
+          </div>
+        </div>
+        <ul class="privacy-points reveal">
+          <li data-i18n="priv.p1">✓ Sans compte obligatoire</li>
+          <li data-i18n="priv.p2">✓ Export de vos données</li>
+          <li data-i18n="priv.p3">✓ Contrôle source par source</li>
+          <li data-i18n="priv.p4">✓ Aucune action externe silencieuse</li>
+          <li data-i18n="priv.p5">✓ Suppression complète</li>
+          <li data-i18n="priv.p6">✓ Aucune IA cloud requise</li>
+        </ul>
+      </section>
+
+      <section class="section-shell learn-section">
+        <div class="section-heading reveal">
+          <p class="eyebrow" data-i18n="learn.eyebrow">Personnalisation réelle</p>
+          <h2 data-i18n="learn.title">Plus vous l’utilisez, moins vous avez besoin de l’organiser.</h2>
+        </div>
+        <div class="learn-grid reveal">
+          <article>
+            <span class="learn-icon" aria-hidden="true">◷</span>
+            <p data-i18n="learn.1">Vous reportez souvent l’administratif après 16 h.</p>
+            <small data-i18n="learn.1d">Σ évite progressivement ce créneau.</small>
+          </article>
+          <article>
+            <span class="learn-icon" aria-hidden="true">≈</span>
+            <p data-i18n="learn.2">Vos tâches client prennent en moyenne 18 % de plus que prévu.</p>
+            <small data-i18n="learn.2d">Les futures estimations sont recalibrées.</small>
+          </article>
+          <article>
+            <span class="learn-icon" aria-hidden="true">🤝</span>
+            <p data-i18n="learn.3">Vous avez promis le devis à Müller.</p>
+            <small data-i18n="learn.3d">Une promesse passe avant une simple tâche.</small>
+          </article>
+          <article>
+            <span class="learn-icon" aria-hidden="true">!</span>
+            <p data-i18n="learn.4">Ce projet a été reporté 4 fois en 11 jours.</p>
+            <small data-i18n="learn.4d">Σ propose la plus petite prochaine étape pour le débloquer.</small>
+          </article>
+        </div>
+      </section>
+
+      <section class="section-shell compare-section">
+        <div class="section-heading reveal">
+          <p class="eyebrow" data-i18n="cmp.eyebrow">Une catégorie différente</p>
+          <h2 data-i18n="cmp.title">
+            Les autres outils organisent votre travail. Σ arbitre votre attention.
+          </h2>
+        </div>
+        <table class="compare-table reveal">
+          <thead>
+            <tr>
+              <td></td>
+              <th scope="col" data-i18n="proof.todo">Todo-list</th>
+              <th scope="col" data-i18n="proof.cal">Agenda IA</th>
+              <th scope="col" class="sigma-col">Σ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row" data-i18n="cmp.r1">Montre ce qui existe</th>
+              <td>✓</td>
+              <td>✓</td>
+              <td class="sigma-col">✓</td>
+            </tr>
+            <tr>
+              <th scope="row" data-i18n="cmp.r2">Place le travail dans l’agenda</th>
+              <td>—</td>
+              <td>✓</td>
+              <td class="sigma-col">✓</td>
+            </tr>
+            <tr>
+              <th scope="row" data-i18n="cmp.r3">Décide ce qui peut attendre</th>
+              <td>—</td>
+              <td>—</td>
+              <td class="sigma-col">✓</td>
+            </tr>
+            <tr>
+              <th scope="row" data-i18n="cmp.r4">Explique pourquoi A plutôt que B</th>
+              <td>—</td>
+              <td>—</td>
+              <td class="sigma-col">✓</td>
+            </tr>
+            <tr>
+              <th scope="row" data-i18n="cmp.r5">Fonctionne sans IA cloud</th>
+              <td>✓</td>
+              <td>—</td>
+              <td class="sigma-col">✓</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="section-shell pricing-section" id="pricing">
+        <div class="section-heading reveal">
+          <p class="eyebrow" data-i18n="price.eyebrow">Simple pour commencer</p>
+          <h2 data-i18n="price.title">
+            Découvrez le moteur gratuitement. Passez Pro quand Σ devient votre système.
+          </h2>
+        </div>
+        <div class="pricing-grid reveal">
+          <article class="price-card">
+            <div>
+              <p class="plan-name">Σ Free</p>
+              <p class="price">0 €</p>
+              <p data-i18n="price.freeLead">
+                Voyez en quelques jours si trois décisions valent mieux qu’une nouvelle todo-list.
+              </p>
+            </div>
+            <ul>
+              <li data-i18n="price.f1">3 décisions expliquées par jour</li>
+              <li data-i18n="price.f2">Pourquoi maintenant / pourquoi pas</li>
+              <li data-i18n="price.f3">Plan du jour et « et si… ? »</li>
+              <li data-i18n="price.f4">Missions : examen, entretien, sport, lecture…</li>
+              <li data-i18n="price.f5">Capture en langage naturel, IA locale</li>
+              <li data-i18n="price.f6">Coach : 5 analyses par jour</li>
+            </ul>
+            <a class="btn btn-secondary btn-block" href="app.html" data-i18n="cta.start"
+              >Commencer gratuitement</a
+            >
+          </article>
+          <article class="price-card featured">
+            <p class="popular" data-i18n="price.badge">Pour le système complet</p>
+            <div>
+              <p class="plan-name">Σ Pro</p>
+              <p class="price">
+                <span id="price-monthly">8,90 €</span> <small data-i18n="price.month">/ mois</small>
+              </p>
+              <p>
+                <span data-i18n="price.or">ou</span> <span id="price-annual">69 €</span>
+                <span data-i18n="price.year">/ an</span>
+              </p>
+            </div>
+            <ul>
+              <li data-i18n="price.p1">Sources connectées : agenda, mails, IMAP, réseaux</li>
+              <li data-i18n="price.p2">Synchronisation multi-appareils et sauvegarde Drive</li>
+              <li data-i18n="price.p3">Coach illimité</li>
+              <li data-i18n="price.p4">Finances, santé, foyer et carrière</li>
+              <li data-i18n="price.p5">Projets et habitudes illimités</li>
+            </ul>
+            <a class="btn btn-primary btn-block" href="app.html#account/plan" data-i18n="cta.pro"
+              >Passer à Σ Pro</a
+            >
+          </article>
+        </div>
+      </section>
+
+      <section class="final-cta section-shell reveal">
+        <div class="final-mark" aria-hidden="true">Σ</div>
+        <p class="eyebrow" data-i18n="final.eyebrow">Demain matin</p>
+        <h2 data-i18n="final.title">N’ouvrez pas cinq apps pour reconstruire votre journée.</h2>
+        <p data-i18n="final.lead">Ouvrez Σ. Regardez les trois décisions. Commencez.</p>
         <div class="hero-actions">
-          <a class="btn btn-primary" href="app.html" data-i18n="cta.start">Commencer gratuitement</a>
-          <a class="btn btn-secondary" href="#how" data-i18n="cta.how">Voir comment ça marche</a>
+          <a class="btn btn-primary btn-lg" href="app.html" data-i18n="cta.free">Essayer Σ gratuitement</a>
         </div>
-        <ul class="ticks">
-          <li data-i18n="hero.t1">Sans compte obligatoire</li>
-          <li data-i18n="hero.t2">Vos données restent sur votre appareil par défaut</li>
-          <li data-i18n="hero.t3">Français, English, Deutsch, Español</li>
-        </ul>
-      </section>
-
-      <section id="features" class="features">
-        <h2 data-i18n="features.title">Une couche de décision calme au-dessus de vos outils</h2>
-        <div class="feature-grid">
-          <article>
-            <h3 data-i18n="f1.t">Aujourd'hui</h3>
-            <p data-i18n="f1.d">
-              Jusqu'à trois actions justifiées, avec leur score, leurs raisons et leurs incertitudes.
-            </p>
-          </article>
-          <article>
-            <h3 data-i18n="f2.t">Attention</h3>
-            <p data-i18n="f2.d">
-              Une seule file pour les réponses attendues, opportunités, démarches et signaux de capacité.
-            </p>
-          </article>
-          <article>
-            <h3 data-i18n="f3.t">Plan</h3>
-            <p data-i18n="f3.d">
-              Capacité réelle du jour (réunions, énergie), créneaux protégés et ordre suggéré.
-            </p>
-          </article>
-          <article>
-            <h3 data-i18n="f4.t">Σ Coach</h3>
-            <p data-i18n="f4.d">
-              Des réponses fondées uniquement sur vos données, qui citent leurs sources et n'inventent rien.
-            </p>
-          </article>
-          <article>
-            <h3 data-i18n="f5.t">Sources</h3>
-            <p data-i18n="f5.d">
-              Gmail, Outlook, IMAP, Google Agenda, Microsoft, YouTube, LinkedIn, X, TikTok, Apple Santé,
-              Health Connect.
-            </p>
-          </article>
-          <article>
-            <h3 data-i18n="f6.t">Vie privée</h3>
-            <p data-i18n="f6.d">
-              Local d'abord, export à tout moment, synchronisation chiffrée optionnelle, suppression complète
-              en un clic.
-            </p>
-          </article>
-        </div>
-      </section>
-
-      <section id="editions" class="editions">
-        <h2 data-i18n="editions.title">Un moteur, cinq éditions</h2>
-        <p data-i18n="editions.lead">
-          Choisissez un espace actif. Vous pouvez en changer sans perdre vos données.
+        <p class="final-meta" data-i18n="final.meta">
+          Local-first · Explicable · Multilingue · Fonctionne sans IA cloud
         </p>
-        <ul class="edition-pills">
-          <li>🎓 Σ Student</li>
-          <li>💼 Σ Solo &amp; Micro</li>
-          <li>✦ Σ Creator</li>
-          <li>⌂ Σ Life</li>
-          <li>◎ Σ Nomad</li>
-        </ul>
-      </section>
-
-      <section id="how" class="how">
-        <h2 data-i18n="how.title">Assez simple pour devenir une habitude</h2>
-        <ol>
-          <li>
-            <strong data-i18n="how.1t">Choisissez votre mode</strong
-            ><span data-i18n="how.1d">Student, Solo, Creator, Life ou Nomad.</span>
-          </li>
-          <li>
-            <strong data-i18n="how.2t">Capturez de vrais signaux</strong
-            ><span data-i18n="how.2d">Tâches, agenda, mails, argent, énergie, apprentissages.</span>
-          </li>
-          <li>
-            <strong data-i18n="how.3t">Agissez sur une recommandation</strong
-            ><span data-i18n="how.3d">Σ met en avant l'étape la plus utile — et explique pourquoi.</span>
-          </li>
-        </ol>
-      </section>
-
-      <section id="pricing" class="pricing">
-        <h2 data-i18n="pricing.title">Commencez gratuitement. Passez Pro quand le système complet compte.</h2>
-        <div class="price-grid">
-          <article class="price">
-            <h3>Σ Free</h3>
-            <p class="amount">0 €</p>
-            <p data-i18n="pricing.free">
-              Un espace actif, essentiels en local, export, 5 analyses du Coach par jour.
-            </p>
-            <a class="btn btn-secondary" href="app.html" data-i18n="cta.start">Commencer gratuitement</a>
-          </article>
-          <article class="price featured">
-            <h3>Σ Pro</h3>
-            <p class="amount">
-              <span id="price-monthly">8,90 €</span> <small data-i18n="pricing.month">/ mois</small>
-            </p>
-            <p class="small">
-              <span data-i18n="pricing.or">ou</span> <span id="price-annual">69 €</span>
-              <span data-i18n="pricing.year">/ an</span>
-            </p>
-            <p data-i18n="pricing.pro">
-              Finances, santé, foyer, carrière, sources connectées, synchronisation cloud, Coach illimité.
-            </p>
-            <a class="btn btn-primary" href="app.html#account/plan" data-i18n="cta.pro">Passer Pro</a>
-          </article>
-        </div>
       </section>
     </main>
 
     <footer class="site-footer">
-      <span>© <span id="year"></span> Σ Life OS <span id="legal-entity"></span></span>
-      <nav aria-label="Legal">
+      <div>
+        <a class="brand" href="./"
+          ><span class="brand-mark small-mark" aria-hidden="true">Σ</span><strong>Σ Life OS</strong></a
+        >
+        <p data-i18n="footer.tagline">Une couche de décision calme au-dessus de votre vie numérique.</p>
+      </div>
+      <nav class="footer-links" aria-label="Legal">
         <a href="legal/privacy.html" data-i18n="footer.privacy">Confidentialité</a>
         <a href="legal/terms.html" data-i18n="footer.terms">Conditions</a>
         <a href="legal/support.html" data-i18n="footer.support">Support</a>
         <a href="legal/impressum.html">Impressum</a>
       </nav>
+      <p class="footer-meta">© <span id="year"></span> Σ Life OS<span id="legal-entity"></span></p>
     </footer>
     <script type="module" src="/src/site/landing.ts"></script>
   </body>
