@@ -3,7 +3,10 @@
     "public": "apps/web/dist",
     "cleanUrls": false,
     "trailingSlash": false,
-    "ignore": ["**/.*", "**/*.map"],
+    "ignore": [
+      "**/.*",
+      "**/*.map"
+    ],
     "headers": [
       {
         "source": "**",
@@ -65,7 +68,10 @@
           }
         ]
       }
-    ],
-    "site": "sum-plus"
+    ]
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
   }
 }

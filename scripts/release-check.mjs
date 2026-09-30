@@ -56,6 +56,8 @@ check(
   /match \/\{document=\*\*\}\s*\{\s*allow read, write: if false;/.test(rules),
 );
 check('No "if true" in Firestore rules', !/if\s+true/.test(rules));
+check('Launch open-access mode disabled (rules)', !/return true; \/\/ OPEN_ACCESS/.test(rules));
+check('Launch open-access mode disabled (web)', env('VITE_OPEN_ACCESS') !== 'true');
 check(
   'Entitlements are not client-writable',
   /match \/entitlements\/\{uid\}\s*\{[^}]*allow write: if false;/.test(rules),

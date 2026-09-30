@@ -23,7 +23,8 @@ export default defineConfig({
     { name: 'mobile', use: { ...devices['Pixel 7'] }, testMatch: /mobile\.spec\.ts/ },
   ],
   webServer: {
-    command: 'npm run build && npm run preview',
+    // --mode e2e skips .env.production: E2E runs the local-only app, no live backend.
+    command: 'npx vite build --mode e2e && npm run preview',
     url: 'http://localhost:4173/app.html',
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,

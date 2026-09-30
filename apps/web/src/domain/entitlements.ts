@@ -56,6 +56,9 @@ export interface Entitlement {
 
 export const FREE_ENTITLEMENT: Entitlement = { plan: 'free', status: 'none', source: 'none' };
 
+/** Launch mode (no payments yet): everything unlocked. */
+export const OPEN_ENTITLEMENT: Entitlement = { plan: 'pro', status: 'active', source: 'none' };
+
 export function isPro(e: Entitlement | null | undefined, now: Date = new Date()): boolean {
   if (!e || e.plan !== 'pro') return false;
   if (e.status === 'active' || e.status === 'on_trial' || e.status === 'past_due') return true;

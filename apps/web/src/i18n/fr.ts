@@ -32,6 +32,7 @@ export const fr = {
   'error.storage':
     'Le stockage local est indisponible (navigation privée ?). Vos données ne seront pas conservées.',
   'error.fileTooLarge': 'Fichier trop volumineux.',
+  'error.requires-recent-login': 'Par sécurité, reconnectez-vous puis relancez la suppression.',
   'error.popup-closed-by-user': 'Fenêtre de connexion fermée.',
   'error.popup_closed': 'Fenêtre de connexion fermée.',
   'error.popup-blocked': 'Le navigateur a bloqué la fenêtre de connexion.',
@@ -958,6 +959,7 @@ export const fr = {
   'plan.notAvailable': 'L’abonnement n’est pas encore ouvert sur cette installation.',
   'plan.signInFirst': 'Connectez-vous d’abord à un compte Σ.',
   'plan.testMode': 'Mode test : aucun paiement réel ne sera effectué.',
+  'plan.openAccess': 'Phase de lancement : toutes les fonctionnalités Pro sont offertes.',
   'plan.validUntil': 'jusqu’au {date}',
   'plan.legal': 'Paiement sécurisé par Lemon Squeezy (marchand officiel). Résiliable à tout moment.',
   'plan.sub.active': 'Actif',

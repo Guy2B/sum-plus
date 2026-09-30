@@ -12,4 +12,5 @@ paths = [
   '''tests/rules/.*''',
   '''services/local-ai-gateway/server\.test\.mjs''',
   '''docs/AUDIT-2026-09-legacy\.md''',
+  '''apps/web/\.env\.production''',
 ]

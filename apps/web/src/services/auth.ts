@@ -1,7 +1,8 @@
 import { authUser, setEntitlement, type AuthUser } from '../data/store';
 import { FREE_ENTITLEMENT, type Entitlement } from '../domain/entitlements';
 import { cloud, call } from './firebase';
-import { cloudConfigured } from '../config';
+import { cloudConfigured, config } from '../config';
+import { COLLECTIONS, LOCAL_ONLY_COLLECTIONS } from '../domain/types';
 import { startSync, stopSync } from './sync';
 import { reportError } from './monitoring';
 
@@ -33,7 +34,8 @@ export async function initAuth(): Promise<void> {
         providers: user.providerData.map((p) => p.providerId),
       };
       authUser.value = next;
-      unsubEntitlement = onSnapshot(
+      if (!config.openAccess)
+        unsubEntitlement = onSnapshot(
         doc(db, 'entitlements', user.uid),
         (snap) =>
           void setEntitlement(
@@ -97,15 +99,55 @@ export async function signOut(): Promise<void> {
   await fbSignOut(auth);
 }
 
-/** Server-side erasure of every cloud record, credential and the auth account. */
+const CLOUD_COLLECTIONS = COLLECTIONS.filter((c) => !LOCAL_ONLY_COLLECTIONS.has(c));
+
+/**
+ * Erases every cloud record and the auth account. With Cloud Functions this is
+ * done server-side (also removing connector credentials); in the free Spark
+ * mode the client deletes its own documents (rules allow owner deletes).
+ */
 export async function deleteCloudAccount(): Promise<void> {
-  await call<Record<string, never>, { deleted: true }>('deleteMyAccount', {});
-  const { auth } = await cloud();
-  const { signOut: fbSignOut } = await import('firebase/auth');
+  const { auth, db } = await cloud();
+  const { signOut: fbSignOut, deleteUser } = await import('firebase/auth');
   stopSync();
-  await fbSignOut(auth).catch(() => undefined);
+  if (config.functionsEnabled) {
+    await call<Record<string, never>, { deleted: true }>('deleteMyAccount', {});
+    await fbSignOut(auth).catch(() => undefined);
+    return;
+  }
+  const user = auth.currentUser;
+  if (!user) throw Object.assign(new Error('unauthenticated'), { code: 'unauthenticated' });
+  const fs = await import('firebase/firestore');
+  for (const c of CLOUD_COLLECTIONS) {
+    const snap = await fs.getDocs(fs.collection(db, 'users', user.uid, c));
+    for (let i = 0; i < snap.docs.length; i += 400) {
+      const batch = fs.writeBatch(db);
+      snap.docs.slice(i, i + 400).forEach((d) => batch.delete(d.ref));
+      await batch.commit();
+    }
+  }
+  await fs.deleteDoc(fs.doc(db, 'users', user.uid, 'meta', 'settings')).catch(() => undefined);
+  // Firebase requires a recent sign-in to delete the account itself.
+  await deleteUser(user);
 }
 
 export async function exportCloudData(): Promise<unknown> {
-  return call<Record<string, never>, unknown>('exportMyData', {});
+  if (config.functionsEnabled) return call<Record<string, never>, unknown>('exportMyData', {});
+  const { auth, db } = await cloud();
+  const user = auth.currentUser;
+  if (!user) throw Object.assign(new Error('unauthenticated'), { code: 'unauthenticated' });
+  const fs = await import('firebase/firestore');
+  const collections: Record<string, unknown[]> = {};
+  for (const c of CLOUD_COLLECTIONS) {
+    const snap = await fs.getDocs(fs.collection(db, 'users', user.uid, c));
+    collections[c] = snap.docs.map((d) => d.data());
+  }
+  const settingsSnap = await fs.getDoc(fs.doc(db, 'users', user.uid, 'meta', 'settings'));
+  return {
+    format: 'sigma-life-os-cloud-export',
+    exportedAt: new Date().toISOString(),
+    account: { uid: user.uid, email: user.email, displayName: user.displayName, createdAt: user.metadata.creationTime },
+    settings: settingsSnap.exists() ? settingsSnap.data() : null,
+    collections,
+  };
 }

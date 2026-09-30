@@ -104,6 +104,7 @@ export function Admin() {
         </ul>
       </Card>
 
+      {config.functionsEnabled && (
       <Card title={t('admin.server')}>
         <Button
           icon="refresh"
@@ -136,6 +137,7 @@ export function Admin() {
           </ul>
         )}
       </Card>
+      )}
 
       <Card title={t('admin.scenarios')}>
         <p class="small muted">{t('admin.scenariosHint')}</p>
@@ -170,6 +172,7 @@ export function Admin() {
         </div>
       </Card>
 
+      {config.functionsEnabled && (
       <Card title={t('admin.grant')}>
         <p class="small muted">{t('admin.grantHint')}</p>
         <form
@@ -212,6 +215,7 @@ export function Admin() {
           </Button>
         </form>
       </Card>
+      )}
     </div>
   );
 }

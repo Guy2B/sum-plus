@@ -4,7 +4,7 @@
  * function which writes them to Cloud Logging (alerting is configured there).
  * No third-party tracker is loaded.
  */
-import { APP_VERSION, cloudConfigured } from '../config';
+import { APP_VERSION, cloudConfigured, config } from '../config';
 
 const MAX_PER_SESSION = 20;
 let sent = 0;
@@ -22,7 +22,7 @@ export function scrub(text: string): string {
 export function reportError(err: unknown, context: Record<string, string> = {}): void {
   const e = err instanceof Error ? err : new Error(String(err));
   console.error('[sigma]', context.where ?? '', e);
-  if (!cloudConfigured() || sent >= MAX_PER_SESSION) return;
+  if (!cloudConfigured() || !config.functionsEnabled || sent >= MAX_PER_SESSION) return;
   const fingerprint = `${e.name}:${e.message}`.slice(0, 200);
   if (seen.has(fingerprint)) return;
   seen.add(fingerprint);

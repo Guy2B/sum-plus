@@ -8,7 +8,8 @@ import type { CollectionMap, CollectionName, Doc, Settings, Snapshot } from '../
 import { COLLECTIONS, LOCAL_ONLY_COLLECTIONS } from '../domain/types';
 import { defaultSettings, normalizeSettings } from '../domain/defaults';
 import { newId, nowIso } from '../domain/ids';
-import { FREE_ENTITLEMENT, type Entitlement } from '../domain/entitlements';
+import { FREE_ENTITLEMENT, OPEN_ENTITLEMENT, type Entitlement } from '../domain/entitlements';
+import { config } from '../config';
 import { buildSignals } from '../domain/signals';
 import { arbitrate, rankSignals } from '../domain/decision';
 import { buildDayBlocks, computeCapacity, groupAttention } from '../domain/planning';
@@ -36,7 +37,7 @@ const emptySnapshot = (): Snapshot =>
 export const ready = signal(false);
 export const snapshot = signal<Snapshot>(emptySnapshot());
 export const settings = signal<Settings>(defaultSettings());
-export const entitlement = signal<Entitlement>(FREE_ENTITLEMENT);
+export const entitlement = signal<Entitlement>(config.openAccess ? OPEN_ENTITLEMENT : FREE_ENTITLEMENT);
 export const authUser = signal<AuthUser | null>(null);
 export const syncState = signal<SyncState>({ status: 'off', lastSyncAt: null, error: null });
 /** Ticks every minute so time-relative views (overdue, "in 2h") stay correct. */
@@ -124,7 +125,7 @@ export async function initStore(): Promise<{ migratedLegacy: Record<string, numb
   batch(() => {
     snapshot.value = Object.fromEntries(loaded) as unknown as Snapshot;
     settings.value = normalizeSettings(storedSettings);
-    if (storedEnt) entitlement.value = storedEnt;
+    if (storedEnt && !config.openAccess) entitlement.value = storedEnt;
     ready.value = true;
   });
   setInterval(() => (clock.value = new Date()), 60_000);
@@ -263,6 +264,7 @@ export async function updateSettings(
 }
 
 export async function setEntitlement(e: Entitlement): Promise<void> {
+  if (config.openAccess) return;
   entitlement.value = e;
   await setKV('entitlement', e);
 }

@@ -23,6 +23,10 @@ export const config = Object.freeze({
   appCheckSiteKey: str(env.VITE_APPCHECK_RECAPTCHA_SITE_KEY),
   functionsRegion: str(env.VITE_FUNCTIONS_REGION) || 'europe-west1',
   useEmulators: bool(env.VITE_USE_EMULATORS),
+  /** Cloud Functions deployed (requires the Blaze plan). Off = free Spark mode. */
+  functionsEnabled: bool(env.VITE_FUNCTIONS_ENABLED),
+  /** Launch mode: every feature unlocked for everyone until payments go live. */
+  openAccess: bool(env.VITE_OPEN_ACCESS),
   google: {
     clientId: str(env.VITE_GOOGLE_CLIENT_ID),
   },

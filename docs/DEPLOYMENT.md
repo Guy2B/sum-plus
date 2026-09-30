@@ -105,3 +105,21 @@ git push --follow-tags
 ## 8. Mise en vente
 
 `npm run release:check` doit passer : paiement `live`, liens de checkout HTTPS, identité légale, e-mail de support, App Check, URL publique, aucun secret dans le bundle. Faire relire les pages légales (`apps/web/legal`) et l'AIPD (`docs/PRIVACY.md`) par un juriste.
+
+## Backend gratuit (plan Spark) — mode de lancement
+
+Projet Firebase : `sum-plus-app` (Firestore `eur3`, Auth, Hosting). Aucun coût : pas de
+Cloud Functions (elles exigent le plan Blaze).
+
+- Configuration web publique : `apps/web/.env.production` (non secrète).
+- `VITE_FUNCTIONS_ENABLED=false` : export / suppression RGPD faits côté client ; IMAP,
+  réseaux sociaux, paiements et outils admin serveur masqués.
+- `VITE_OPEN_ACCESS=true` + `openAccess()` dans `firestore.rules` : synchronisation cloud
+  ouverte à tout utilisateur connecté (ses propres données uniquement).
+- Déploiement : `npm run deploy:static` (règles + index + hébergement sur
+  https://sum-plus-app.web.app). GitHub Pages se reconstruit à chaque push sur `main`.
+- Domaines autorisés Auth : `sum-plus-app.web.app`, `guy2b.github.io`.
+
+Passage au payant : plan Blaze, déployer les Functions, mettre `openAccess()` à `false`,
+`VITE_OPEN_ACCESS=false`, `VITE_FUNCTIONS_ENABLED=true`. `npm run release:check` bloque
+toute release tant que le mode de lancement est actif.

@@ -155,6 +155,7 @@ function Plan() {
           <span class="muted small">{t('plan.validUntil', { date: fmtDate(ent.validUntil) })}</span>
         )}
       </div>
+      {config.openAccess && <p class="notice small">{t('plan.openAccess')}</p>}
       {!pro && (
         <>
           <ul class="plan-features">

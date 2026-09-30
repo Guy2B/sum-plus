@@ -18,3 +18,4 @@ Thumbs.db
 .idea/
 mobile/android/app/build/
 mobile/ios/App/Pods/
+!apps/web/.env.production

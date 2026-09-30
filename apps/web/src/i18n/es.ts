@@ -33,6 +33,7 @@ export const es: Record<MessageKey, string> = {
   'error.storage':
     'El almacenamiento local no está disponible (¿navegación privada?). Tus datos no se conservarán.',
   'error.fileTooLarge': 'Archivo demasiado grande.',
+  'error.requires-recent-login': 'Por seguridad, vuelve a iniciar sesión y repite la eliminación.',
   'error.popup-closed-by-user': 'Ventana de inicio de sesión cerrada.',
   'error.popup_closed': 'Ventana de inicio de sesión cerrada.',
   'error.popup-blocked': 'El navegador bloqueó la ventana de inicio de sesión.',
@@ -950,6 +951,7 @@ export const es: Record<MessageKey, string> = {
   'plan.notAvailable': 'Las suscripciones aún no están abiertas en esta instalación.',
   'plan.signInFirst': 'Inicia sesión primero con una cuenta Σ.',
   'plan.testMode': 'Modo de prueba: no se realizará ningún pago real.',
+  'plan.openAccess': 'Fase de lanzamiento: todas las funciones Pro son gratuitas.',
   'plan.validUntil': 'hasta el {date}',
   'plan.legal': 'Pago seguro con Lemon Squeezy (comerciante registrado). Cancela cuando quieras.',
   'plan.sub.active': 'Activa',

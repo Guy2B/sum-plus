@@ -24,6 +24,16 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/entitlements/$(uid)).data;
     }
 
+    // Launch mode: cloud sync open to every signed-in user until payments go live.
+    // Set to false once the Lemon Squeezy webhook (Cloud Functions, Blaze plan) is deployed.
+    function openAccess() {
+      return true; // OPEN_ACCESS
+    }
+
+    function canSync(uid) {
+      return openAccess() || isPro(uid);
+    }
+
     function isPro(uid) {
       let e = entitlement(uid);
       return exists(/databases/$(database)/documents/entitlements/$(uid))
@@ -64,19 +74,20 @@ service cloud.firestore {
 
       match /meta/settings {
         allow read: if isOwner(uid);
-        allow create, update: if isOwner(uid) && isPro(uid)
+        allow create, update: if isOwner(uid) && canSync(uid)
           && request.resource.data.serverUpdatedAt == request.time
           && request.resource.data.keys().size() <= 40;
-        allow delete: if false;
+        allow delete: if isOwner(uid);
       }
 
       match /{col}/{docId} {
         allow read: if isOwner(uid) && syncable(col);
-        allow create, update: if isOwner(uid) && syncable(col) && isPro(uid)
+        allow create, update: if isOwner(uid) && syncable(col) && canSync(uid)
           && validRecord(docId)
           && (col != 'health' || healthConsented(uid));
-        // Deletions replicate as tombstones (deletedAt); hard deletes are server-side only.
-        allow delete: if false;
+        // Deletions replicate as tombstones (deletedAt); hard deletes happen only when the
+        // owner erases their account.
+        allow delete: if isOwner(uid) && syncable(col);
       }
     }
 

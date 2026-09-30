@@ -13,21 +13,32 @@ import {
 } from '@firebase/rules-unit-testing';
 import { doc, getDoc, serverTimestamp, setDoc, deleteDoc, Timestamp } from 'firebase/firestore';
 
+const RULES = readFileSync(resolve(__dirname, '../../firestore.rules'), 'utf8');
+// The suite checks the paid configuration; launch mode is covered separately below.
+const PAID_RULES = RULES.replace('return true; // OPEN_ACCESS', 'return false; // OPEN_ACCESS');
+
 let env: RulesTestEnvironment;
+let openEnv: RulesTestEnvironment;
 
 beforeAll(async () => {
   env = await initializeTestEnvironment({
     projectId: 'demo-sigma',
-    firestore: {
-      rules: readFileSync(resolve(__dirname, '../../firestore.rules'), 'utf8'),
-      host: '127.0.0.1',
-      port: 8080,
-    },
+    firestore: { rules: PAID_RULES, host: '127.0.0.1', port: 8080 },
+  });
+  openEnv = await initializeTestEnvironment({
+    projectId: 'demo-sigma-open',
+    firestore: { rules: RULES.replace('return false; // OPEN_ACCESS', 'return true; // OPEN_ACCESS'), host: '127.0.0.1', port: 8080 },
   });
 });
 
-afterAll(async () => env?.cleanup());
-beforeEach(async () => env.clearFirestore());
+afterAll(async () => {
+  await env?.cleanup();
+  await openEnv?.cleanup();
+});
+beforeEach(async () => {
+  await env.clearFirestore();
+  await openEnv.clearFirestore();
+});
 
 const record = (id: string, extra: Record<string, unknown> = {}) => ({
   id,
@@ -97,7 +108,14 @@ describe('sync collections', () => {
     );
     await assertFails(setDoc(doc(db, 'users/alice/mailMessages/m1'), record('m1')));
     await assertFails(setDoc(doc(db, 'users/alice/auditEvents/a1'), record('a1')));
-    await assertFails(deleteDoc(doc(db, 'users/alice/tasks/t1')));
+    await assertFails(deleteDoc(doc(db, 'users/alice/mailMessages/m1')));
+    await assertFails(deleteDoc(doc(env.authenticatedContext('bob').firestore(), 'users/alice/tasks/t1')));
+  });
+
+  it('lets owners erase their own records (account deletion)', async () => {
+    const db = env.authenticatedContext('alice').firestore();
+    await assertSucceeds(deleteDoc(doc(db, 'users/alice/tasks/t1')));
+    await assertSucceeds(deleteDoc(doc(db, 'users/alice/meta/settings')));
   });
 
   it('requires recorded consent for health records', async () => {
@@ -107,6 +125,16 @@ describe('sync collections', () => {
     await assertFails(setDoc(doc(db, 'users/alice/health/h1'), record('h1')));
     await consentHealth('alice', '2026-09-30T08:00:00.000Z');
     await assertSucceeds(setDoc(doc(db, 'users/alice/health/h1'), record('h1')));
+  });
+});
+
+describe('launch mode (open access)', () => {
+  it('lets any signed-in user sync their own data without an entitlement', async () => {
+    const alice = openEnv.authenticatedContext('alice').firestore();
+    await assertSucceeds(setDoc(doc(alice, 'users/alice/tasks/t1'), record('t1')));
+    await assertFails(setDoc(doc(openEnv.authenticatedContext('bob').firestore(), 'users/alice/tasks/t2'), record('t2')));
+    await assertFails(setDoc(doc(openEnv.unauthenticatedContext().firestore(), 'users/alice/tasks/t3'), record('t3')));
+    await assertFails(setDoc(doc(alice, 'entitlements/alice'), { plan: 'pro', status: 'active' }));
   });
 });
 

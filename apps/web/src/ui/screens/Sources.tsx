@@ -313,7 +313,7 @@ export function Sources() {
 
   const mailStatus = (needsServer: boolean, available: boolean): Status => {
     if (!available) return 'notConfigured';
-    if (needsServer && !cloudConfigured()) return 'notConfigured';
+    if (needsServer && (!cloudConfigured() || !config.functionsEnabled)) return 'notConfigured';
     if (needsServer && !user) return 'needsSignIn';
     if (needsServer && !can('imap', ent)) return 'needsPro';
     if (!canMail) return 'needsPro';
@@ -328,7 +328,7 @@ export function Sources() {
             : 'needsPro'
           : 'needsSignIn'
         : 'approval';
-    if (!config.social[p] || !cloudConfigured()) return 'notConfigured';
+    if (!config.social[p] || !cloudConfigured() || !config.functionsEnabled) return 'notConfigured';
     if (!user) return 'needsSignIn';
     if (!can('social', ent)) return 'needsPro';
     return 'ready';

@@ -1,6 +1,7 @@
 {
   "projects": {
-    "default": "project-sum-b961a",
+    "default": "sum-plus-app",
+    "legacy": "project-sum-b961a",
     "staging": "project-sum-b961a-staging",
     "demo": "demo-sigma"
   }

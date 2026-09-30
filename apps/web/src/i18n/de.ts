@@ -33,6 +33,7 @@ export const de: Record<MessageKey, string> = {
   'error.storage':
     'Lokaler Speicher nicht verfügbar (privates Surfen?). Ihre Daten werden nicht gespeichert.',
   'error.fileTooLarge': 'Datei zu groß.',
+  'error.requires-recent-login': 'Melden Sie sich aus Sicherheitsgründen erneut an und wiederholen Sie die Löschung.',
   'error.popup-closed-by-user': 'Anmeldefenster geschlossen.',
   'error.popup_closed': 'Anmeldefenster geschlossen.',
   'error.popup-blocked': 'Der Browser hat das Anmeldefenster blockiert.',
@@ -955,6 +956,7 @@ export const de: Record<MessageKey, string> = {
   'plan.notAvailable': 'Abonnements sind für diese Installation noch nicht geöffnet.',
   'plan.signInFirst': 'Melden Sie sich zuerst mit einem Σ-Konto an.',
   'plan.testMode': 'Testmodus: Es erfolgt keine echte Zahlung.',
+  'plan.openAccess': 'Startphase: Alle Pro-Funktionen sind kostenlos.',
   'plan.validUntil': 'bis {date}',
   'plan.legal': 'Sichere Zahlung über Lemon Squeezy (Merchant of Record). Jederzeit kündbar.',
   'plan.sub.active': 'Aktiv',
