@@ -1,0 +1,163 @@
+/**
+ * Demo workspace generator used by onboarding ("try with examples") and the
+ * admin QA scenarios. Every seeded record is tagged so it can be removed in
+ * one click without touching real data.
+ */
+import type { EditionKey, Locale } from '../domain/types';
+import { COLLECTIONS } from '../domain/types';
+import { editionDemo } from '../domain/editions';
+import { addDays, isoDay, atTime } from '../domain/dates';
+import { newId } from '../domain/ids';
+import { createMany, remove, snapshot } from './store';
+
+export const DEMO_PROVIDER = 'demo';
+
+export async function seedDemo(edition: EditionKey, locale: Locale, now: Date = new Date()): Promise<void> {
+  const demo = editionDemo(edition, locale);
+  const src = { provider: DEMO_PROVIDER };
+  const d = (n: number) => isoDay(addDays(now, n));
+
+  await createMany(
+    'tasks',
+    demo.tasks.map((title, i) => ({
+      id: newId('demo'),
+      title,
+      category: i === 3 ? 'projects' : 'work',
+      status: i === 3 ? 'inbox' : 'todo',
+      priority: i === 0 ? 'high' : 'medium',
+      essential: i === 0,
+      dueDate: i === 0 ? d(0) : i === 1 ? d(1) : i === 2 ? d(4) : null,
+      estimateMinutes: [45, 30, 20, 15][i] ?? 30,
+      source: src,
+    })),
+  );
+
+  const [projectName, ...steps] = demo.project;
+  await createMany('projects', [
+    {
+      id: newId('demo'),
+      name: projectName ?? '—',
+      description: '',
+      status: 'active',
+      dueDate: d(21),
+      milestones: steps.map((title, i) => ({ id: newId(), title, done: i === 0, dueDate: d(3 + i * 5) })),
+    },
+  ]);
+
+  await createMany('finance', [
+    {
+      id: newId('demo'),
+      date: d(-6),
+      kind: 'income',
+      amount: 180000,
+      currency: 'EUR',
+      category: 'client',
+      label: demo.income,
+      status: 'paid',
+      taxRelevant: true,
+    },
+    {
+      id: newId('demo'),
+      date: d(-2),
+      kind: 'expense',
+      amount: 4900,
+      currency: 'EUR',
+      category: 'tools',
+      label: demo.expense,
+      status: 'paid',
+      taxRelevant: true,
+    },
+    {
+      id: newId('demo'),
+      date: d(-1),
+      kind: 'income',
+      amount: 65000,
+      currency: 'EUR',
+      category: 'client',
+      label: demo.income,
+      status: 'pending',
+      dueDate: d(5),
+    },
+  ]);
+
+  await createMany('journal', [
+    {
+      id: newId('demo'),
+      date: d(-1),
+      kind: 'reflection',
+      text: `${demo.journal}\n\n${demo.gratitude}`,
+      mood: 4,
+      tags: [],
+    },
+  ]);
+
+  await createMany('skills', [
+    {
+      id: newId('demo'),
+      name: demo.skill,
+      target: 'B1',
+      progress: 35,
+      nextReviewAt: d(0),
+      reviewIntervalDays: 2,
+      resources: [],
+    },
+  ]);
+
+  await createMany(
+    'goals',
+    demo.goals.slice(0, 3).map((title, i) => ({
+      id: newId('demo'),
+      title,
+      horizon: i === 0 ? 'week' : i === 1 ? 'month' : 'quarter',
+      status: 'active',
+      targetValue: 100,
+      currentValue: [20, 45, 10][i] ?? 0,
+    })),
+  );
+
+  await createMany('habits', [
+    { id: newId('demo'), name: demo.goals[4] ?? demo.skill, cadence: 'daily', domain: 'personal' },
+  ]);
+
+  await createMany(
+    'events',
+    demo.events.map((title, i) => {
+      const day = addDays(now, i === 0 ? 1 : 3);
+      const start = atTime(day, i === 0 ? '10:00' : '16:00');
+      return {
+        id: newId('demo'),
+        title,
+        start: start.toISOString(),
+        end: new Date(start.getTime() + 3_600_000).toISOString(),
+        source: src,
+      };
+    }),
+  );
+
+  await createMany('health', [
+    { id: newId('demo'), date: d(-1), sleepHours: 6.8, energy: 3, stress: 3, steps: 7400, source: 'manual' },
+    { id: newId('demo'), date: d(0), sleepHours: 7.4, energy: 4, stress: 2, steps: 2100, source: 'manual' },
+  ]);
+}
+
+/** Removes every seeded record (ids are prefixed with "demo_"), leaving real data untouched. */
+export async function clearDemo(): Promise<number> {
+  let n = 0;
+  for (const c of COLLECTIONS) {
+    for (const doc of snapshot.value[c] as { id: string; deletedAt?: string | null }[]) {
+      if (!doc.deletedAt && doc.id.startsWith('demo_')) {
+        await remove(c, doc.id);
+        n += 1;
+      }
+    }
+  }
+  return n;
+}
+
+export function hasDemoData(): boolean {
+  return COLLECTIONS.some((c) =>
+    (snapshot.value[c] as { id: string; deletedAt?: string | null }[]).some(
+      (d) => !d.deletedAt && d.id.startsWith('demo_'),
+    ),
+  );
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@sigma/local-ai-gateway",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Optional self-hosted rephrasing gateway for Σ Life OS (Ollama). No dependencies.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test server.test.mjs"
+  }
+}

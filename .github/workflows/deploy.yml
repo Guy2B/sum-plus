@@ -1,0 +1,115 @@
+name: Deploy
+
+# Tag vX.Y.Z → staging automatically → production after manual approval
+# (configure required reviewers on the "production" GitHub environment).
+on:
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # Workload Identity Federation (no long-lived service-account keys)
+
+jobs:
+  staging:
+    name: Deploy to staging
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run verify
+      - name: Build web with staging configuration
+        run: npm run build -w apps/web
+        env:
+          VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ vars.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
+          VITE_APPCHECK_RECAPTCHA_SITE_KEY: ${{ vars.VITE_APPCHECK_RECAPTCHA_SITE_KEY }}
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+          VITE_MICROSOFT_CLIENT_ID: ${{ vars.VITE_MICROSOFT_CLIENT_ID }}
+          VITE_SOCIAL_LINKEDIN_ENABLED: ${{ vars.VITE_SOCIAL_LINKEDIN_ENABLED }}
+          VITE_SOCIAL_X_ENABLED: ${{ vars.VITE_SOCIAL_X_ENABLED }}
+          VITE_SOCIAL_TIKTOK_ENABLED: ${{ vars.VITE_SOCIAL_TIKTOK_ENABLED }}
+          VITE_PAYMENT_MODE: ${{ vars.VITE_PAYMENT_MODE }}
+          VITE_CHECKOUT_MONTHLY_URL: ${{ vars.VITE_CHECKOUT_MONTHLY_URL }}
+          VITE_CHECKOUT_ANNUAL_URL: ${{ vars.VITE_CHECKOUT_ANNUAL_URL }}
+          VITE_LEGAL_ENTITY: ${{ vars.VITE_LEGAL_ENTITY }}
+          VITE_LEGAL_ADDRESS: ${{ vars.VITE_LEGAL_ADDRESS }}
+          VITE_SUPPORT_EMAIL: ${{ vars.VITE_SUPPORT_EMAIL }}
+          VITE_PUBLIC_URL: ${{ vars.VITE_PUBLIC_URL }}
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOY_SERVICE_ACCOUNT }}
+      - run: npx --yes firebase-tools@14 deploy --project staging --non-interactive --force
+
+  production:
+    name: Deploy to production
+    needs: staging
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build web with production configuration
+        run: npm run build -w apps/web
+        env:
+          VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ vars.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
+          VITE_APPCHECK_RECAPTCHA_SITE_KEY: ${{ vars.VITE_APPCHECK_RECAPTCHA_SITE_KEY }}
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+          VITE_MICROSOFT_CLIENT_ID: ${{ vars.VITE_MICROSOFT_CLIENT_ID }}
+          VITE_SOCIAL_LINKEDIN_ENABLED: ${{ vars.VITE_SOCIAL_LINKEDIN_ENABLED }}
+          VITE_SOCIAL_X_ENABLED: ${{ vars.VITE_SOCIAL_X_ENABLED }}
+          VITE_SOCIAL_TIKTOK_ENABLED: ${{ vars.VITE_SOCIAL_TIKTOK_ENABLED }}
+          VITE_PAYMENT_MODE: ${{ vars.VITE_PAYMENT_MODE }}
+          VITE_CHECKOUT_MONTHLY_URL: ${{ vars.VITE_CHECKOUT_MONTHLY_URL }}
+          VITE_CHECKOUT_ANNUAL_URL: ${{ vars.VITE_CHECKOUT_ANNUAL_URL }}
+          VITE_LEGAL_ENTITY: ${{ vars.VITE_LEGAL_ENTITY }}
+          VITE_LEGAL_ADDRESS: ${{ vars.VITE_LEGAL_ADDRESS }}
+          VITE_SUPPORT_EMAIL: ${{ vars.VITE_SUPPORT_EMAIL }}
+          VITE_PUBLIC_URL: ${{ vars.VITE_PUBLIC_URL }}
+      - name: Commercial release gate
+        run: npm run release:check
+        env:
+          VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ vars.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
+          VITE_APPCHECK_RECAPTCHA_SITE_KEY: ${{ vars.VITE_APPCHECK_RECAPTCHA_SITE_KEY }}
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+          VITE_MICROSOFT_CLIENT_ID: ${{ vars.VITE_MICROSOFT_CLIENT_ID }}
+          VITE_SOCIAL_LINKEDIN_ENABLED: ${{ vars.VITE_SOCIAL_LINKEDIN_ENABLED }}
+          VITE_SOCIAL_X_ENABLED: ${{ vars.VITE_SOCIAL_X_ENABLED }}
+          VITE_SOCIAL_TIKTOK_ENABLED: ${{ vars.VITE_SOCIAL_TIKTOK_ENABLED }}
+          VITE_PAYMENT_MODE: ${{ vars.VITE_PAYMENT_MODE }}
+          VITE_CHECKOUT_MONTHLY_URL: ${{ vars.VITE_CHECKOUT_MONTHLY_URL }}
+          VITE_CHECKOUT_ANNUAL_URL: ${{ vars.VITE_CHECKOUT_ANNUAL_URL }}
+          VITE_LEGAL_ENTITY: ${{ vars.VITE_LEGAL_ENTITY }}
+          VITE_LEGAL_ADDRESS: ${{ vars.VITE_LEGAL_ADDRESS }}
+          VITE_SUPPORT_EMAIL: ${{ vars.VITE_SUPPORT_EMAIL }}
+          VITE_PUBLIC_URL: ${{ vars.VITE_PUBLIC_URL }}
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOY_SERVICE_ACCOUNT }}
+      - run: npx --yes firebase-tools@14 deploy --project default --non-interactive --force

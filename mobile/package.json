@@ -1,0 +1,23 @@
+{
+  "name": "@sigma/mobile",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Σ Life OS iOS/Android shells (Capacitor) with native health bridges.",
+  "scripts": {
+    "build:web": "npm run build --prefix ../apps/web",
+    "native:init": "npx cap add android && npx cap add ios && node scripts/install-native.mjs",
+    "native:patch": "node scripts/install-native.mjs",
+    "sync": "npm run build:web && npx cap sync && node scripts/install-native.mjs",
+    "open:android": "npx cap open android",
+    "open:ios": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/core": "^7.4.3",
+    "@capacitor/ios": "^7.4.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.3"
+  }
+}

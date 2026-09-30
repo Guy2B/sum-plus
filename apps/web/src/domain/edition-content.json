@@ -1,0 +1,1214 @@
+{
+  "base": {
+    "student": {
+      "icon": "🎓",
+      "accent": "#4f46e5",
+      "soft": "#eef2ff"
+    },
+    "solo": {
+      "icon": "💼",
+      "accent": "#087f8c",
+      "soft": "#e7f8f8"
+    },
+    "creator": {
+      "icon": "✦",
+      "accent": "#a445d6",
+      "soft": "#faefff"
+    },
+    "life": {
+      "icon": "⌂",
+      "accent": "#239b56",
+      "soft": "#ecfbf2"
+    },
+    "nomad": {
+      "icon": "◎",
+      "accent": "#e06f22",
+      "soft": "#fff3e8"
+    }
+  },
+  "copy": {
+    "en": {
+      "student": {
+        "name": "Σ Student",
+        "short": "Student",
+        "promise": "Courses, exams, study habits and budget in one calm academic cockpit.",
+        "hero": "Protect the next academic result without losing your energy.",
+        "nav": {
+          "tasks": "Assignments",
+          "planner": "Study calendar",
+          "projects": "Academic work",
+          "finance": "Student budget",
+          "health": "Energy",
+          "learning": "Subjects"
+        },
+        "labels": {
+          "priority": "Next academic priority",
+          "essentials": "3 study essentials",
+          "habits": "Study rhythm",
+          "focus": "Study focus from Σ"
+        },
+        "kpis": ["Open assignments", "Upcoming events", "Study habits today", "Average progress"],
+        "coachWelcome": "I can help you choose what to study, plan an exam week, turn notes into a revision path and protect your energy.",
+        "prompts": [
+          [
+            "Plan my revision week",
+            "Build a realistic seven-day revision plan from my assignments, events and learning goals."
+          ],
+          ["Choose today’s subject", "Which subject or assignment should I prioritise today?"],
+          [
+            "Catch up without overload",
+            "Help me catch up on overdue academic work without overloading the day."
+          ]
+        ],
+        "templates": ["Exam preparation", "Dissertation", "Language learning", "University application"]
+      },
+      "solo": {
+        "name": "Σ Solo & Micro",
+        "short": "Solo & Micro",
+        "promise": "Projects, cash flow, client deadlines and personal energy for independent professionals.",
+        "hero": "Run the business and protect the person doing the work.",
+        "nav": {
+          "tasks": "Priorities",
+          "planner": "Calendar & rhythm",
+          "projects": "Clients & projects",
+          "finance": "Cash flow",
+          "health": "Energy",
+          "learning": "Skills"
+        },
+        "labels": {
+          "priority": "Commercial priority",
+          "essentials": "3 business essentials",
+          "habits": "Work rhythm",
+          "focus": "Business focus from Σ"
+        },
+        "kpis": ["Open priorities", "Active projects", "Month balance", "Energy today"],
+        "coachWelcome": "I can connect client work, deadlines, cash flow and energy to help you choose the next useful action.",
+        "prompts": [
+          ["Organise my workday", "Organise my workday around client impact, deadlines and current energy."],
+          ["Review my cash flow", "What does my current cash flow show and what should I review first?"],
+          [
+            "Unblock a client project",
+            "Which active project looks blocked and what is its smallest next step?"
+          ]
+        ],
+        "templates": ["Client mission", "Service launch", "Sales campaign", "Monthly business review"]
+      },
+      "creator": {
+        "name": "Σ Creator",
+        "short": "Creator",
+        "promise": "Ideas, production, publishing rhythm and creator income in one focused workspace.",
+        "hero": "Turn captured ideas into finished work, not a growing backlog.",
+        "nav": {
+          "tasks": "Production tasks",
+          "planner": "Editorial calendar",
+          "projects": "Content projects",
+          "finance": "Creator income",
+          "health": "Creative energy",
+          "learning": "Creative skills"
+        },
+        "labels": {
+          "priority": "Content priority",
+          "essentials": "3 production essentials",
+          "habits": "Creative rhythm",
+          "focus": "Creation focus from Σ"
+        },
+        "kpis": ["Ideas waiting", "Content projects", "Publishing habits", "Month balance"],
+        "coachWelcome": "I can help you finish current content, structure an idea, protect a publishing rhythm and review creator income.",
+        "prompts": [
+          [
+            "Plan my content week",
+            "Build a seven-day content plan from my active projects, tasks and calendar."
+          ],
+          ["Finish before starting", "Which content item should I finish before starting something new?"],
+          ["Structure an idea", "Help me transform my most important captured idea into a concrete project."]
+        ],
+        "templates": ["YouTube video", "Newsletter", "Podcast episode", "Online course"]
+      },
+      "life": {
+        "name": "Σ Life",
+        "short": "Life",
+        "promise": "Personal priorities, household budget, habits, wellbeing and reflection together.",
+        "hero": "Make everyday life clearer without turning it into another job.",
+        "nav": {
+          "tasks": "Personal tasks",
+          "planner": "Calendar & habits",
+          "projects": "Life projects",
+          "finance": "Personal budget",
+          "health": "Wellbeing",
+          "learning": "Learning"
+        },
+        "labels": {
+          "priority": "Personal priority",
+          "essentials": "3 essentials today",
+          "habits": "Daily rhythm",
+          "focus": "Life focus from Σ"
+        },
+        "kpis": ["Open tasks", "Habits completed", "Month balance", "Energy today"],
+        "coachWelcome": "I can help you simplify the day, review habits and budget, move a personal project and reflect on what matters.",
+        "prompts": [
+          ["Simplify my day", "Help me reduce today to three realistic personal priorities."],
+          ["Review my habits", "What pattern is visible in my habits and energy?"],
+          ["Prepare my week", "Prepare a balanced seven-day plan from my tasks, events and goals."]
+        ],
+        "templates": ["Move home", "Personal reset", "Important purchase", "Annual goal"]
+      },
+      "nomad": {
+        "name": "Σ Nomad",
+        "short": "Nomad",
+        "promise": "Cross-border projects, documents, currencies, languages and travel rhythm in one place.",
+        "hero": "Stay organised when places, languages and administrative contexts change.",
+        "nav": {
+          "tasks": "Open actions",
+          "planner": "Travel calendar",
+          "projects": "Moves & projects",
+          "finance": "Travel budget",
+          "health": "Travel energy",
+          "learning": "Languages"
+        },
+        "labels": {
+          "priority": "Mobility priority",
+          "essentials": "3 essential actions",
+          "habits": "Travel rhythm",
+          "focus": "Nomad focus from Σ"
+        },
+        "kpis": ["Open actions", "Upcoming events", "Month balance", "Language progress"],
+        "coachWelcome": "I can help you prepare a move, surface administrative deadlines, organise multilingual work and review travel spending.",
+        "prompts": [
+          ["Prepare my next move", "Build a seven-day preparation plan for my next move or trip."],
+          ["Check urgent administration", "Which administrative task or event should I handle first?"],
+          ["Review travel spending", "Review my current spending and upcoming events for the next 30 days."]
+        ],
+        "templates": ["Long stay abroad", "Document renewal", "Relocation", "Language sprint"]
+      }
+    },
+    "fr": {
+      "student": {
+        "name": "Σ Student",
+        "short": "Étudiant",
+        "promise": "Cours, examens, habitudes d’étude et budget dans un cockpit académique serein.",
+        "hero": "Protégez le prochain résultat académique sans épuiser votre énergie.",
+        "nav": {
+          "tasks": "Devoirs",
+          "planner": "Calendrier d’étude",
+          "projects": "Travaux académiques",
+          "finance": "Budget étudiant",
+          "health": "Énergie",
+          "learning": "Matières"
+        },
+        "labels": {
+          "priority": "Priorité académique",
+          "essentials": "3 essentiels d’étude",
+          "habits": "Rythme d’étude",
+          "focus": "Focus d’étude proposé par Σ"
+        },
+        "kpis": ["Devoirs ouverts", "Événements à venir", "Habitudes du jour", "Progression moyenne"],
+        "coachWelcome": "Je peux vous aider à choisir quoi étudier, planifier une semaine d’examen, structurer vos révisions et protéger votre énergie.",
+        "prompts": [
+          [
+            "Planifier mes révisions",
+            "Construis un plan réaliste de révision sur sept jours à partir de mes devoirs, événements et objectifs."
+          ],
+          ["Choisir la matière du jour", "Quelle matière ou quel devoir dois-je prioriser aujourd’hui ?"],
+          [
+            "Rattraper sans surcharge",
+            "Aide-moi à rattraper mes travaux en retard sans surcharger la journée."
+          ]
+        ],
+        "templates": [
+          "Préparation d’examen",
+          "Mémoire",
+          "Apprentissage linguistique",
+          "Candidature universitaire"
+        ]
+      },
+      "solo": {
+        "name": "Σ Solo & Micro",
+        "short": "Solo & Micro",
+        "promise": "Projets, trésorerie, échéances clients et énergie pour les professionnels indépendants.",
+        "hero": "Pilotez l’activité sans sacrifier la personne qui réalise le travail.",
+        "nav": {
+          "tasks": "Priorités",
+          "planner": "Calendrier & rythme",
+          "projects": "Clients & projets",
+          "finance": "Trésorerie",
+          "health": "Énergie",
+          "learning": "Compétences"
+        },
+        "labels": {
+          "priority": "Priorité commerciale",
+          "essentials": "3 essentiels business",
+          "habits": "Rythme de travail",
+          "focus": "Focus business proposé par Σ"
+        },
+        "kpis": ["Priorités ouvertes", "Projets actifs", "Solde du mois", "Énergie du jour"],
+        "coachWelcome": "Je peux relier missions clients, échéances, trésorerie et énergie pour vous aider à choisir la prochaine action utile.",
+        "prompts": [
+          [
+            "Organiser ma journée de travail",
+            "Organise ma journée selon l’impact client, les échéances et mon énergie actuelle."
+          ],
+          ["Revoir ma trésorerie", "Que montre ma trésorerie actuelle et que dois-je examiner en premier ?"],
+          [
+            "Débloquer un projet client",
+            "Quel projet actif semble bloqué et quelle est sa plus petite prochaine étape ?"
+          ]
+        ],
+        "templates": [
+          "Mission client",
+          "Lancement de service",
+          "Campagne commerciale",
+          "Revue mensuelle d’activité"
+        ]
+      },
+      "creator": {
+        "name": "Σ Creator",
+        "short": "Créateur",
+        "promise": "Idées, production, rythme de publication et revenus créatifs dans un seul espace.",
+        "hero": "Transformez les idées capturées en œuvres terminées, pas en liste infinie.",
+        "nav": {
+          "tasks": "Tâches de production",
+          "planner": "Calendrier éditorial",
+          "projects": "Projets de contenu",
+          "finance": "Revenus créatifs",
+          "health": "Énergie créative",
+          "learning": "Compétences créatives"
+        },
+        "labels": {
+          "priority": "Priorité de contenu",
+          "essentials": "3 essentiels de production",
+          "habits": "Rythme créatif",
+          "focus": "Focus création proposé par Σ"
+        },
+        "kpis": ["Idées en attente", "Projets de contenu", "Habitudes de publication", "Solde du mois"],
+        "coachWelcome": "Je peux vous aider à terminer un contenu, structurer une idée, protéger votre rythme de publication et revoir vos revenus créatifs.",
+        "prompts": [
+          [
+            "Planifier ma semaine de contenu",
+            "Construis un plan de contenu sur sept jours à partir de mes projets, tâches et calendrier."
+          ],
+          ["Finir avant de commencer", "Quel contenu dois-je terminer avant de démarrer une nouvelle idée ?"],
+          ["Structurer une idée", "Aide-moi à transformer mon idée la plus importante en projet concret."]
+        ],
+        "templates": ["Vidéo YouTube", "Newsletter", "Épisode de podcast", "Formation en ligne"]
+      },
+      "life": {
+        "name": "Σ Life",
+        "short": "Vie",
+        "promise": "Priorités personnelles, budget, habitudes, bien-être et réflexion réunis.",
+        "hero": "Rendez la vie quotidienne plus claire sans en faire un second travail.",
+        "nav": {
+          "tasks": "Tâches personnelles",
+          "planner": "Calendrier & habitudes",
+          "projects": "Projets de vie",
+          "finance": "Budget personnel",
+          "health": "Bien-être",
+          "learning": "Apprentissage"
+        },
+        "labels": {
+          "priority": "Priorité personnelle",
+          "essentials": "3 essentiels du jour",
+          "habits": "Rythme quotidien",
+          "focus": "Focus de vie proposé par Σ"
+        },
+        "kpis": ["Tâches ouvertes", "Habitudes réalisées", "Solde du mois", "Énergie du jour"],
+        "coachWelcome": "Je peux vous aider à simplifier la journée, revoir vos habitudes et votre budget, avancer un projet personnel et clarifier une réflexion.",
+        "prompts": [
+          [
+            "Simplifier ma journée",
+            "Aide-moi à réduire la journée à trois priorités personnelles réalistes."
+          ],
+          ["Revoir mes habitudes", "Quel schéma apparaît dans mes habitudes et mon énergie ?"],
+          [
+            "Préparer ma semaine",
+            "Prépare un plan équilibré sur sept jours à partir de mes tâches, événements et objectifs."
+          ]
+        ],
+        "templates": ["Déménagement", "Réorganisation personnelle", "Achat important", "Objectif annuel"]
+      },
+      "nomad": {
+        "name": "Σ Nomad",
+        "short": "Nomade",
+        "promise": "Projets transfrontaliers, documents, devises, langues et déplacements réunis.",
+        "hero": "Restez organisé quand les lieux, les langues et les contextes administratifs changent.",
+        "nav": {
+          "tasks": "Actions ouvertes",
+          "planner": "Calendrier de mobilité",
+          "projects": "Mobilité & projets",
+          "finance": "Budget mobilité",
+          "health": "Énergie en déplacement",
+          "learning": "Langues"
+        },
+        "labels": {
+          "priority": "Priorité de mobilité",
+          "essentials": "3 actions essentielles",
+          "habits": "Rythme nomade",
+          "focus": "Focus nomade proposé par Σ"
+        },
+        "kpis": ["Actions ouvertes", "Événements à venir", "Solde du mois", "Progression linguistique"],
+        "coachWelcome": "Je peux vous aider à préparer un déplacement, repérer les échéances administratives, organiser le travail multilingue et revoir les dépenses.",
+        "prompts": [
+          [
+            "Préparer mon prochain déplacement",
+            "Construis un plan de préparation sur sept jours pour mon prochain déplacement ou changement de lieu."
+          ],
+          [
+            "Vérifier l’administratif urgent",
+            "Quelle tâche ou échéance administrative dois-je traiter en premier ?"
+          ],
+          [
+            "Revoir mes dépenses de mobilité",
+            "Analyse mes dépenses actuelles et mes événements des trente prochains jours."
+          ]
+        ],
+        "templates": [
+          "Séjour prolongé",
+          "Renouvellement de document",
+          "Installation dans un pays",
+          "Sprint linguistique"
+        ]
+      }
+    },
+    "de": {
+      "student": {
+        "name": "Σ Student",
+        "short": "Studium",
+        "promise": "Kurse, Prüfungen, Lerngewohnheiten und Budget in einem ruhigen Studien-Cockpit.",
+        "hero": "Schützen Sie das nächste Studienergebnis, ohne Ihre Energie zu verlieren.",
+        "nav": {
+          "tasks": "Aufgaben",
+          "planner": "Lernkalender",
+          "projects": "Studienprojekte",
+          "finance": "Studienbudget",
+          "health": "Energie",
+          "learning": "Fächer"
+        },
+        "labels": {
+          "priority": "Nächste Studienpriorität",
+          "essentials": "3 Lernschwerpunkte",
+          "habits": "Lernrhythmus",
+          "focus": "Lernfokus von Σ"
+        },
+        "kpis": [
+          "Offene Aufgaben",
+          "Kommende Termine",
+          "Lerngewohnheiten heute",
+          "Durchschnittlicher Fortschritt"
+        ],
+        "coachWelcome": "Ich helfe bei Lernprioritäten, Prüfungswochen, Wiederholungsplänen und einem realistischen Energieeinsatz.",
+        "prompts": [
+          [
+            "Lernwoche planen",
+            "Erstelle einen realistischen Sieben-Tage-Lernplan aus Aufgaben, Terminen und Lernzielen."
+          ],
+          ["Fach für heute wählen", "Welches Fach oder welche Aufgabe sollte ich heute priorisieren?"],
+          ["Rückstand aufholen", "Hilf mir, Studienrückstände ohne Überlastung aufzuholen."]
+        ],
+        "templates": ["Prüfungsvorbereitung", "Abschlussarbeit", "Sprachenlernen", "Hochschulbewerbung"]
+      },
+      "solo": {
+        "name": "Σ Solo & Micro",
+        "short": "Solo & Micro",
+        "promise": "Projekte, Cashflow, Kundentermine und Energie für Selbstständige.",
+        "hero": "Steuern Sie das Geschäft und schützen Sie die Person, die es trägt.",
+        "nav": {
+          "tasks": "Prioritäten",
+          "planner": "Kalender & Rhythmus",
+          "projects": "Kunden & Projekte",
+          "finance": "Cashflow",
+          "health": "Energie",
+          "learning": "Kompetenzen"
+        },
+        "labels": {
+          "priority": "Geschäftspriorität",
+          "essentials": "3 Business-Schwerpunkte",
+          "habits": "Arbeitsrhythmus",
+          "focus": "Business-Fokus von Σ"
+        },
+        "kpis": ["Offene Prioritäten", "Aktive Projekte", "Monatssaldo", "Energie heute"],
+        "coachWelcome": "Ich verbinde Kundenarbeit, Fristen, Cashflow und Energie, um die nächste sinnvolle Aktion zu wählen.",
+        "prompts": [
+          [
+            "Arbeitstag organisieren",
+            "Organisiere meinen Arbeitstag nach Kundennutzen, Fristen und Energie."
+          ],
+          ["Cashflow prüfen", "Was zeigt mein aktueller Cashflow und was sollte ich zuerst prüfen?"],
+          [
+            "Kundenprojekt lösen",
+            "Welches aktive Projekt wirkt blockiert und was ist der kleinste nächste Schritt?"
+          ]
+        ],
+        "templates": ["Kundenauftrag", "Service-Launch", "Vertriebskampagne", "Monatsreview"]
+      },
+      "creator": {
+        "name": "Σ Creator",
+        "short": "Creator",
+        "promise": "Ideen, Produktion, Veröffentlichungsrhythmus und Creator-Einnahmen an einem Ort.",
+        "hero": "Machen Sie aus Ideen fertige Inhalte statt einen immer längeren Rückstand.",
+        "nav": {
+          "tasks": "Produktion",
+          "planner": "Redaktionskalender",
+          "projects": "Content-Projekte",
+          "finance": "Creator-Einnahmen",
+          "health": "Kreative Energie",
+          "learning": "Kreative Skills"
+        },
+        "labels": {
+          "priority": "Content-Priorität",
+          "essentials": "3 Produktionsschwerpunkte",
+          "habits": "Kreativer Rhythmus",
+          "focus": "Kreativfokus von Σ"
+        },
+        "kpis": ["Offene Ideen", "Content-Projekte", "Publikationsgewohnheiten", "Monatssaldo"],
+        "coachWelcome": "Ich helfe, Inhalte abzuschließen, Ideen zu strukturieren, den Publikationsrhythmus zu schützen und Einnahmen zu prüfen.",
+        "prompts": [
+          [
+            "Content-Woche planen",
+            "Erstelle einen Sieben-Tage-Contentplan aus Projekten, Aufgaben und Kalender."
+          ],
+          ["Erst abschließen", "Welchen Inhalt sollte ich abschließen, bevor ich etwas Neues starte?"],
+          ["Idee strukturieren", "Verwandle meine wichtigste Idee in ein konkretes Projekt."]
+        ],
+        "templates": ["YouTube-Video", "Newsletter", "Podcast-Folge", "Onlinekurs"]
+      },
+      "life": {
+        "name": "Σ Life",
+        "short": "Leben",
+        "promise": "Persönliche Prioritäten, Budget, Gewohnheiten, Wohlbefinden und Reflexion zusammen.",
+        "hero": "Machen Sie den Alltag klarer, ohne daraus einen zweiten Job zu machen.",
+        "nav": {
+          "tasks": "Persönliche Aufgaben",
+          "planner": "Kalender & Gewohnheiten",
+          "projects": "Lebensprojekte",
+          "finance": "Privatbudget",
+          "health": "Wohlbefinden",
+          "learning": "Lernen"
+        },
+        "labels": {
+          "priority": "Persönliche Priorität",
+          "essentials": "3 Schwerpunkte heute",
+          "habits": "Tagesrhythmus",
+          "focus": "Lebensfokus von Σ"
+        },
+        "kpis": ["Offene Aufgaben", "Erledigte Gewohnheiten", "Monatssaldo", "Energie heute"],
+        "coachWelcome": "Ich helfe, den Tag zu vereinfachen, Gewohnheiten und Budget zu prüfen, ein persönliches Projekt voranzubringen und zu reflektieren.",
+        "prompts": [
+          ["Tag vereinfachen", "Reduziere meinen Tag auf drei realistische persönliche Prioritäten."],
+          ["Gewohnheiten prüfen", "Welches Muster zeigt sich in Gewohnheiten und Energie?"],
+          [
+            "Woche vorbereiten",
+            "Erstelle einen ausgewogenen Sieben-Tage-Plan aus Aufgaben, Terminen und Zielen."
+          ]
+        ],
+        "templates": ["Umzug", "Persönlicher Neustart", "Großer Kauf", "Jahresziel"]
+      },
+      "nomad": {
+        "name": "Σ Nomad",
+        "short": "Nomad",
+        "promise": "Grenzüberschreitende Projekte, Dokumente, Währungen, Sprachen und Reisen zusammen.",
+        "hero": "Bleiben Sie organisiert, wenn Orte, Sprachen und Verwaltungskontexte wechseln.",
+        "nav": {
+          "tasks": "Offene Aktionen",
+          "planner": "Reisekalender",
+          "projects": "Mobilität & Projekte",
+          "finance": "Reisebudget",
+          "health": "Reiseenergie",
+          "learning": "Sprachen"
+        },
+        "labels": {
+          "priority": "Mobilitätspriorität",
+          "essentials": "3 wichtige Aktionen",
+          "habits": "Nomadenrhythmus",
+          "focus": "Nomadenfokus von Σ"
+        },
+        "kpis": ["Offene Aktionen", "Kommende Termine", "Monatssaldo", "Sprachfortschritt"],
+        "coachWelcome": "Ich helfe bei Reisen, Verwaltungsfristen, mehrsprachiger Arbeit und der Übersicht über Mobilitätskosten.",
+        "prompts": [
+          [
+            "Nächsten Ortswechsel planen",
+            "Erstelle einen Sieben-Tage-Plan für meinen nächsten Ortswechsel oder meine Reise."
+          ],
+          [
+            "Dringende Verwaltung prüfen",
+            "Welche administrative Aufgabe oder Frist sollte ich zuerst erledigen?"
+          ],
+          ["Reisekosten prüfen", "Analysiere meine Ausgaben und Termine der nächsten 30 Tage."]
+        ],
+        "templates": ["Langzeitaufenthalt", "Dokumentverlängerung", "Umzug ins Ausland", "Sprachsprint"]
+      }
+    },
+    "es": {
+      "student": {
+        "name": "Σ Student",
+        "short": "Estudiante",
+        "promise": "Cursos, exámenes, hábitos de estudio y presupuesto en un cockpit académico tranquilo.",
+        "hero": "Protege el próximo resultado académico sin agotar tu energía.",
+        "nav": {
+          "tasks": "Tareas académicas",
+          "planner": "Calendario de estudio",
+          "projects": "Trabajos académicos",
+          "finance": "Presupuesto estudiantil",
+          "health": "Energía",
+          "learning": "Materias"
+        },
+        "labels": {
+          "priority": "Prioridad académica",
+          "essentials": "3 esenciales de estudio",
+          "habits": "Ritmo de estudio",
+          "focus": "Foco de estudio de Σ"
+        },
+        "kpis": ["Tareas abiertas", "Eventos próximos", "Hábitos de hoy", "Progreso medio"],
+        "coachWelcome": "Puedo ayudarte a elegir qué estudiar, planificar exámenes, organizar repasos y proteger tu energía.",
+        "prompts": [
+          [
+            "Planificar mis repasos",
+            "Crea un plan realista de siete días con mis tareas, eventos y objetivos de aprendizaje."
+          ],
+          ["Elegir materia de hoy", "¿Qué materia o tarea debo priorizar hoy?"],
+          ["Ponerme al día", "Ayúdame a recuperar tareas atrasadas sin sobrecargar el día."]
+        ],
+        "templates": [
+          "Preparación de examen",
+          "Trabajo final",
+          "Aprendizaje de idiomas",
+          "Solicitud universitaria"
+        ]
+      },
+      "solo": {
+        "name": "Σ Solo & Micro",
+        "short": "Solo & Micro",
+        "promise": "Proyectos, flujo de caja, plazos de clientes y energía para profesionales independientes.",
+        "hero": "Dirige el negocio sin descuidar a la persona que hace el trabajo.",
+        "nav": {
+          "tasks": "Prioridades",
+          "planner": "Calendario y ritmo",
+          "projects": "Clientes y proyectos",
+          "finance": "Flujo de caja",
+          "health": "Energía",
+          "learning": "Competencias"
+        },
+        "labels": {
+          "priority": "Prioridad comercial",
+          "essentials": "3 esenciales de negocio",
+          "habits": "Ritmo de trabajo",
+          "focus": "Foco de negocio de Σ"
+        },
+        "kpis": ["Prioridades abiertas", "Proyectos activos", "Saldo mensual", "Energía de hoy"],
+        "coachWelcome": "Puedo conectar clientes, plazos, flujo de caja y energía para elegir la siguiente acción útil.",
+        "prompts": [
+          ["Organizar mi jornada", "Organiza mi jornada según impacto en clientes, plazos y energía actual."],
+          ["Revisar mi caja", "¿Qué muestra mi flujo de caja y qué debo revisar primero?"],
+          [
+            "Desbloquear un proyecto",
+            "¿Qué proyecto activo parece bloqueado y cuál es su siguiente paso mínimo?"
+          ]
+        ],
+        "templates": ["Misión de cliente", "Lanzamiento de servicio", "Campaña comercial", "Revisión mensual"]
+      },
+      "creator": {
+        "name": "Σ Creator",
+        "short": "Creador",
+        "promise": "Ideas, producción, ritmo de publicación e ingresos creativos en un solo espacio.",
+        "hero": "Convierte ideas capturadas en contenido terminado, no en una lista infinita.",
+        "nav": {
+          "tasks": "Producción",
+          "planner": "Calendario editorial",
+          "projects": "Proyectos de contenido",
+          "finance": "Ingresos creativos",
+          "health": "Energía creativa",
+          "learning": "Habilidades creativas"
+        },
+        "labels": {
+          "priority": "Prioridad de contenido",
+          "essentials": "3 esenciales de producción",
+          "habits": "Ritmo creativo",
+          "focus": "Foco creativo de Σ"
+        },
+        "kpis": ["Ideas pendientes", "Proyectos de contenido", "Hábitos de publicación", "Saldo mensual"],
+        "coachWelcome": "Puedo ayudarte a terminar contenido, estructurar ideas, proteger el ritmo de publicación y revisar ingresos.",
+        "prompts": [
+          [
+            "Planificar mi semana de contenido",
+            "Crea un plan de contenido de siete días con mis proyectos, tareas y calendario."
+          ],
+          ["Terminar antes de empezar", "¿Qué contenido debo terminar antes de iniciar algo nuevo?"],
+          ["Estructurar una idea", "Ayúdame a convertir mi idea principal en un proyecto concreto."]
+        ],
+        "templates": ["Vídeo de YouTube", "Newsletter", "Podcast", "Curso online"]
+      },
+      "life": {
+        "name": "Σ Life",
+        "short": "Vida",
+        "promise": "Prioridades personales, presupuesto, hábitos, bienestar y reflexión juntos.",
+        "hero": "Aclara la vida diaria sin convertirla en otro trabajo.",
+        "nav": {
+          "tasks": "Tareas personales",
+          "planner": "Calendario y hábitos",
+          "projects": "Proyectos de vida",
+          "finance": "Presupuesto personal",
+          "health": "Bienestar",
+          "learning": "Aprendizaje"
+        },
+        "labels": {
+          "priority": "Prioridad personal",
+          "essentials": "3 esenciales de hoy",
+          "habits": "Ritmo diario",
+          "focus": "Foco de vida de Σ"
+        },
+        "kpis": ["Tareas abiertas", "Hábitos completados", "Saldo mensual", "Energía de hoy"],
+        "coachWelcome": "Puedo ayudarte a simplificar el día, revisar hábitos y presupuesto, avanzar proyectos personales y reflexionar.",
+        "prompts": [
+          ["Simplificar mi día", "Ayúdame a reducir el día a tres prioridades personales realistas."],
+          ["Revisar mis hábitos", "¿Qué patrón aparece en mis hábitos y energía?"],
+          [
+            "Preparar mi semana",
+            "Prepara un plan equilibrado de siete días con mis tareas, eventos y objetivos."
+          ]
+        ],
+        "templates": ["Mudanza", "Reinicio personal", "Compra importante", "Objetivo anual"]
+      },
+      "nomad": {
+        "name": "Σ Nomad",
+        "short": "Nómada",
+        "promise": "Proyectos internacionales, documentos, monedas, idiomas y viajes en un solo lugar.",
+        "hero": "Mantén el control cuando cambian lugares, idiomas y contextos administrativos.",
+        "nav": {
+          "tasks": "Acciones abiertas",
+          "planner": "Calendario de movilidad",
+          "projects": "Movilidad y proyectos",
+          "finance": "Presupuesto de viaje",
+          "health": "Energía en viaje",
+          "learning": "Idiomas"
+        },
+        "labels": {
+          "priority": "Prioridad de movilidad",
+          "essentials": "3 acciones esenciales",
+          "habits": "Ritmo nómada",
+          "focus": "Foco nómada de Σ"
+        },
+        "kpis": ["Acciones abiertas", "Eventos próximos", "Saldo mensual", "Progreso lingüístico"],
+        "coachWelcome": "Puedo ayudarte a preparar traslados, detectar plazos administrativos, organizar trabajo multilingüe y revisar gastos.",
+        "prompts": [
+          ["Preparar mi próximo traslado", "Crea un plan de siete días para mi próximo traslado o viaje."],
+          ["Revisar administración urgente", "¿Qué tarea o plazo administrativo debo atender primero?"],
+          ["Revisar gastos de movilidad", "Analiza mis gastos y eventos de los próximos 30 días."]
+        ],
+        "templates": [
+          "Estancia larga",
+          "Renovación de documentos",
+          "Mudanza internacional",
+          "Sprint de idioma"
+        ]
+      }
+    }
+  },
+  "demo": {
+    "en": {
+      "student": {
+        "tasks": [
+          "Revise statistics chapter 4",
+          "Submit the research essay",
+          "Prepare scholarship documents",
+          "Find two sources for the thesis"
+        ],
+        "project": [
+          "Complete the dissertation outline",
+          "Define the research question",
+          "Draft the chapter structure"
+        ],
+        "income": "Monthly student allowance",
+        "expense": "Course books",
+        "journal": "The workload feels clearer when I study one subject at a time.",
+        "gratitude": "A quiet place to study.",
+        "skill": "German conversation",
+        "goals": [
+          "Finish two revision blocks",
+          "Submit the essay",
+          "Complete exam preparation",
+          "Improve German speaking",
+          "Keep a stable sleep rhythm"
+        ],
+        "events": ["Statistics exam", "Study group"]
+      },
+      "solo": {
+        "tasks": [
+          "Send the client proposal",
+          "Prepare the weekly review",
+          "Reconcile business expenses",
+          "Explore a launch campaign"
+        ],
+        "project": ["Launch the new consulting offer", "Clarify the promise", "Publish the sales page"],
+        "income": "Client payment",
+        "expense": "Professional tools",
+        "journal": "The week is busy, but the priorities are becoming clearer.",
+        "gratitude": "A client recommendation.",
+        "skill": "German for business",
+        "goals": [
+          "Finish the sales page",
+          "Test the Premium journey",
+          "Publish Σ",
+          "Reach 20 active users",
+          "Protect a weekly review"
+        ],
+        "events": ["Beta user interview", "Weekly personal review"]
+      },
+      "creator": {
+        "tasks": [
+          "Publish the Friday newsletter",
+          "Edit the short video",
+          "Send the sponsor proposal",
+          "Capture an idea about creator routines"
+        ],
+        "project": [
+          "Produce the first podcast mini-series",
+          "Define the episode promise",
+          "Record episode one"
+        ],
+        "income": "Content partnership",
+        "expense": "Editing software",
+        "journal": "Finishing one piece before opening another protects creative momentum.",
+        "gratitude": "A thoughtful reader reply.",
+        "skill": "Storytelling",
+        "goals": [
+          "Publish two pieces",
+          "Record one episode",
+          "Launch the mini-series",
+          "Grow the newsletter",
+          "Protect three deep-work blocks"
+        ],
+        "events": ["Recording session", "Newsletter deadline"]
+      },
+      "life": {
+        "tasks": [
+          "Review the household budget",
+          "Organise important documents",
+          "Plan the weekend meal list",
+          "Capture an idea for the living room"
+        ],
+        "project": ["Create a calmer home workspace", "Choose the layout", "Set up the first zone"],
+        "income": "Monthly income",
+        "expense": "Household purchase",
+        "journal": "A shorter list makes the day feel more manageable.",
+        "gratitude": "A calm evening at home.",
+        "skill": "Personal finance basics",
+        "goals": [
+          "Complete the document review",
+          "Walk three times",
+          "Create the new workspace",
+          "Save for an important purchase",
+          "Keep a weekly reflection"
+        ],
+        "events": ["Family appointment", "Monthly budget review"]
+      },
+      "nomad": {
+        "tasks": [
+          "Renew travel insurance",
+          "Confirm the next accommodation",
+          "Scan residence documents",
+          "Compare train routes"
+        ],
+        "project": [
+          "Prepare the Berlin–Lisbon move",
+          "Confirm the document list",
+          "Book the first travel segment"
+        ],
+        "income": "Remote client income",
+        "expense": "Travel booking",
+        "journal": "Mobility feels easier when documents and deadlines are visible.",
+        "gratitude": "The ability to work from different places.",
+        "skill": "Portuguese conversation",
+        "goals": [
+          "Complete the document checklist",
+          "Book the route",
+          "Move to Lisbon",
+          "Reach A2 Portuguese",
+          "Keep a travel budget review"
+        ],
+        "events": ["Insurance renewal", "Departure day"]
+      }
+    },
+    "fr": {
+      "student": {
+        "tasks": [
+          "Réviser le chapitre 4 de statistiques",
+          "Remettre le devoir de recherche",
+          "Préparer les documents de bourse",
+          "Trouver deux sources pour le mémoire"
+        ],
+        "project": [
+          "Finaliser le plan du mémoire",
+          "Définir la question de recherche",
+          "Structurer les chapitres"
+        ],
+        "income": "Budget étudiant mensuel",
+        "expense": "Livres de cours",
+        "journal": "La charge devient plus claire quand je travaille une matière à la fois.",
+        "gratitude": "Un endroit calme pour étudier.",
+        "skill": "Conversation allemande",
+        "goals": [
+          "Faire deux blocs de révision",
+          "Remettre le devoir",
+          "Préparer les examens",
+          "Améliorer mon allemand oral",
+          "Stabiliser mon sommeil"
+        ],
+        "events": ["Examen de statistiques", "Groupe d’étude"]
+      },
+      "solo": {
+        "tasks": [
+          "Envoyer la proposition client",
+          "Préparer la revue hebdomadaire",
+          "Rapprocher les dépenses professionnelles",
+          "Réfléchir à une campagne de lancement"
+        ],
+        "project": [
+          "Lancer la nouvelle offre de conseil",
+          "Clarifier la promesse",
+          "Publier la page de vente"
+        ],
+        "income": "Paiement client",
+        "expense": "Outils professionnels",
+        "journal": "La semaine est chargée, mais les priorités deviennent plus claires.",
+        "gratitude": "Une recommandation client.",
+        "skill": "Allemand professionnel",
+        "goals": [
+          "Finaliser la page de vente",
+          "Tester le parcours Premium",
+          "Publier Σ",
+          "Obtenir 20 utilisateurs actifs",
+          "Protéger la revue hebdomadaire"
+        ],
+        "events": ["Entretien bêta utilisateur", "Revue personnelle de la semaine"]
+      },
+      "creator": {
+        "tasks": [
+          "Publier la newsletter de vendredi",
+          "Monter la vidéo courte",
+          "Envoyer la proposition au sponsor",
+          "Capturer une idée sur les routines créatives"
+        ],
+        "project": [
+          "Produire la première mini-série de podcast",
+          "Définir la promesse des épisodes",
+          "Enregistrer le premier épisode"
+        ],
+        "income": "Partenariat de contenu",
+        "expense": "Logiciel de montage",
+        "journal": "Terminer un contenu avant d’en ouvrir un autre protège l’élan créatif.",
+        "gratitude": "La réponse attentive d’un lecteur.",
+        "skill": "Storytelling",
+        "goals": [
+          "Publier deux contenus",
+          "Enregistrer un épisode",
+          "Lancer la mini-série",
+          "Développer la newsletter",
+          "Protéger trois blocs de création"
+        ],
+        "events": ["Session d’enregistrement", "Échéance newsletter"]
+      },
+      "life": {
+        "tasks": [
+          "Revoir le budget du foyer",
+          "Organiser les documents importants",
+          "Planifier les repas du week-end",
+          "Capturer une idée pour le salon"
+        ],
+        "project": [
+          "Créer un espace de travail plus calme",
+          "Choisir l’aménagement",
+          "Installer la première zone"
+        ],
+        "income": "Revenu mensuel",
+        "expense": "Achat pour la maison",
+        "journal": "Une liste plus courte rend la journée plus facile à gérer.",
+        "gratitude": "Une soirée calme à la maison.",
+        "skill": "Bases des finances personnelles",
+        "goals": [
+          "Terminer le tri des documents",
+          "Marcher trois fois",
+          "Créer le nouvel espace",
+          "Épargner pour un achat important",
+          "Garder une réflexion hebdomadaire"
+        ],
+        "events": ["Rendez-vous familial", "Revue mensuelle du budget"]
+      },
+      "nomad": {
+        "tasks": [
+          "Renouveler l’assurance voyage",
+          "Confirmer le prochain logement",
+          "Scanner les documents de résidence",
+          "Comparer les itinéraires en train"
+        ],
+        "project": [
+          "Préparer le déplacement Berlin–Lisbonne",
+          "Confirmer la liste des documents",
+          "Réserver le premier trajet"
+        ],
+        "income": "Revenu client à distance",
+        "expense": "Réservation de voyage",
+        "journal": "La mobilité devient plus simple quand les documents et les échéances sont visibles.",
+        "gratitude": "La possibilité de travailler depuis plusieurs lieux.",
+        "skill": "Conversation portugaise",
+        "goals": [
+          "Terminer la checklist documentaire",
+          "Réserver le trajet",
+          "S’installer à Lisbonne",
+          "Atteindre le niveau A2 en portugais",
+          "Garder une revue du budget mobilité"
+        ],
+        "events": ["Renouvellement de l’assurance", "Jour du départ"]
+      }
+    },
+    "de": {
+      "student": {
+        "tasks": [
+          "Statistik Kapitel 4 wiederholen",
+          "Forschungsarbeit abgeben",
+          "Stipendienunterlagen vorbereiten",
+          "Zwei Quellen für die Abschlussarbeit finden"
+        ],
+        "project": [
+          "Gliederung der Abschlussarbeit abschließen",
+          "Forschungsfrage definieren",
+          "Kapitel strukturieren"
+        ],
+        "income": "Monatliches Studienbudget",
+        "expense": "Fachbücher",
+        "journal": "Die Arbeitslast wird klarer, wenn ich jeweils ein Fach bearbeite.",
+        "gratitude": "Ein ruhiger Lernort.",
+        "skill": "Deutsche Konversation",
+        "goals": [
+          "Zwei Lernblöcke abschließen",
+          "Arbeit abgeben",
+          "Prüfung vorbereiten",
+          "Mündliches Deutsch verbessern",
+          "Schlafrhythmus stabilisieren"
+        ],
+        "events": ["Statistikprüfung", "Lerngruppe"]
+      },
+      "solo": {
+        "tasks": [
+          "Kundenangebot senden",
+          "Wochenreview vorbereiten",
+          "Geschäftsausgaben abgleichen",
+          "Launch-Kampagne prüfen"
+        ],
+        "project": ["Neues Beratungsangebot starten", "Versprechen klären", "Verkaufsseite veröffentlichen"],
+        "income": "Kundenzahlung",
+        "expense": "Berufliche Tools",
+        "journal": "Die Woche ist voll, aber die Prioritäten werden klarer.",
+        "gratitude": "Eine Kundenempfehlung.",
+        "skill": "Business-Deutsch",
+        "goals": [
+          "Verkaufsseite fertigstellen",
+          "Premium-Ablauf testen",
+          "Σ veröffentlichen",
+          "20 aktive Nutzer erreichen",
+          "Wochenreview schützen"
+        ],
+        "events": ["Beta-Interview", "Persönliches Wochenreview"]
+      },
+      "creator": {
+        "tasks": [
+          "Freitags-Newsletter veröffentlichen",
+          "Kurzvideo schneiden",
+          "Sponsor-Angebot senden",
+          "Idee zu Creator-Routinen erfassen"
+        ],
+        "project": [
+          "Erste Podcast-Miniserie produzieren",
+          "Episodenversprechen definieren",
+          "Erste Folge aufnehmen"
+        ],
+        "income": "Content-Partnerschaft",
+        "expense": "Schnittsoftware",
+        "journal": "Ein Werk abzuschließen schützt den kreativen Schwung.",
+        "gratitude": "Eine aufmerksame Leserantwort.",
+        "skill": "Storytelling",
+        "goals": [
+          "Zwei Inhalte veröffentlichen",
+          "Eine Folge aufnehmen",
+          "Miniserie starten",
+          "Newsletter ausbauen",
+          "Drei Fokusblöcke schützen"
+        ],
+        "events": ["Aufnahmesession", "Newsletter-Frist"]
+      },
+      "life": {
+        "tasks": [
+          "Haushaltsbudget prüfen",
+          "Wichtige Dokumente ordnen",
+          "Wochenendessen planen",
+          "Wohnzimmeridee erfassen"
+        ],
+        "project": ["Ruhigeren Arbeitsplatz schaffen", "Layout wählen", "Erste Zone einrichten"],
+        "income": "Monatliches Einkommen",
+        "expense": "Haushaltskauf",
+        "journal": "Eine kürzere Liste macht den Tag übersichtlicher.",
+        "gratitude": "Ein ruhiger Abend zu Hause.",
+        "skill": "Grundlagen privater Finanzen",
+        "goals": [
+          "Dokumente abschließen",
+          "Dreimal spazieren",
+          "Neuen Arbeitsplatz schaffen",
+          "Für einen Kauf sparen",
+          "Wöchentlich reflektieren"
+        ],
+        "events": ["Familientermin", "Monatliches Budgetreview"]
+      },
+      "nomad": {
+        "tasks": [
+          "Reiseversicherung verlängern",
+          "Nächste Unterkunft bestätigen",
+          "Aufenthaltsdokumente scannen",
+          "Zugrouten vergleichen"
+        ],
+        "project": ["Umzug Berlin–Lissabon vorbereiten", "Dokumentenliste bestätigen", "Erste Reise buchen"],
+        "income": "Remote-Kundeneinkommen",
+        "expense": "Reisebuchung",
+        "journal": "Mobilität wird leichter, wenn Dokumente und Fristen sichtbar sind.",
+        "gratitude": "Von verschiedenen Orten arbeiten zu können.",
+        "skill": "Portugiesische Konversation",
+        "goals": [
+          "Dokumentenliste abschließen",
+          "Route buchen",
+          "Nach Lissabon ziehen",
+          "Portugiesisch A2 erreichen",
+          "Reisebudget prüfen"
+        ],
+        "events": ["Versicherungsverlängerung", "Abreisetag"]
+      }
+    },
+    "es": {
+      "student": {
+        "tasks": [
+          "Repasar el capítulo 4 de estadística",
+          "Entregar el trabajo de investigación",
+          "Preparar documentos de beca",
+          "Encontrar dos fuentes para la tesis"
+        ],
+        "project": [
+          "Finalizar el esquema de la tesis",
+          "Definir la pregunta de investigación",
+          "Estructurar los capítulos"
+        ],
+        "income": "Presupuesto estudiantil mensual",
+        "expense": "Libros del curso",
+        "journal": "La carga resulta más clara cuando trabajo una materia cada vez.",
+        "gratitude": "Un lugar tranquilo para estudiar.",
+        "skill": "Conversación en alemán",
+        "goals": [
+          "Completar dos bloques de estudio",
+          "Entregar el trabajo",
+          "Preparar el examen",
+          "Mejorar el alemán oral",
+          "Estabilizar el sueño"
+        ],
+        "events": ["Examen de estadística", "Grupo de estudio"]
+      },
+      "solo": {
+        "tasks": [
+          "Enviar la propuesta al cliente",
+          "Preparar la revisión semanal",
+          "Conciliar gastos profesionales",
+          "Explorar una campaña de lanzamiento"
+        ],
+        "project": [
+          "Lanzar la nueva oferta de consultoría",
+          "Aclarar la promesa",
+          "Publicar la página de venta"
+        ],
+        "income": "Pago de cliente",
+        "expense": "Herramientas profesionales",
+        "journal": "La semana está llena, pero las prioridades son más claras.",
+        "gratitude": "Una recomendación de cliente.",
+        "skill": "Alemán profesional",
+        "goals": [
+          "Finalizar la página de venta",
+          "Probar el recorrido Premium",
+          "Publicar Σ",
+          "Llegar a 20 usuarios activos",
+          "Proteger la revisión semanal"
+        ],
+        "events": ["Entrevista beta", "Revisión personal semanal"]
+      },
+      "creator": {
+        "tasks": [
+          "Publicar la newsletter del viernes",
+          "Editar el vídeo corto",
+          "Enviar la propuesta al patrocinador",
+          "Capturar una idea sobre rutinas creativas"
+        ],
+        "project": [
+          "Producir la primera miniserie de podcast",
+          "Definir la promesa de los episodios",
+          "Grabar el primer episodio"
+        ],
+        "income": "Colaboración de contenido",
+        "expense": "Software de edición",
+        "journal": "Terminar una pieza antes de abrir otra protege el impulso creativo.",
+        "gratitude": "La respuesta atenta de un lector.",
+        "skill": "Storytelling",
+        "goals": [
+          "Publicar dos contenidos",
+          "Grabar un episodio",
+          "Lanzar la miniserie",
+          "Hacer crecer la newsletter",
+          "Proteger tres bloques creativos"
+        ],
+        "events": ["Sesión de grabación", "Fecha límite de newsletter"]
+      },
+      "life": {
+        "tasks": [
+          "Revisar el presupuesto del hogar",
+          "Organizar documentos importantes",
+          "Planificar comidas del fin de semana",
+          "Capturar una idea para el salón"
+        ],
+        "project": [
+          "Crear un espacio de trabajo más tranquilo",
+          "Elegir la distribución",
+          "Montar la primera zona"
+        ],
+        "income": "Ingreso mensual",
+        "expense": "Compra del hogar",
+        "journal": "Una lista más corta hace que el día sea más manejable.",
+        "gratitude": "Una tarde tranquila en casa.",
+        "skill": "Finanzas personales básicas",
+        "goals": [
+          "Terminar la revisión de documentos",
+          "Caminar tres veces",
+          "Crear el nuevo espacio",
+          "Ahorrar para una compra",
+          "Mantener una reflexión semanal"
+        ],
+        "events": ["Cita familiar", "Revisión mensual del presupuesto"]
+      },
+      "nomad": {
+        "tasks": [
+          "Renovar el seguro de viaje",
+          "Confirmar el próximo alojamiento",
+          "Escanear documentos de residencia",
+          "Comparar rutas de tren"
+        ],
+        "project": [
+          "Preparar el traslado Berlín–Lisboa",
+          "Confirmar la lista de documentos",
+          "Reservar el primer trayecto"
+        ],
+        "income": "Ingreso de cliente remoto",
+        "expense": "Reserva de viaje",
+        "journal": "La movilidad es más fácil cuando documentos y plazos son visibles.",
+        "gratitude": "Poder trabajar desde distintos lugares.",
+        "skill": "Conversación en portugués",
+        "goals": [
+          "Completar la lista documental",
+          "Reservar la ruta",
+          "Mudarse a Lisboa",
+          "Alcanzar portugués A2",
+          "Mantener revisión de presupuesto"
+        ],
+        "events": ["Renovación del seguro", "Día de salida"]
+      }
+    }
+  }
+}

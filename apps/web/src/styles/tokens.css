@@ -1,0 +1,144 @@
+:root {
+  color-scheme: light;
+  --font:
+    'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  --bg: #f6f7fb;
+  --surface: #ffffff;
+  --surface-2: #f1f3f8;
+  --border: #e3e6ef;
+  --text: #151827;
+  --text-2: #4a5068;
+  --muted: #5f657c;
+  --accent: #4f46e5;
+  --accent-soft: #eef0ff;
+  --accent-text: #ffffff;
+  --good: #117a4b;
+  --good-soft: #e6f6ee;
+  --warn: #9a5b00;
+  --warn-soft: #fff3de;
+  --bad: #b42318;
+  --bad-soft: #fdecea;
+  --focus: #2563eb;
+  --shadow: 0 1px 2px rgb(16 24 40 / 6%), 0 1px 3px rgb(16 24 40 / 8%);
+  --shadow-lg: 0 12px 32px rgb(16 24 40 / 16%);
+
+  --radius: 14px;
+  --radius-sm: 9px;
+  --space: 16px;
+  --sidebar: 260px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #0f1222;
+    --surface: #171a2e;
+    --surface-2: #1f2338;
+    --border: #2b3050;
+    --text: #eef0fa;
+    --text-2: #c3c7dc;
+    --muted: #9aa0bb;
+    --accent: #8b85ff;
+    --accent-soft: #25264a;
+    --accent-text: #0f1222;
+    --good: #4ade9a;
+    --good-soft: #143528;
+    --warn: #f7b955;
+    --warn-soft: #3a2d12;
+    --bad: #ff8a80;
+    --bad-soft: #3d1a1a;
+    --focus: #93b4ff;
+    --shadow: 0 1px 2px rgb(0 0 0 / 40%);
+    --shadow-lg: 0 16px 40px rgb(0 0 0 / 55%);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0f1222;
+  --surface: #171a2e;
+  --surface-2: #1f2338;
+  --border: #2b3050;
+  --text: #eef0fa;
+  --text-2: #c3c7dc;
+  --muted: #9aa0bb;
+  --accent: #8b85ff;
+  --accent-soft: #25264a;
+  --accent-text: #0f1222;
+  --good: #4ade9a;
+  --good-soft: #143528;
+  --warn: #f7b955;
+  --warn-soft: #3a2d12;
+  --bad: #ff8a80;
+  --bad-soft: #3d1a1a;
+  --focus: #93b4ff;
+  --shadow: 0 1px 2px rgb(0 0 0 / 40%);
+  --shadow-lg: 0 16px 40px rgb(0 0 0 / 55%);
+}
+
+/* Edition accents (light values; dark mode keeps a lighter variant of the same hue). */
+:root[data-edition='student'] {
+  --accent: #4f46e5;
+  --accent-soft: #eef0ff;
+}
+:root[data-edition='solo'] {
+  --accent: #066a74;
+  --accent-soft: #e5f6f7;
+}
+:root[data-edition='creator'] {
+  --accent: #9333ea;
+  --accent-soft: #f6ecff;
+}
+:root[data-edition='life'] {
+  --accent: #13703a;
+  --accent-soft: #e8f7ee;
+}
+:root[data-edition='nomad'] {
+  --accent: #c2410c;
+  --accent-soft: #fff0e6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light'])[data-edition='student'] {
+    --accent: #8b85ff;
+    --accent-soft: #25264a;
+  }
+  :root:not([data-theme='light'])[data-edition='solo'] {
+    --accent: #3fc6d3;
+    --accent-soft: #10323a;
+  }
+  :root:not([data-theme='light'])[data-edition='creator'] {
+    --accent: #c58bff;
+    --accent-soft: #2e1d44;
+  }
+  :root:not([data-theme='light'])[data-edition='life'] {
+    --accent: #5fd88c;
+    --accent-soft: #15331f;
+  }
+  :root:not([data-theme='light'])[data-edition='nomad'] {
+    --accent: #ff9a5c;
+    --accent-soft: #3a2213;
+  }
+}
+:root[data-theme='dark'][data-edition='student'] {
+  --accent: #8b85ff;
+  --accent-soft: #25264a;
+}
+:root[data-theme='dark'][data-edition='solo'] {
+  --accent: #3fc6d3;
+  --accent-soft: #10323a;
+}
+:root[data-theme='dark'][data-edition='creator'] {
+  --accent: #c58bff;
+  --accent-soft: #2e1d44;
+}
+:root[data-theme='dark'][data-edition='life'] {
+  --accent: #5fd88c;
+  --accent-soft: #15331f;
+}
+:root[data-theme='dark'][data-edition='nomad'] {
+  --accent: #ff9a5c;
+  --accent-soft: #3a2213;
+}

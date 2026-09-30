@@ -1,0 +1,108 @@
+rules_version = '2';
+
+// Σ Life OS — Firestore security rules.
+//
+// Principles
+// - Deny by default; every readable/writable path is listed explicitly.
+// - A user only ever touches documents under users/{their uid}.
+// - Cloud sync is a Pro feature: writes require a server-issued entitlement.
+// - Health records additionally require the user's recorded consent.
+// - Entitlements, connector credentials, OAuth states, rate limits and the
+//   audit log are written by Cloud Functions only (Admin SDK bypasses rules).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function entitlement(uid) {
+      return get(/databases/$(database)/documents/entitlements/$(uid)).data;
+    }
+
+    function isPro(uid) {
+      let e = entitlement(uid);
+      return exists(/databases/$(database)/documents/entitlements/$(uid))
+        && e.plan == 'pro'
+        && (e.status in ['active', 'on_trial', 'past_due']
+            || (e.status == 'cancelled' && e.validUntilTs != null && e.validUntilTs > request.time));
+    }
+
+    function healthConsented(uid) {
+      let path = /databases/$(database)/documents/users/$(uid)/meta/settings;
+      return exists(path) && get(path).data.consent.health != null;
+    }
+
+    // Collections the client may sync. Provider caches (mailMessages,
+    // socialItems) and the coach transcript are local-only by design.
+    function syncable(col) {
+      return col in [
+        'tasks', 'projects', 'finance', 'health', 'journal', 'skills', 'events',
+        'habits', 'habitLogs', 'goals', 'contacts', 'mailAccounts', 'socialAccounts',
+        'household', 'schoolItems', 'applications', 'checkins', 'feedback'
+      ];
+    }
+
+    function validRecord(docId) {
+      let d = request.resource.data;
+      return d.id == docId
+        && docId.size() > 0 && docId.size() <= 128
+        && d.createdAt is string && d.updatedAt is string
+        && d.updatedAt.size() <= 40
+        && (!('deletedAt' in d) || d.deletedAt == null || d.deletedAt is string)
+        && d.serverUpdatedAt == request.time
+        && d.keys().size() <= 60;
+    }
+
+    match /users/{uid} {
+      // The parent document itself is never written by clients.
+      allow read: if isOwner(uid);
+
+      match /meta/settings {
+        allow read: if isOwner(uid);
+        allow create, update: if isOwner(uid) && isPro(uid)
+          && request.resource.data.serverUpdatedAt == request.time
+          && request.resource.data.keys().size() <= 40;
+        allow delete: if false;
+      }
+
+      match /{col}/{docId} {
+        allow read: if isOwner(uid) && syncable(col);
+        allow create, update: if isOwner(uid) && syncable(col) && isPro(uid)
+          && validRecord(docId)
+          && (col != 'health' || healthConsented(uid));
+        // Deletions replicate as tombstones (deletedAt); hard deletes are server-side only.
+        allow delete: if false;
+      }
+    }
+
+    match /entitlements/{uid} {
+      allow read: if isOwner(uid);
+      allow write: if false;
+    }
+
+    match /private/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /oauthStates/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /rateLimits/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /auditLog/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "name": "sigma-life-os",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Σ Life OS — explainable personal decision layer (web PWA, Firebase backend, Capacitor mobile).",
+  "license": "UNLICENSED",
+  "workspaces": [
+    "apps/web",
+    "functions"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "npm run dev -w apps/web",
+    "build": "npm run build -w apps/web && npm run build -w functions",
+    "lint": "eslint . --max-warnings=0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "npm run typecheck -w apps/web && npm run typecheck -w functions",
+    "test": "npm run test -w apps/web && npm run test -w functions && node --test services/local-ai-gateway/server.test.mjs",
+    "test:e2e": "npm run test:e2e -w apps/web",
+    "test:rules": "firebase emulators:exec --only firestore,storage --project demo-sigma \"vitest run --config tests/rules/vitest.config.ts\"",
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run build",
+    "release:check": "node scripts/release-check.mjs",
+    "emulators": "firebase emulators:start --project demo-sigma",
+    "admin:grant": "node functions/scripts/set-admin.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.14.0",
+    "@firebase/rules-unit-testing": "^4.0.1",
+    "eslint": "^9.14.0",
+    "eslint-plugin-no-unsanitized": "^4.1.2",
+    "globals": "^15.12.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.13.0",
+    "vitest": "^2.1.4"
+  },
+  "allowScripts": {
+    "esbuild@0.21.5": true,
+    "protobufjs@7.6.6": true
+  }
+}

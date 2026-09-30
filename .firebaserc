@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "project-sum-b961a",
+    "staging": "project-sum-b961a-staging",
+    "demo": "demo-sigma"
+  }
+}

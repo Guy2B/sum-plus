@@ -1,0 +1,11 @@
+rules_version = '2';
+
+// Σ does not use Cloud Storage: backups go to the user's own Google Drive.
+// Everything is denied until a feature explicitly needs it.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

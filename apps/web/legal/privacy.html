@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+    <title>Politique de confidentialité — Σ Life OS</title>
+  </head>
+  <body class="site legal">
+    <header class="site-header">
+      <a class="brand" href="/"
+        ><span class="brand-mark" aria-hidden="true">Σ</span><strong>Σ Life OS</strong></a
+      >
+      <nav><a class="btn btn-primary btn-sm" href="/app.html">Ouvrir Σ</a></nav>
+    </header>
+    <main class="legal-body">
+      <h1>Politique de confidentialité</h1>
+      <p class="muted">Version 2.0 — en vigueur le <span data-legal="date"></span></p>
+
+      <h2>1. Responsable du traitement</h2>
+      <p>
+        <span data-legal="entity"></span>, <span data-legal="address"></span>. Contact :
+        <a data-legal="email-link"><span data-legal="email"></span></a>.
+      </p>
+
+      <h2>2. Principe : local d'abord</h2>
+      <p>
+        Σ Life OS fonctionne sans compte. Vos tâches, projets, agenda, journal, finances, données d'énergie et
+        historique du Coach sont enregistrés dans le stockage de votre navigateur (IndexedDB), sur votre
+        appareil. Sans compte, nous ne recevons aucune de ces données.
+      </p>
+
+      <h2>3. Données traitées lorsque vous créez un compte</h2>
+      <ul>
+        <li>
+          <strong>Identité de compte</strong> (Firebase Authentication, Google Cloud) : adresse e-mail, nom
+          affiché, identifiant technique. Finalité : authentification. Base légale : exécution du contrat.
+        </li>
+        <li>
+          <strong>Synchronisation (Pro, optionnelle)</strong> (Cloud Firestore, région europe-west1) : copies
+          de vos enregistrements pour les retrouver sur vos appareils. Activée uniquement par vous. Base
+          légale : exécution du contrat.
+        </li>
+        <li>
+          <strong>Abonnement</strong> : statut et date de fin de votre formule, transmis par notre prestataire
+          de paiement (Lemon Squeezy, marchand officiel). Nous ne recevons jamais vos données de carte. Base
+          légale : contrat et obligations comptables.
+        </li>
+        <li>
+          <strong>Journaux techniques</strong> : erreurs applicatives expurgées (sans e-mail, jeton ni
+          contenu), conservées 30 jours. Base légale : intérêt légitime (sécurité et fiabilité).
+        </li>
+      </ul>
+
+      <h2>4. Données de santé (catégorie particulière)</h2>
+      <p>
+        Le module Santé &amp; énergie traite des données de sommeil, d'activité et de ressenti uniquement
+        après votre <strong>consentement explicite et distinct</strong> (RGPD, art. 9-2-a). Sans ce
+        consentement, aucune donnée de santé n'est utilisée par les recommandations ni synchronisée. Vous
+        pouvez retirer ce consentement à tout moment depuis l'écran Santé ; les données de santé sont alors
+        supprimées. Σ ne pose aucun diagnostic et ne remplace pas un professionnel de santé.
+      </p>
+
+      <h2>5. Sources connectées</h2>
+      <ul>
+        <li>
+          <strong>Gmail, Google Agenda, YouTube, Google Drive</strong> et
+          <strong>Microsoft 365 / Outlook</strong> : l'accès se fait depuis votre navigateur avec un jeton
+          temporaire. Le contenu de vos messages et événements est traité sur votre appareil et
+          <strong>n'est pas transmis à nos serveurs</strong>. L'utilisation des données issues des API Google
+          respecte la
+          <a href="https://developers.google.com/terms/api-services-user-data-policy" rel="noopener"
+            >Google API Services User Data Policy</a
+          >, y compris les exigences d'utilisation limitée (Limited Use).
+        </li>
+        <li>
+          <strong>Boîtes IMAP</strong> (Yahoo, GMX, iCloud…) et <strong>LinkedIn, X, TikTok</strong> : ces
+          fournisseurs exigent un serveur. Vos identifiants (mot de passe d'application ou jetons OAuth) sont
+          chiffrés (AES-256-GCM) dans notre backend et servent uniquement à récupérer vos éléments récents,
+          qui vous sont renvoyés sans être conservés sur nos serveurs.
+        </li>
+        <li>
+          <strong>Apple Santé / Health Connect</strong> (applications mobiles) : lecture de résumés
+          quotidiens, après votre autorisation dans le système et votre consentement dans Σ.
+        </li>
+      </ul>
+
+      <h2>6. Intelligence artificielle</h2>
+      <p>
+        Le Coach est déterministe et s'exécute sur votre appareil. Les options d'IA (modèle sémantique local,
+        modèle intégré au navigateur, passerelle auto-hébergée) sont désactivées par défaut. Elles peuvent
+        seulement reformuler une réponse déjà calculée ; aucune donnée n'est envoyée à un fournisseur d'IA
+        tiers par défaut.
+      </p>
+
+      <h2>7. Sous-traitants</h2>
+      <ul>
+        <li>Google Cloud / Firebase : hébergement, authentification, base de données (Union européenne).</li>
+        <li>Lemon Squeezy : paiement, marchand officiel.</li>
+      </ul>
+
+      <h2>8. Durées de conservation</h2>
+      <p>
+        Données locales : jusqu'à ce que vous les supprimiez. Données synchronisées : pendant la durée du
+        compte, puis supprimées lors de la suppression du compte. Données d'abonnement : durée légale de
+        conservation comptable. États OAuth temporaires : moins d'une heure. Journaux techniques : 30 jours.
+      </p>
+
+      <h2>9. Vos droits</h2>
+      <p>
+        Accès, rectification, effacement, limitation, opposition et portabilité. Dans l'application,
+        <em>Compte → Données</em> permet d'exporter vos données (JSON), d'effacer l'appareil et de supprimer
+        définitivement votre compte cloud. Pour toute autre demande :
+        <a data-legal="email-link"><span data-legal="email"></span></a>. Vous pouvez saisir l'autorité de
+        contrôle compétente (en France : CNIL ; en Belgique : APD).
+      </p>
+
+      <h2>10. Sécurité</h2>
+      <p>
+        Chiffrement en transit (TLS), règles d'accès par utilisateur, App Check, chiffrement applicatif des
+        identifiants de connecteurs, politique de sécurité du contenu (CSP) stricte.
+      </p>
+    </main>
+    <footer class="site-footer">
+      <a href="/legal/terms.html">Conditions</a> · <a href="/legal/support.html">Support</a>
+    </footer>
+    <script type="module" src="/src/site/legal.ts"></script>
+  </body>
+</html>
