@@ -123,3 +123,12 @@ describe('decision memory', () => {
     expect(detectIntent('Why did you pick the report yesterday?')).toBe('memory');
   });
 });
+
+describe('local model output', () => {
+  it('drops inline reasoning from thinking models', async () => {
+    const { stripThinking } = await import('../src/services/llm');
+    expect(stripThinking('<think>hmm, let me see</think>\n{"kind":"task"}')).toBe('{"kind":"task"}');
+    expect(stripThinking('reasoning without opening tag</think>Bonjour')).toBe('Bonjour');
+    expect(stripThinking('Bonjour')).toBe('Bonjour');
+  });
+});

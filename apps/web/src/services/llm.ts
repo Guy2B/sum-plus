@@ -54,6 +54,13 @@ export async function testLocal(url: string, model: string): Promise<LocalTest> 
   }
 }
 
+export function stripThinking(text: string): string {
+  return text
+    .replace(/<think>[\s\S]*?<\/think>/g, '')
+    .replace(/^[\s\S]*?<\/think>/, '')
+    .trim();
+}
+
 async function localChat(
   p: AiPreferences,
   system: string,
@@ -82,7 +89,9 @@ async function localChat(
     });
     if (!res.ok) return null;
     const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-    return data.choices?.[0]?.message?.content ?? null;
+    // Reasoning models (Qwen3, DeepSeek-R1…) may inline their thinking; keep only the answer.
+    const content = data.choices?.[0]?.message?.content;
+    return content ? stripThinking(content) || null : null;
   } catch {
     return null;
   } finally {
