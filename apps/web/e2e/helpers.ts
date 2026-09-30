@@ -13,18 +13,21 @@ export function watchErrors(page: Page): string[] {
 
 export async function onboard(
   page: Page,
-  opts: { name?: string; editionIndex?: number; demo?: boolean } = {},
+  opts: { name?: string; profileIndex?: number; demo?: boolean; mind?: string[] } = {},
 ) {
   await page.goto('/app.html');
-  await expect(page.getByRole('heading', { name: 'Bienvenue dans Σ' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Qu’est-ce qui occupe votre esprit aujourd’hui ?' }),
+  ).toBeVisible();
+  for (const [i, text] of (opts.mind ?? []).entries()) await page.getByLabel(`Chose ${i + 1}`).fill(text);
   await page.getByLabel('Prénom ou nom affiché').fill(opts.name ?? 'Camille');
   await page.getByRole('button', { name: 'Continuer' }).click();
   await page
     .getByRole('radio')
-    .nth(opts.editionIndex ?? 1)
+    .nth(opts.profileIndex ?? 1)
     .click();
   await page.getByRole('button', { name: 'Continuer' }).click();
-  await page.getByLabel('Objectif principal').fill('Signer trois nouveaux clients');
-  await page.getByRole('button', { name: opts.demo ? 'Essayer avec des exemples' : 'Commencer' }).click();
+  await expect(page.getByRole('heading', { name: 'Votre premier plan est prêt' })).toBeVisible();
+  await page.getByRole('button', { name: opts.demo ? 'Essayer avec des exemples' : 'Voir mon plan' }).click();
   await expect(page).toHaveURL(/#today/);
 }

@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'preact/hooks';
-import type { Mission, MissionKind, MissionLogEntry, MissionTopic } from '../../domain/types';
-import { MISSION_KINDS, MODEL, STEPS, planMission, type PlannedSession } from '../../domain/missions';
+import type { Mission, MissionKind, MissionLogEntry, MissionTopic, PipelineItem } from '../../domain/types';
+import {
+  MISSION_KINDS,
+  MODEL,
+  STEPS,
+  planMission,
+  withLoggedSession,
+  type PlannedSession,
+} from '../../domain/missions';
+import { newId } from '../../domain/ids';
 import { addDays, isoDay, toDate } from '../../domain/dates';
 import { clock, create, snapshot, update } from '../../data/store';
 import { t, fmtDate, fmtMinutes } from '../../i18n';
@@ -15,6 +23,7 @@ const ICON: Record<MissionKind, string> = {
   fitness: '🏃',
   language: '🗣️',
   presentation: '🎤',
+  jobsearch: '🧭',
 };
 const NEEDS_DATE: MissionKind[] = ['exam', 'interview', 'presentation'];
 const MINUTES = [15, 20, 30, 45, 60, 90];
@@ -24,6 +33,7 @@ export function sessionLabel(m: Mission, s: PlannedSession): string {
   if (s.topic) params.topic = s.topic;
   if (s.fromPage) params.from = s.fromPage;
   if (s.toPage) params.to = s.toPage;
+  if (s.company) params.company = s.company;
   return s.step ? t(`mission.step.${m.kind}.${s.step}`, params) : t(`mission.session.${s.kind}`, params);
 }
 
@@ -54,6 +64,7 @@ function MissionEditor({ draft, onClose }: { draft: Draft | null; onClose: () =>
   const model = kind ? MODEL[kind] : null;
   const topics = topicsFromText(form.topicsText ?? '', form.topics ?? []);
   const v = (e: Event) => (e.currentTarget as HTMLInputElement).value;
+  const members = snapshot.value.household.filter((h) => !h.deletedAt).map((h) => h.name);
 
   const save = async (e: Event) => {
     e.preventDefault();
@@ -68,6 +79,8 @@ function MissionEditor({ draft, onClose }: { draft: Draft | null; onClose: () =>
       totalPages: kind === 'book' ? Number(form.totalPages) || 1 : null,
       startPage: kind === 'book' ? Number(form.startPage) || 0 : null,
       level: kind === 'fitness' ? (form.level ?? 'beginner') : null,
+      forName: kind === 'exam' ? form.forName || null : null,
+      ...(kind === 'jobsearch' && !form.id ? { pipeline: [] } : {}),
     };
     await attempt(
       async () => {
@@ -143,14 +156,14 @@ function MissionEditor({ draft, onClose }: { draft: Draft | null; onClose: () =>
               )}
             </Field>
             {model !== 'steps' && (
-              <Field label={t('mission.field.days')}>
+              <Field label={kind === 'jobsearch' ? t('mission.field.appsPerWeek') : t('mission.field.days')}>
                 {(id) => (
                   <select
                     id={id}
                     value={form.daysPerWeek ?? (kind === 'fitness' ? 3 : 5)}
                     onChange={(e) => set({ daysPerWeek: Number(v(e)) })}
                   >
-                    {[1, 2, 3, 4, 5, 6, 7].map((d) => (
+                    {(kind === 'jobsearch' ? [1, 2, 3, 5, 7, 10] : [1, 2, 3, 4, 5, 6, 7]).map((d) => (
                       <option key={d} value={d}>
                         {t('mission.perWeek', { count: d })}
                       </option>
@@ -160,6 +173,21 @@ function MissionEditor({ draft, onClose }: { draft: Draft | null; onClose: () =>
               </Field>
             )}
           </div>
+
+          {kind === 'exam' && members.length > 0 && (
+            <Field label={t('mission.field.forWho')}>
+              {(id) => (
+                <select id={id} value={form.forName ?? ''} onChange={(e) => set({ forName: v(e) || null })}>
+                  <option value="">{t('mission.forMe')}</option>
+                  {members.map((name) => (
+                    <option key={name} value={name}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </Field>
+          )}
 
           {model === 'topics' && (
             <>
@@ -291,12 +319,14 @@ function LogSession({
       date: isoDay(clock.value),
       minutes: Math.max(1, Math.min(600, minutes)),
       topicId: session?.topicId ?? null,
-      step: session?.step ?? null,
+      step:
+        session?.step ??
+        (session?.kind === 'apply' ? 'apply' : session?.itemId ? `${session.kind}:${session.itemId}` : null),
       rating,
       page: mission.kind === 'book' && page !== '' ? Number(page) : null,
     };
     await attempt(async () => {
-      await update('missions', mission.id, { log: [...(mission.log ?? []), entry] });
+      await update('missions', mission.id, withLoggedSession(mission, entry));
       onClose();
     }, t('mission.logged'));
   };
@@ -357,16 +387,118 @@ function LogSession({
   );
 }
 
+/* -------------------------------- pipeline -------------------------------- */
+
+const STAGES: PipelineItem['stage'][] = ['wishlist', 'applied', 'interview', 'offer', 'accepted', 'rejected'];
+
+function Pipeline({ m, onPrepare }: { m: Mission; onPrepare: (item: PipelineItem) => void }) {
+  const [company, setCompany] = useState('');
+  const [role, setRole] = useState('');
+  const items = m.pipeline ?? [];
+  const save = (pipeline: PipelineItem[]) => void update('missions', m.id, { pipeline });
+  const today = isoDay(clock.value);
+  return (
+    <div class="pipeline">
+      {items.length ? (
+        <ul class="plain-list">
+          {items.map((it) => (
+            <li key={it.id} class="ledger-row">
+              <span>
+                <strong>{it.company}</strong> <span class="muted">· {it.role}</span>
+                {it.appliedAt && <small class="muted"> · {fmtDate(it.appliedAt)}</small>}
+              </span>
+              <select
+                aria-label={t('career.stage')}
+                value={it.stage}
+                onChange={(e) => {
+                  const stage = (e.currentTarget as HTMLSelectElement).value as PipelineItem['stage'];
+                  save(
+                    items.map((x) =>
+                      x.id === it.id
+                        ? { ...x, stage, appliedAt: x.appliedAt ?? (stage === 'wishlist' ? null : today) }
+                        : x,
+                    ),
+                  );
+                }}
+              >
+                {STAGES.map((st) => (
+                  <option key={st} value={st}>
+                    {t(`career.stageValue.${st}`)}
+                  </option>
+                ))}
+              </select>
+              {it.stage === 'interview' && (
+                <Button size="sm" variant="ghost" onClick={() => onPrepare(it)}>
+                  {t('mission.pipeline.prepare')}
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant="ghost"
+                icon="x"
+                onClick={() => save(items.filter((x) => x.id !== it.id))}
+              >
+                <span class="sr-only">{t('common.delete')}</span>
+              </Button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="small muted">{t('mission.pipeline.empty')}</p>
+      )}
+      <form
+        class="inline-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!company.trim()) return;
+          save([
+            ...items,
+            {
+              id: newId('app'),
+              company: company.trim().slice(0, 120),
+              role: role.trim().slice(0, 120),
+              stage: 'applied',
+              appliedAt: today,
+            },
+          ]);
+          setCompany('');
+          setRole('');
+        }}
+      >
+        <input
+          aria-label={t('mission.pipeline.company')}
+          placeholder={t('mission.pipeline.company')}
+          value={company}
+          maxLength={120}
+          onInput={(e) => setCompany((e.currentTarget as HTMLInputElement).value)}
+        />
+        <input
+          aria-label={t('mission.pipeline.role')}
+          placeholder={t('mission.pipeline.role')}
+          value={role}
+          maxLength={120}
+          onInput={(e) => setRole((e.currentTarget as HTMLInputElement).value)}
+        />
+        <Button type="submit" size="sm" icon="plus">
+          {t('mission.pipeline.add')}
+        </Button>
+      </form>
+    </div>
+  );
+}
+
 /* ---------------------------------- card ---------------------------------- */
 
 function MissionCard({
   m,
   onLog,
   onEdit,
+  onDraft,
 }: {
   m: Mission;
   onLog: (m: Mission, s: PlannedSession | null) => void;
   onEdit: (m: Mission) => void;
+  onDraft: (d: Draft) => void;
 }) {
   const [open, setOpen] = useState(false);
   const now = clock.value;
@@ -386,6 +518,7 @@ function MissionCard({
           <h2 id={`m-${m.id}`}>{m.title}</h2>
           <p class="small muted">
             {t(`mission.kind.${m.kind}`)}
+            {m.forName && ` · ${m.forName}`}
             {target && ` · ${fmtDate(target)}`}
             {plan.daysLeft !== null &&
               plan.daysLeft > 0 &&
@@ -428,6 +561,15 @@ function MissionCard({
           </>
         )}
       </div>
+
+      {m.kind === 'jobsearch' && (
+        <Pipeline
+          m={m}
+          onPrepare={(it) =>
+            onDraft({ kind: 'interview', title: it.role ? `${it.company} — ${it.role}` : it.company })
+          }
+        />
+      )}
 
       {steps && (
         <ul class="check-list mission-steps">
@@ -511,6 +653,11 @@ export function Missions() {
   // #missions/<id> (e.g. from a decision) scrolls to that mission.
   useEffect(() => {
     const id = route.value.param;
+    if (id?.startsWith('new:')) {
+      const [, kind, who] = id.split(':');
+      setDraft({ kind: kind as MissionKind, forName: who || null });
+      return;
+    }
     if (id) setTimeout(() => document.getElementById(`m-${id}`)?.scrollIntoView({ block: 'center' }), 50);
   }, [route.value.param]);
 
@@ -532,6 +679,7 @@ export function Missions() {
             m={m}
             onLog={(mm, s) => setLogging({ m: mm, s })}
             onEdit={(mm) => setDraft(mm)}
+            onDraft={setDraft}
           />
         ))
       ) : (

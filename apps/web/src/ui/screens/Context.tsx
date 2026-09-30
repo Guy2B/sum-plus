@@ -6,17 +6,7 @@ import { t, fmtDate } from '../../i18n';
 import { Button, Card, Field, PageHeader, Toggle, attempt } from '../components';
 
 const DAYS: ContextProfile['workDays'] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
-const DOMAINS: Domain[] = [
-  'calendar',
-  'mail',
-  'social',
-  'finance',
-  'health',
-  'journal',
-  'learning',
-  'household',
-  'career',
-];
+const DOMAINS: Domain[] = ['calendar', 'mail', 'social', 'finance', 'health', 'journal', 'household'];
 
 export function Context() {
   const [ctx, setCtx] = useState<ContextProfile>(settings.value.context);

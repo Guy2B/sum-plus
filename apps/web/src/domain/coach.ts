@@ -588,7 +588,7 @@ const BUILDERS: Record<CoachIntent, (i: CoachInput) => CoachAnswer> = {
       bullets,
       usedSources: used,
       confidence: confidenceFor(used),
-      actions: [{ key: 'coach.action.openLearning', route: 'learning' }],
+      actions: [{ key: 'coach.action.openLearning', route: 'missions' }],
     };
   },
 
@@ -674,7 +674,7 @@ const BUILDERS: Record<CoachIntent, (i: CoachInput) => CoachAnswer> = {
       })),
       usedSources: apps.length ? [{ source: 'career', count: apps.length }] : [],
       confidence: apps.length ? 'high' : 'low',
-      actions: [{ key: 'coach.action.openCareer', route: 'career' }],
+      actions: [{ key: 'coach.action.openCareer', route: 'missions' }],
     };
   },
 

@@ -164,7 +164,6 @@ function Plan() {
                 'finance',
                 'health',
                 'household',
-                'career',
                 'cloudSync',
                 'social',
                 'calendarSync',

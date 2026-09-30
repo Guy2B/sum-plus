@@ -1304,6 +1304,100 @@ main {
   margin-top: 10px;
 }
 
+.understood {
+  list-style: none;
+  margin: 12px 0 16px;
+  padding: 0;
+}
+.understood li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.understood li:last-child {
+  border-bottom: 0;
+}
+
+/* ---------------------------------- today ---------------------------------- */
+
+.today-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.today-card {
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius);
+  padding: 18px 20px 14px;
+  background: var(--surface);
+}
+.today-card.role-now {
+  border-color: var(--border-strong) !important;
+  box-shadow: var(--shadow-md);
+}
+.today-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+.role-now .today-role {
+  color: var(--accent);
+}
+.today-card .decision-title {
+  font-size: 1.08rem;
+}
+.today-slot {
+  margin: 6px 0 0;
+  font-weight: 550;
+  font-variant-numeric: tabular-nums;
+}
+.today-meta {
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.today-card .decision-actions,
+.today-card .decision-explain {
+  margin-left: 0;
+}
+.useful {
+  width: 30px;
+  height: 30px;
+  font-size: 0.95rem;
+}
+.day-details {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+.day-details summary {
+  cursor: pointer;
+  font-weight: 550;
+  list-style: none;
+}
+.day-details summary::-webkit-details-marker {
+  display: none;
+}
+.day-details summary::before {
+  content: '›';
+  display: inline-block;
+  margin-right: 8px;
+  transition: transform 0.15s;
+}
+.day-details[open] summary::before {
+  transform: rotate(90deg);
+}
+.day-details .tiles {
+  margin-top: 14px;
+}
+
 /* -------------------------------- missions -------------------------------- */
 
 .kind-grid {

@@ -15,6 +15,16 @@ test.describe('core journey', () => {
     expect(errors).toEqual([]);
   });
 
+  test('two-minute onboarding turns what is on your mind into a first plan', async ({ page }) => {
+    await onboard(page, { name: 'Léa', mind: ['Répondre à Marc demain 10min', 'Contrôle de maths jeudi'] });
+    await expect(page.locator('#top3 .today-card').first()).toBeVisible();
+    await expect(page.locator('#top3')).toContainText('Répondre à Marc');
+    await page.goto('/app.html#missions');
+    await expect(page.locator('.mission', { hasText: 'Contrôle de maths' })).toContainText(
+      'Préparer un examen',
+    );
+  });
+
   test('quick capture parses natural language and persists across reloads', async ({ page }) => {
     await onboard(page);
     await page.getByRole('textbox', { name: 'Capture rapide' }).fill('Appeler Marc demain 30min !');
@@ -138,6 +148,7 @@ test.describe('accessibility', () => {
   for (const route of [
     'today',
     'attention',
+    'missions',
     'plan',
     'coach',
     'tasks',
@@ -167,7 +178,13 @@ test.describe('accessibility', () => {
   }
 
   test('landing and legal pages are accessible', async ({ page }) => {
-    for (const path of ['/', '/legal/privacy.html', '/legal/terms.html', '/legal/support.html']) {
+    for (const path of [
+      '/',
+      '/legal/privacy.html',
+      '/legal/terms.html',
+      '/legal/support.html',
+      '/legal/impressum.html',
+    ]) {
       await page.goto(path);
       const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
       expect(

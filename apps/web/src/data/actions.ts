@@ -6,6 +6,7 @@ import { computed, signal } from '@preact/signals';
 import type { Decision } from '../domain/decision';
 import type { CollectionName, FeedbackAction } from '../domain/types';
 import { create, snapshot, update } from './store';
+import { withLoggedSession } from '../domain/missions';
 import { getKV, setKV } from './db';
 import { isoDay } from '../domain/dates';
 import { decisions, topDecisions, attention } from './store';
@@ -83,7 +84,7 @@ export async function completeDecision(d: Decision): Promise<void> {
       break;
     case 'missions': {
       const m = snapshot.value.missions.find((x) => x.id === id);
-      if (m && d.signal.session) await update('missions', id, { log: [...(m.log ?? []), d.signal.session] });
+      if (m && d.signal.session) await update('missions', id, withLoggedSession(m, d.signal.session));
       break;
     }
     case 'projects': {

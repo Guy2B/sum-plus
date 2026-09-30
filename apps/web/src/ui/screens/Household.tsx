@@ -3,7 +3,19 @@ import type { HouseholdMember, SchoolItem } from '../../domain/types';
 import { create, snapshot, update, clock } from '../../data/store';
 import { isoDay } from '../../domain/dates';
 import { t, fmtDate } from '../../i18n';
-import { Badge, Button, Card, Empty, Field, IconButton, PageHeader, ProGate, attempt } from '../components';
+import {
+  Badge,
+  Button,
+  Card,
+  Empty,
+  Field,
+  IconButton,
+  PageHeader,
+  ProGate,
+  attempt,
+  toast,
+} from '../components';
+import { planMission } from '../../domain/missions';
 import { deleteWithUndo } from './Tasks';
 
 const KINDS: SchoolItem['kind'][] = ['homework', 'exam', 'form', 'meeting', 'activity'];
@@ -13,6 +25,9 @@ function MemberCard({ m }: { m: HouseholdMember }) {
   const [title, setTitle] = useState('');
   const [kind, setKind] = useState<SchoolItem['kind']>('homework');
   const [due, setDue] = useState(today);
+  const exams = snapshot.value.missions.filter(
+    (x) => !x.deletedAt && x.status === 'active' && x.forName === m.name,
+  );
   const items = snapshot.value.schoolItems
     .filter((s) => !s.deletedAt && s.memberId === m.id)
     .sort((a, b) => Number(a.done) - Number(b.done) || (a.dueDate ?? '9').localeCompare(b.dueDate ?? '9'));
@@ -31,6 +46,22 @@ function MemberCard({ m }: { m: HouseholdMember }) {
       }
     >
       {m.school && <p class="muted small">{m.school}</p>}
+      {exams.length > 0 && (
+        <ul class="plain-list">
+          {exams.map((x) => (
+            <li key={x.id} class="ledger-row">
+              <a href={`#missions/${x.id}`}>📘 {x.title}</a>
+              <span class="small muted">
+                {x.targetDate && `${fmtDate(x.targetDate)} · `}
+                {t(
+                  planMission(x, clock.value).forecast.headline.key,
+                  planMission(x, clock.value).forecast.headline.params,
+                )}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
       <ul class="check-list">
         {items.map((s) => (
           <li key={s.id}>
@@ -60,6 +91,24 @@ function MemberCard({ m }: { m: HouseholdMember }) {
         onSubmit={(e) => {
           e.preventDefault();
           if (!title.trim()) return;
+          if (kind === 'exam') {
+            // A test to prepare is a mission: Σ plans the revisions for the child.
+            void create('missions', {
+              kind: 'exam',
+              title: title.trim().slice(0, 200),
+              forName: m.name,
+              targetDate: due || null,
+              status: 'active',
+              minutesPerDay: 20,
+              daysPerWeek: 5,
+              topics: [{ id: 't1', title: title.trim().slice(0, 200), mastery: 2 }],
+              log: [],
+            }).then(() => {
+              setTitle('');
+              toast(t('household.examToMission', { name: m.name }), 'good');
+            });
+            return;
+          }
           void create('schoolItems', {
             memberId: m.id,
             title: title.trim().slice(0, 200),

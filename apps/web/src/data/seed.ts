@@ -8,7 +8,7 @@ import { COLLECTIONS } from '../domain/types';
 import { editionDemo } from '../domain/editions';
 import { addDays, isoDay, atTime } from '../domain/dates';
 import { newId } from '../domain/ids';
-import { createMany, remove, snapshot } from './store';
+import { convertModulesToMissions, createMany, remove, snapshot } from './store';
 
 export const DEMO_PROVIDER = 'demo';
 
@@ -173,6 +173,7 @@ export async function seedDemo(edition: EditionKey, locale: Locale, now: Date = 
     { id: newId('demo'), date: d(-1), sleepHours: 6.8, energy: 3, stress: 3, steps: 7400, source: 'manual' },
     { id: newId('demo'), date: d(0), sleepHours: 7.4, energy: 4, stress: 2, steps: 2100, source: 'manual' },
   ]);
+  await convertModulesToMissions();
 }
 
 /** Removes every seeded record (ids are prefixed with "demo_"), leaving real data untouched. */

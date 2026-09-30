@@ -325,6 +325,8 @@ export function buildSignals(
     if (s.topic) params.topic = s.topic;
     if (s.fromPage) params.from = s.fromPage;
     if (s.toPage) params.to = s.toPage;
+    if (s.company) params.company = s.company;
+    if (m.forName) params.who = m.forName;
     out.push({
       id: `missions:${m.id}:${s.date}`,
       sourceType: 'mission',

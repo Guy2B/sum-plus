@@ -17,11 +17,9 @@ import { Calendar } from './screens/Calendar';
 import { Goals } from './screens/Goals';
 import { Journal } from './screens/Journal';
 import { Missions } from './screens/Missions';
-import { Learning } from './screens/Learning';
 import { Finance } from './screens/Finance';
 import { Health } from './screens/Health';
 import { Household } from './screens/Household';
-import { Career } from './screens/Career';
 import { Mail } from './screens/Mail';
 import { Social } from './screens/Social';
 import { Context } from './screens/Context';
@@ -41,11 +39,9 @@ const SCREENS: Record<RouteId, FunctionComponent> = {
   goals: Goals,
   journal: Journal,
   missions: Missions,
-  learning: Learning,
   finance: Finance,
   health: Health,
   household: Household,
-  career: Career,
   mail: Mail,
   social: Social,
   context: Context,

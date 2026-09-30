@@ -91,6 +91,7 @@ export default defineConfig({
         privacy: resolve(__dirname, 'legal/privacy.html'),
         terms: resolve(__dirname, 'legal/terms.html'),
         support: resolve(__dirname, 'legal/support.html'),
+        impressum: resolve(__dirname, 'legal/impressum.html'),
       },
       output: {
         manualChunks: {

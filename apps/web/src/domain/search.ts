@@ -41,8 +41,15 @@ const INDEX: Partial<Record<CollectionName, { route: string; extract: Extract }>
       body: d.text,
     })) as Extract,
   },
+  missions: {
+    route: 'missions',
+    extract: ((d: Snapshot['missions'][number]) => ({
+      title: d.title,
+      detail: d.targetDate ?? undefined,
+    })) as Extract,
+  },
   skills: {
-    route: 'learning',
+    route: 'missions',
     extract: ((d: Snapshot['skills'][number]) => ({
       title: d.name,
       detail: d.target,
@@ -82,7 +89,7 @@ const INDEX: Partial<Record<CollectionName, { route: string; extract: Extract }>
     })) as Extract,
   },
   applications: {
-    route: 'career',
+    route: 'missions',
     extract: ((d: Snapshot['applications'][number]) => ({
       title: `${d.role} — ${d.company}`,
       detail: d.stage,

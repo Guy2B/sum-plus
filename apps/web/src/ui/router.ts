@@ -14,11 +14,9 @@ export type RouteId =
   | 'calendar'
   | 'goals'
   | 'journal'
-  | 'learning'
   | 'finance'
   | 'health'
   | 'household'
-  | 'career'
   | 'mail'
   | 'social'
   | 'context'
@@ -45,11 +43,9 @@ export const ROUTES: RouteDef[] = [
   { id: 'calendar', icon: 'calendar', group: 'tools', domain: 'calendar' },
   { id: 'goals', icon: 'target', group: 'tools' },
   { id: 'journal', icon: 'book', group: 'tools', domain: 'journal' },
-  { id: 'learning', icon: 'graduation', group: 'tools', domain: 'learning' },
   { id: 'finance', icon: 'wallet', group: 'tools', feature: 'finance', domain: 'finance' },
   { id: 'health', icon: 'heart', group: 'tools', feature: 'health', domain: 'health' },
   { id: 'household', icon: 'home', group: 'tools', feature: 'household', domain: 'household' },
-  { id: 'career', icon: 'briefcase', group: 'tools', feature: 'career', domain: 'career' },
   { id: 'mail', icon: 'mail', group: 'connected', domain: 'mail' },
   { id: 'social', icon: 'share', group: 'connected', feature: 'social', domain: 'social' },
   { id: 'sources', icon: 'plug', group: 'connected' },

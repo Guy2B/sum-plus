@@ -11,11 +11,22 @@
  *  - program (fitness): progressive load, deload every 4th week, recovery
  *            after a hard session, consistency forecast.
  */
-import type { ISODate, Mission, MissionKind, MissionLogEntry, MissionTopic } from './types';
-import { addDays, isoDay, startOfDay, toDate } from './dates';
+import type { ISODate, Mission, MissionKind, MissionLogEntry, MissionTopic, PipelineItem } from './types';
+import { addDays, isoDay, startOfDay, startOfWeek, toDate } from './dates';
 
 export type SessionKind =
-  'study' | 'mock' | 'light' | 'step' | 'read' | 'endurance' | 'strength' | 'mobility' | 'recovery';
+  | 'study'
+  | 'mock'
+  | 'light'
+  | 'step'
+  | 'read'
+  | 'endurance'
+  | 'strength'
+  | 'mobility'
+  | 'recovery'
+  | 'apply'
+  | 'followup'
+  | 'prepare';
 
 export interface PlannedSession {
   date: ISODate;
@@ -26,6 +37,9 @@ export interface PlannedSession {
   step?: string;
   fromPage?: number;
   toPage?: number;
+  /** Job search: the application concerned. */
+  itemId?: string;
+  company?: string;
 }
 
 export interface MissionReason {
@@ -61,15 +75,17 @@ export const MISSION_KINDS: MissionKind[] = [
   'fitness',
   'language',
   'presentation',
+  'jobsearch',
 ];
 
-export const MODEL: Record<MissionKind, 'topics' | 'steps' | 'pace' | 'program'> = {
+export const MODEL: Record<MissionKind, 'topics' | 'steps' | 'pace' | 'program' | 'pipeline'> = {
   exam: 'topics',
   language: 'topics',
   interview: 'steps',
   presentation: 'steps',
   book: 'pace',
   fitness: 'program',
+  jobsearch: 'pipeline',
 };
 
 /** Preparation steps: key, offset in days from the target date, minutes. */
@@ -513,6 +529,96 @@ function planProgram(m: Mission, now: Date, horizon: number): MissionPlan {
   };
 }
 
+/* ------------------------------ pipeline model ----------------------------- */
+
+/** Days after an application (or the last follow-up) before a follow-up is due. */
+export const FOLLOW_UP_DAYS = 7;
+const RESPONDED: PipelineItem['stage'][] = ['interview', 'offer', 'accepted'];
+
+/** Interview rate with a small prior (10 %) so early numbers are not overconfident. */
+export function responseRate(items: PipelineItem[]): number {
+  const sent = items.filter((i) => i.stage !== 'wishlist').length;
+  const responded = items.filter((i) => RESPONDED.includes(i.stage)).length;
+  return (responded + 0.1 * 5) / (sent + 5);
+}
+
+function planPipeline(m: Mission, now: Date, horizon: number): MissionPlan {
+  const today = startOfDay(now);
+  const todayIso = isoDay(now);
+  const items = m.pipeline ?? [];
+  const target = clamp(Math.round(m.daysPerWeek), 1, 20); // applications per week
+  const perSession = round5(Math.min(m.minutesPerDay, 60));
+  const sessions: PlannedSession[] = [];
+
+  for (const it of items) {
+    if (it.stage === 'interview')
+      sessions.push({ date: todayIso, minutes: 45, kind: 'prepare', itemId: it.id, company: it.company });
+    if (it.stage !== 'applied') continue;
+    const last = toDate(it.followedUpAt ?? it.appliedAt);
+    if (!last) continue;
+    const due = addDays(startOfDay(last), FOLLOW_UP_DAYS);
+    sessions.push({
+      date: isoDay(due < today ? today : due),
+      minutes: 10,
+      kind: 'followup',
+      itemId: it.id,
+      company: it.company,
+    });
+  }
+
+  // Applications still to send this week, then a steady rhythm for the next weeks.
+  const weekStart = startOfWeek(today);
+  const sentThisWeek = items.filter((i) => i.appliedAt && i.appliedAt >= isoDay(weekStart)).length;
+  const appliedToday = (m.log ?? []).some((l) => l.date === todayIso && l.step === 'apply');
+  let remaining = Math.max(0, target - sentThisWeek);
+  for (let i = 0; i < horizon; i++) {
+    const day = addDays(today, i);
+    if (day.getDay() === 1 && i > 0) remaining = target; // a new week starts
+    if (i === 0 && appliedToday) continue;
+    if (remaining <= 0) continue;
+    const daysLeftInWeek = 7 - ((day.getDay() + 6) % 7);
+    const perDay = Math.ceil(remaining / daysLeftInWeek);
+    for (let k = 0; k < perDay && remaining > 0; k++) {
+      sessions.push({ date: isoDay(day), minutes: perSession, kind: 'apply' });
+      remaining--;
+    }
+  }
+  const order: Record<string, number> = { prepare: 0, followup: 1, apply: 2 };
+  sessions.sort((a, b) => a.date.localeCompare(b.date) || (order[a.kind] ?? 3) - (order[b.kind] ?? 3));
+
+  const rate = responseRate(items);
+  const sent = items.filter((i) => i.stage !== 'wishlist').length;
+  const interviews = items.filter((i) => RESPONDED.includes(i.stage)).length;
+  const last7 = items.filter((i) => i.appliedAt && i.appliedAt > isoDay(addDays(today, -7))).length;
+  const followups = sessions.filter((s) => s.kind === 'followup' && s.date === todayIso).length;
+  const prep = items.find((i) => i.stage === 'interview');
+  const reasons: MissionReason[] = [
+    { key: 'mission.reason.weekTarget', params: { done: sentThisWeek, target } },
+    {
+      key: 'mission.reason.projectedInterviews',
+      params: { count: Math.round(target * 4 * rate), pct: Math.round(rate * 100) },
+    },
+  ];
+  if (followups) reasons.push({ key: 'mission.reason.followups', params: { count: followups } });
+  if (prep) reasons.unshift({ key: 'mission.reason.interviewPrep', params: { company: prep.company } });
+  const goal = toDate(m.targetDate);
+  return {
+    sessions: sessions.filter((s) => s.date < isoDay(addDays(today, horizon))),
+    today: sessions.find((s) => s.date === todayIso) ?? null,
+    daysLeft: goal ? daysBetween(today, goal) : null,
+    forecast: {
+      readiness: null,
+      progress: Math.round(clamp(sentThisWeek / target, 0, 1) * 100),
+      onTrack: last7 >= Math.ceil(target * 0.7) || Boolean(prep) || items.some((i) => i.stage === 'offer'),
+      projectedFinish: null,
+      extraMinutes: 0,
+      atRisk: [],
+      headline: { key: 'mission.headline.pipeline', params: { sent, interviews } },
+      reasons,
+    },
+  };
+}
+
 /* ---------------------------------- entry ---------------------------------- */
 
 export function planMission(m: Mission, now: Date = new Date(), horizon = 14): MissionPlan {
@@ -523,6 +629,8 @@ export function planMission(m: Mission, now: Date = new Date(), horizon = 14): M
       return planSteps(m, now);
     case 'pace':
       return planPace(m, now, horizon);
+    case 'pipeline':
+      return planPipeline(m, now, horizon);
     default:
       return planProgram(m, now, horizon);
   }
@@ -534,8 +642,17 @@ export function sessionToLog(s: PlannedSession, rating: MissionLogEntry['rating'
     date: s.date,
     minutes: s.minutes,
     topicId: s.topicId ?? null,
-    step: s.step ?? null,
+    step: s.step ?? (s.kind === 'apply' ? 'apply' : s.itemId ? `${s.kind}:${s.itemId}` : null),
     rating,
     page: s.toPage ?? null,
   };
+}
+
+/** Mission patch recording a finished session (log, and follow-up date for job searches). */
+export function withLoggedSession(m: Mission, entry: MissionLogEntry): Partial<Mission> {
+  const patch: Partial<Mission> = { log: [...(m.log ?? []), entry] };
+  const [kind, itemId] = (entry.step ?? '').split(':');
+  if (kind === 'followup' && itemId && m.pipeline)
+    patch.pipeline = m.pipeline.map((i) => (i.id === itemId ? { ...i, followedUpAt: entry.date } : i));
+  return patch;
 }

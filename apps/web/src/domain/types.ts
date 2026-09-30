@@ -343,7 +343,20 @@ export interface Settings {
  * Only the inputs and the history are stored; the plan and the forecast are
  * recomputed deterministically by domain/missions.ts, so they always adapt.
  */
-export type MissionKind = 'exam' | 'interview' | 'book' | 'fitness' | 'language' | 'presentation';
+export type MissionKind =
+  'exam' | 'interview' | 'book' | 'fitness' | 'language' | 'presentation' | 'jobsearch';
+
+/** One application tracked by a job-search mission. */
+export interface PipelineItem {
+  id: string;
+  company: string;
+  role: string;
+  stage: ApplicationStage;
+  appliedAt?: ISODate | null;
+  /** Last follow-up sent (relance). */
+  followedUpAt?: ISODate | null;
+  url?: string;
+}
 
 export interface MissionTopic {
   id: string;
@@ -373,6 +386,10 @@ export interface Mission extends Doc {
   totalPages?: number | null;
   startPage?: number | null;
   level?: 'beginner' | 'intermediate' | 'advanced' | null;
+  /** Exam prepared for a family member (e.g. a child's test). */
+  forName?: string | null;
+  /** Job search: the applications being tracked. */
+  pipeline?: PipelineItem[];
   log: MissionLogEntry[];
   notes?: string;
 }

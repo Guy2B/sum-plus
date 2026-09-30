@@ -14,11 +14,11 @@ const ROUTE_FOR: Record<string, RouteId> = {
   socialItems: 'social',
   finance: 'finance',
   health: 'health',
-  skills: 'learning',
+  skills: 'missions',
   habits: 'goals',
   projects: 'projects',
   schoolItems: 'household',
-  applications: 'career',
+  applications: 'missions',
   missions: 'missions',
 };
 
@@ -26,14 +26,17 @@ export function decisionTitle(d: Decision): string {
   return d.signal.titleKey ? t(d.signal.titleKey, d.signal.titleParams) : (d.signal.title ?? '');
 }
 
+/** Opens the record behind a decision (task, mail, mission…). */
+export function openDecisionSource(d: Decision): void {
+  const route = ROUTE_FOR[d.signal.ref.collection];
+  if (route) navigate(route, d.signal.ref.id);
+}
+
 export function DecisionCard({ d, rank, compact }: { d: Decision; rank?: number; compact?: boolean }) {
   const [open, setOpen] = useState(false);
   const title = decisionTitle(d);
   const due = d.signal.dueAt ? fmtRelative(d.signal.dueAt, clock.value) : null;
-  const openSource = () => {
-    const route = ROUTE_FOR[d.signal.ref.collection];
-    if (route) navigate(route, d.signal.ref.id);
-  };
+  const openSource = () => openDecisionSource(d);
   return (
     <article class={`decision band-${d.band}`} aria-label={title}>
       <div class="decision-main">
@@ -65,9 +68,6 @@ export function DecisionCard({ d, rank, compact }: { d: Decision; rank?: number;
             {d.signal.sender && <span>· {d.signal.sender}</span>}
           </div>
           {!compact && d.reasons[0] && <p class="decision-why">{t(d.reasons[0].key, d.reasons[0].params)}</p>}
-        </div>
-        <div class="decision-score" title={t('decision.scoreHint')}>
-          <strong>{d.score}</strong>/100
         </div>
       </div>
 
@@ -111,7 +111,7 @@ export function DecisionCard({ d, rank, compact }: { d: Decision; rank?: number;
         <div class="decision-explain">
           <ul>
             {d.reasons.map((r) => (
-              <li key={r.key}>{t(r.key, r.params)}</li>
+              <li key={r.key + JSON.stringify(r.params ?? {})}>{t(r.key, r.params)}</li>
             ))}
           </ul>
           {d.uncertainties.length > 0 && (
@@ -124,15 +124,6 @@ export function DecisionCard({ d, rank, compact }: { d: Decision; rank?: number;
               </ul>
             </>
           )}
-          <p class="small muted">
-            {t('decision.formula', {
-              base: d.formula.base,
-              rules: d.formula.rules,
-              behavior: d.formula.behavior,
-              edition: d.formula.edition,
-              confidence: d.facts.confidence,
-            })}
-          </p>
           {d.requiresReview && <p class="small warn-text">{t('decision.requiresReview')}</p>}
         </div>
       )}

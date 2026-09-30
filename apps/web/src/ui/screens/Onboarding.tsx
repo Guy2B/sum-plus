@@ -1,11 +1,17 @@
+/**
+ * Two-minute onboarding: say what is on your mind → pick a profile → see the
+ * first plan. Captures describing a test, an interview or a talk with a date
+ * become missions; everything else becomes a task.
+ */
 import { useState } from 'preact/hooks';
-import type { Currency, EditionKey, Locale } from '../../domain/types';
-import { listEditions } from '../../domain/editions';
-import { settings, updateSettings } from '../../data/store';
+import type { EditionKey, Locale } from '../../domain/types';
+import { detectMission, parseCapture } from '../../domain/capture';
+import { createMany, settings, updateSettings } from '../../data/store';
 import { seedDemo } from '../../data/seed';
-import { t } from '../../i18n';
-import { Button, Field, attempt } from '../components';
+import { t, fmtDate } from '../../i18n';
+import { Button, Field, attempt, toast } from '../components';
 import { cloudConfigured } from '../../config';
+import { googleAvailable, syncGoogleCalendar } from '../../services/connectors/google';
 import { navigate } from '../router';
 
 const LOCALES: { value: Locale; label: string }[] = [
@@ -14,40 +20,116 @@ const LOCALES: { value: Locale; label: string }[] = [
   { value: 'de', label: 'Deutsch' },
   { value: 'es', label: 'Español' },
 ];
-const CURRENCIES: Currency[] = ['EUR', 'USD', 'GBP', 'CHF', 'CAD'];
+
+const PROFILES: { key: string; edition: EditionKey; icon: string }[] = [
+  { key: 'employee', edition: 'life', icon: '🧑‍💼' },
+  { key: 'solo', edition: 'solo', icon: '💼' },
+  { key: 'student', edition: 'student', icon: '🎓' },
+  { key: 'parent', edition: 'life', icon: '👨‍👩‍👧' },
+  { key: 'creator', edition: 'creator', icon: '✦' },
+  { key: 'nomad', edition: 'nomad', icon: '◎' },
+];
+
+interface Understood {
+  text: string;
+  mission: 'exam' | 'interview' | 'presentation' | null;
+  title: string;
+  dueDate: string | null;
+  minutes: number | null;
+}
+
+function understand(lines: string[]): Understood[] {
+  return lines
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((text) => {
+      const c = parseCapture(text);
+      const kind = detectMission(text);
+      return {
+        text,
+        mission: kind && c.dueDate ? kind : null,
+        title: c.title,
+        dueDate: c.dueDate,
+        minutes: c.estimateMinutes,
+      };
+    });
+}
 
 export function Onboarding() {
   const s = settings.value;
   const [step, setStep] = useState(0);
   const [name, setName] = useState(s.name);
-  const [edition, setEdition] = useState<EditionKey>(s.edition);
-  const [goal, setGoal] = useState(s.context.primaryGoal);
-  const [focus, setFocus] = useState(s.context.focusHours);
+  const [lines, setLines] = useState(['', '', '']);
+  const [profile, setProfile] = useState('employee');
   const [peak, setPeak] = useState(s.context.energyPeak);
   const [busy, setBusy] = useState(false);
+  const [calendar, setCalendar] = useState<number | null>(null);
+  const items = understand(lines);
+
+  const saveProfile = () => {
+    const p = PROFILES.find((x) => x.key === profile) ?? PROFILES[0]!;
+    return updateSettings((cur) => ({
+      ...cur,
+      name: name.trim().slice(0, 60),
+      edition: p.edition,
+      context: { ...cur.context, energyPeak: peak },
+    }));
+  };
 
   const finish = async (withDemo: boolean) => {
     setBusy(true);
     await attempt(async () => {
-      await updateSettings((cur) => ({
-        ...cur,
-        name: name.trim().slice(0, 60),
-        edition,
-        onboardingComplete: true,
-        context: {
-          ...cur.context,
-          primaryGoal: goal.trim().slice(0, 200),
-          focusHours: focus,
-          energyPeak: peak,
-        },
-      }));
-      if (withDemo) await seedDemo(edition, settings.value.locale);
+      await saveProfile();
+      const tasks = items.filter((i) => !i.mission);
+      const missions = items.filter((i) => i.mission);
+      if (tasks.length)
+        await createMany(
+          'tasks',
+          tasks.map((i) => {
+            const c = parseCapture(i.text);
+            return {
+              title: c.title.slice(0, 300),
+              category: c.category ?? 'work',
+              status: 'todo' as const,
+              priority: c.priority,
+              dueDate: c.dueDate,
+              scheduledFor: c.dueDate ? c.scheduledFor : 'today',
+              estimateMinutes: c.estimateMinutes ?? undefined,
+              essential: tasks.length === 1,
+            };
+          }),
+        );
+      if (missions.length)
+        await createMany(
+          'missions',
+          missions.map((i) => ({
+            kind: i.mission!,
+            title: i.title.slice(0, 200),
+            targetDate: i.dueDate,
+            status: 'active' as const,
+            minutesPerDay: 30,
+            daysPerWeek: 5,
+            topics: i.mission === 'exam' ? [{ id: 't1', title: i.title.slice(0, 200), mastery: 2 }] : [],
+            log: [],
+          })),
+        );
+      if (withDemo) await seedDemo(settings.value.edition, settings.value.locale);
+      await updateSettings({ onboardingComplete: true });
       navigate('today');
     });
     setBusy(false);
   };
 
-  const editions = listEditions(s.locale);
+  const connectCalendar = async () => {
+    setBusy(true);
+    await attempt(async () => {
+      const r = await syncGoogleCalendar();
+      setCalendar(r.added + r.updated);
+      toast(t('onboarding.calendarConnected', { count: r.added + r.updated }), 'good');
+    });
+    setBusy(false);
+  };
+
   return (
     <div class="onboarding">
       <div class="onboarding-card">
@@ -64,7 +146,7 @@ export function Onboarding() {
               class={i === step ? 'current' : i < step ? 'done' : ''}
               aria-current={i === step ? 'step' : undefined}
             >
-              {t(`onboarding.step${i}`)}
+              {t(`onboarding.stepNew${i}`)}
             </li>
           ))}
         </ol>
@@ -76,20 +158,37 @@ export function Onboarding() {
               setStep(1);
             }}
           >
-            <h1>{t('onboarding.welcome')}</h1>
-            <p class="muted">{t('onboarding.promise')}</p>
-            <Field label={t('onboarding.name')}>
-              {(id) => (
-                <input
-                  id={id}
-                  value={name}
-                  maxLength={60}
-                  autoComplete="given-name"
-                  onInput={(e) => setName((e.currentTarget as HTMLInputElement).value)}
-                />
-              )}
-            </Field>
+            <h1>{t('onboarding.mindTitle')}</h1>
+            <p class="muted">{t('onboarding.mindBody')}</p>
+            {lines.map((value, i) => (
+              <Field key={i} label={t('onboarding.mindLabel', { n: i + 1 })}>
+                {(id) => (
+                  <input
+                    id={id}
+                    value={value}
+                    maxLength={300}
+                    placeholder={t(`onboarding.mindExample${i + 1}`)}
+                    onInput={(e) => {
+                      const next = [...lines];
+                      next[i] = (e.currentTarget as HTMLInputElement).value;
+                      setLines(next);
+                    }}
+                  />
+                )}
+              </Field>
+            ))}
             <div class="row">
+              <Field label={t('onboarding.name')}>
+                {(id) => (
+                  <input
+                    id={id}
+                    value={name}
+                    maxLength={60}
+                    autoComplete="given-name"
+                    onInput={(e) => setName((e.currentTarget as HTMLInputElement).value)}
+                  />
+                )}
+              </Field>
               <Field label={t('settings.language')}>
                 {(id) => (
                   <select
@@ -103,23 +202,6 @@ export function Onboarding() {
                       <option key={l.value} value={l.value}>
                         {l.label}
                       </option>
-                    ))}
-                  </select>
-                )}
-              </Field>
-              <Field label={t('settings.currency')}>
-                {(id) => (
-                  <select
-                    id={id}
-                    value={s.currency}
-                    onChange={(e) =>
-                      void updateSettings({
-                        currency: (e.currentTarget as HTMLSelectElement).value as Currency,
-                      })
-                    }
-                  >
-                    {CURRENCIES.map((c) => (
-                      <option key={c}>{c}</option>
                     ))}
                   </select>
                 )}
@@ -145,24 +227,37 @@ export function Onboarding() {
 
         {step === 1 && (
           <div>
-            <h1>{t('onboarding.editionTitle')}</h1>
-            <p class="muted">{t('onboarding.editionBody')}</p>
-            <div class="edition-grid" role="radiogroup" aria-label={t('onboarding.editionTitle')}>
-              {editions.map((ed) => (
+            <h1>{t('onboarding.profileTitle')}</h1>
+            <p class="muted">{t('onboarding.profileBody')}</p>
+            <div class="edition-grid compact" role="radiogroup" aria-label={t('onboarding.profileTitle')}>
+              {PROFILES.map((p) => (
                 <button
-                  key={ed.key}
+                  key={p.key}
                   type="button"
                   role="radio"
-                  aria-checked={edition === ed.key}
-                  class={`edition-card ${edition === ed.key ? 'selected' : ''}`}
-                  style={{ '--edition-accent': ed.accent } as never}
-                  onClick={() => setEdition(ed.key)}
+                  aria-checked={profile === p.key}
+                  class={`edition-card ${profile === p.key ? 'selected' : ''}`}
+                  onClick={() => setProfile(p.key)}
                 >
                   <span class="edition-icon" aria-hidden="true">
-                    {ed.icon}
+                    {p.icon}
                   </span>
-                  <strong>{ed.name}</strong>
-                  <small class="muted">{ed.promise}</small>
+                  <strong>{t(`onboarding.profile.${p.key}`)}</strong>
+                </button>
+              ))}
+            </div>
+            <p class="label">{t('onboarding.peakTitle')}</p>
+            <div class="segmented" role="radiogroup" aria-label={t('onboarding.peakTitle')}>
+              {(['morning', 'afternoon', 'evening'] as const).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  role="radio"
+                  aria-checked={peak === p}
+                  class={peak === p ? 'active' : ''}
+                  onClick={() => setPeak(p)}
+                >
+                  {t(`context.peak.${p}`)}
                 </button>
               ))}
             </div>
@@ -179,48 +274,42 @@ export function Onboarding() {
 
         {step === 2 && (
           <div>
-            <h1>{t('onboarding.contextTitle')}</h1>
-            <p class="muted">{t('onboarding.contextBody')}</p>
-            <Field label={t('context.primaryGoal')} hint={t('context.primaryGoalHint')}>
-              {(id) => (
-                <input
-                  id={id}
-                  value={goal}
-                  maxLength={200}
-                  onInput={(e) => setGoal((e.currentTarget as HTMLInputElement).value)}
-                />
-              )}
-            </Field>
-            <div class="row">
-              <Field label={t('context.focusHours')}>
-                {(id) => (
-                  <input
-                    id={id}
-                    type="number"
-                    min={1}
-                    max={12}
-                    step={0.5}
-                    value={focus}
-                    onInput={(e) => setFocus(Number((e.currentTarget as HTMLInputElement).value) || 4)}
-                  />
+            <h1>{t('onboarding.planTitle')}</h1>
+            {items.length ? (
+              <>
+                <p class="muted">{t('onboarding.planBody')}</p>
+                <ul class="understood">
+                  {items.map((i) => (
+                    <li key={i.text}>
+                      <span class="badge">
+                        {i.mission ? t(`mission.kind.${i.mission}`) : t('onboarding.asTask')}
+                      </span>
+                      <strong>{i.title}</strong>
+                      <span class="muted small">
+                        {i.dueDate && ` · ${fmtDate(i.dueDate)}`}
+                        {i.minutes && ` · ${i.minutes} min`}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : (
+              <p class="muted">{t('onboarding.planEmpty')}</p>
+            )}
+            {googleAvailable() && (
+              <div class="notice">
+                <span>
+                  {calendar === null
+                    ? t('onboarding.calendarHint')
+                    : t('onboarding.calendarConnected', { count: calendar })}
+                </span>
+                {calendar === null && (
+                  <Button size="sm" icon="calendar" loading={busy} onClick={() => void connectCalendar()}>
+                    {t('onboarding.connectCalendar')}
+                  </Button>
                 )}
-              </Field>
-              <Field label={t('context.energyPeak')}>
-                {(id) => (
-                  <select
-                    id={id}
-                    value={peak}
-                    onChange={(e) => setPeak((e.currentTarget as HTMLSelectElement).value as typeof peak)}
-                  >
-                    {(['morning', 'afternoon', 'evening'] as const).map((p) => (
-                      <option key={p} value={p}>
-                        {t(`context.peak.${p}`)}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </Field>
-            </div>
+              </div>
+            )}
             <p class="small muted">{t('onboarding.privacy')}</p>
             <div class="modal-actions">
               <Button variant="ghost" onClick={() => setStep(1)}>
@@ -230,7 +319,7 @@ export function Onboarding() {
                 {t('onboarding.withDemo')}
               </Button>
               <Button variant="primary" onClick={() => void finish(false)} loading={busy}>
-                {t('onboarding.start')}
+                {t('onboarding.seePlan')}
               </Button>
             </div>
           </div>

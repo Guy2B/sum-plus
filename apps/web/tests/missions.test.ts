@@ -7,8 +7,11 @@ import {
   loadFactor,
   planMission,
   readingPace,
+  sessionToLog,
   topicStates,
+  withLoggedSession,
 } from '../src/domain/missions';
+import { convertModules } from '../src/domain/missions-convert';
 import { buildSignals } from '../src/domain/signals';
 import { rankSignals } from '../src/domain/decision';
 import { addDays, isoDay } from '../src/domain/dates';
@@ -158,5 +161,68 @@ describe('integration with the decision engine', () => {
     expect(s.session).toMatchObject({ topicId: 'b', date: day(0) });
     const [d] = rankSignals([s], { edition: 'student' }, NOW);
     expect(d!.reasons[0]!.key).toBe('mission.headline.readiness');
+  });
+});
+
+describe('pipeline model (job search)', () => {
+  it('schedules follow-ups after 7 days, interview prep, and the weekly applications', () => {
+    const m = mission({
+      kind: 'jobsearch',
+      title: 'Job',
+      daysPerWeek: 3,
+      pipeline: [
+        { id: 'p1', company: 'ACME', role: 'PM', stage: 'applied', appliedAt: day(-8) },
+        { id: 'p2', company: 'Globex', role: 'PO', stage: 'interview', appliedAt: day(-12) },
+        { id: 'p3', company: 'Initech', role: 'PM', stage: 'applied', appliedAt: day(-2) },
+      ],
+    });
+    const plan = planMission(m, NOW);
+    const todayKinds = plan.sessions.filter((s) => s.date === day(0)).map((s) => s.kind);
+    expect(todayKinds[0]).toBe('prepare');
+    expect(todayKinds).toContain('followup');
+    expect(plan.sessions.find((s) => s.kind === 'followup' && s.company === 'Initech')?.date).toBe(day(5));
+    // Target 3/week, Initech already sent on Monday → 2 left, spread over the rest of the week.
+    const week = plan.sessions.filter((s) => s.kind === 'apply' && s.date <= day(4));
+    expect(week).toHaveLength(2);
+    expect(plan.forecast.reasons.find((r) => r.key === 'mission.reason.weekTarget')?.params).toEqual({
+      done: 1,
+      target: 3,
+    });
+    expect(plan.forecast.reasons[0]).toMatchObject({ key: 'mission.reason.interviewPrep' });
+  });
+
+  it('records a follow-up on the application when the session is done', () => {
+    const m = mission({
+      kind: 'jobsearch',
+      pipeline: [{ id: 'p1', company: 'ACME', role: 'PM', stage: 'applied', appliedAt: day(-8) }],
+    });
+    const s = planMission(m, NOW).today!;
+    const patch = withLoggedSession(m, sessionToLog(s));
+    expect(patch.pipeline?.[0]?.followedUpAt).toBe(day(0));
+    expect(planMission({ ...m, ...patch }, NOW).sessions.find((x) => x.kind === 'followup')?.date).toBe(day(7));
+  });
+});
+
+describe('conversion of former modules', () => {
+  it('turns skills, applications and upcoming school tests into missions, idempotently', () => {
+    const snap = snapshot({
+      skills: [doc({ name: 'Allemand', target: 'B1', progress: 50, resources: [] })] as never,
+      applications: [doc({ company: 'ACME', role: 'PM', stage: 'applied', appliedAt: day(-3) })] as never,
+      household: [doc({ name: 'Léa', relation: 'child' })] as never,
+      schoolItems: [] as never,
+    });
+    const lea = snap.household[0]!;
+    snap.schoolItems = [
+      doc({ memberId: lea.id, title: 'Contrôle de maths', kind: 'exam', dueDate: day(6), done: false }),
+      doc({ memberId: lea.id, title: 'Fiche', kind: 'form', dueDate: day(2), done: false }),
+    ] as never;
+    const c = convertModules(snap, 'fr', NOW);
+    const kinds = c.create.map((m) => m.kind).sort();
+    expect(kinds).toEqual(['exam', 'jobsearch', 'language']);
+    expect(c.create.find((m) => m.kind === 'exam')).toMatchObject({ forName: 'Léa', targetDate: day(6) });
+    expect(c.create.find((m) => m.kind === 'language')?.topics[0]?.mastery).toBe(3);
+    expect(c.remove.map((r) => r.collection).sort()).toEqual(['applications', 'schoolItems', 'skills']);
+    // Same input converted again on another device → same ids, no duplicates.
+    expect(convertModules(snap, 'fr', NOW).create.map((m) => m.id)).toEqual(c.create.map((m) => m.id));
   });
 });

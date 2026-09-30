@@ -143,3 +143,20 @@ export function parseCapture(input: string, now: Date = new Date()): Captured {
   title = kept.join(' ').trim() || input.trim();
   return { title, dueDate, priority, estimateMinutes, category, scheduledFor };
 }
+
+const MISSION_WORDS: Record<'exam' | 'interview' | 'presentation', string[]> = {
+  exam: ['controle', 'examen', 'exam', 'partiel', 'interro', 'klausur', 'prufung', 'pruefung', 'test', 'bac'],
+  interview: ['entretien', 'interview', 'vorstellungsgesprach', 'entrevista'],
+  presentation: ['presentation', 'pitch', 'soutenance', 'prasentation', 'presentacion', 'expose'],
+};
+
+/**
+ * Captures that describe something to prepare for (a test, an interview, a talk)
+ * with a date become missions instead of tasks: Σ can then plan the preparation.
+ */
+export function detectMission(text: string): 'exam' | 'interview' | 'presentation' | null {
+  const words = new Set(normalizeText(text).split(/[^a-z0-9]+/));
+  for (const [kind, list] of Object.entries(MISSION_WORDS) as [keyof typeof MISSION_WORDS, string[]][])
+    if (list.some((w) => words.has(w))) return kind;
+  return null;
+}

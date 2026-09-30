@@ -14,6 +14,7 @@ import { buildSignals } from '../domain/signals';
 import { arbitrate, rankSignals } from '../domain/decision';
 import { buildDayBlocks, computeCapacity, groupAttention } from '../domain/planning';
 import { importLegacyState, LEGACY_STORAGE_KEY } from '../domain/legacy';
+import { convertModules } from '../domain/missions-convert';
 import { getKV, hardDelete, readCollection, setKV, wipeLocal, writeDocs, purgeTombstones } from './db';
 
 export interface AuthUser {
@@ -130,7 +131,16 @@ export async function initStore(): Promise<{ migratedLegacy: Record<string, numb
   });
   setInterval(() => (clock.value = new Date()), 60_000);
   void purgeTombstones().catch(() => undefined);
+  await convertModulesToMissions().catch((e) => console.warn('[store] mission conversion failed', e));
   return { migratedLegacy };
+}
+
+/** School tests, career applications and skills now live in missions (idempotent). */
+export async function convertModulesToMissions(): Promise<void> {
+  const plan = convertModules(snapshot.value, settings.value.locale);
+  if (plan.create.length) await createMany('missions', plan.create);
+  for (const u of plan.update) await update('missions', u.id, { pipeline: u.pipeline });
+  for (const r of plan.remove) await remove(r.collection, r.id);
 }
 
 async function reloadCollection(c: CollectionName) {
