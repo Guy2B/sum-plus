@@ -19,6 +19,7 @@ const ROUTE_FOR: Record<string, RouteId> = {
   projects: 'projects',
   schoolItems: 'household',
   applications: 'career',
+  missions: 'missions',
 };
 
 export function decisionTitle(d: Decision): string {

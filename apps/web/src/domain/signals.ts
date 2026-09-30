@@ -1,4 +1,12 @@
-import type { CollectionName, ContextProfile, Domain, RelationshipType, Snapshot } from './types';
+import type {
+  CollectionName,
+  ContextProfile,
+  Domain,
+  MissionLogEntry,
+  RelationshipType,
+  Snapshot,
+} from './types';
+import { planMission, sessionToLog } from './missions';
 import { addDays, hoursUntil, isoDay, toDate, WEEKDAY_KEYS } from './dates';
 
 export type SourceType =
@@ -12,7 +20,8 @@ export type SourceType =
   | 'habit'
   | 'project'
   | 'household'
-  | 'career';
+  | 'career'
+  | 'mission';
 
 /**
  * A normalised, provenance-carrying observation the decision engine can rank.
@@ -45,6 +54,10 @@ export interface Signal {
   relationshipType?: RelationshipType;
   userCreated?: boolean;
   url?: string;
+  /** Producer-side explanation (e.g. the mission forecast), shown before engine reasons. */
+  explain?: { key: string; params?: Record<string, string | number> }[];
+  /** Mission session this signal stands for; recorded in the mission log when done. */
+  session?: MissionLogEntry;
 }
 
 const alive = <T extends { deletedAt?: string | null }>(rows: T[]): T[] => rows.filter((r) => !r.deletedAt);
@@ -300,6 +313,36 @@ export function buildSignals(
         estimateMinutes: 30,
       });
     }
+  }
+
+  // Missions: today's planned session becomes a decision with the forecast as its "why".
+  for (const m of alive(snap.missions ?? [])) {
+    if (m.status !== 'active') continue;
+    const plan = planMission(m, now);
+    const s = plan.today;
+    if (!s) continue;
+    const params: Record<string, string | number> = { mission: m.title, minutes: s.minutes };
+    if (s.topic) params.topic = s.topic;
+    if (s.fromPage) params.from = s.fromPage;
+    if (s.toPage) params.to = s.toPage;
+    out.push({
+      id: `missions:${m.id}:${s.date}`,
+      sourceType: 'mission',
+      domain: 'core',
+      ref: { collection: 'missions', id: m.id },
+      titleKey: s.step ? `mission.step.${m.kind}.${s.step}` : `mission.session.${s.kind}`,
+      titleParams: params,
+      category: m.kind === 'fitness' ? 'health' : 'learning',
+      dueAt: m.targetDate ?? `${today}T21:00:00`,
+      createdAt: m.createdAt,
+      userCreated: true,
+      important: true,
+      urgent: plan.daysLeft !== null && plan.daysLeft <= 3,
+      essential: !plan.forecast.onTrack,
+      estimateMinutes: s.minutes,
+      explain: [plan.forecast.headline, ...plan.forecast.reasons].slice(0, 3),
+      session: sessionToLog(s),
+    });
   }
 
   return out;

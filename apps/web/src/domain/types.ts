@@ -336,6 +336,47 @@ export interface Settings {
   schemaVersion: number;
 }
 
+/* -------------------------------- missions -------------------------------- */
+
+/**
+ * A mission is a goal with a date or a rhythm (exam, interview, book, fitness…).
+ * Only the inputs and the history are stored; the plan and the forecast are
+ * recomputed deterministically by domain/missions.ts, so they always adapt.
+ */
+export type MissionKind = 'exam' | 'interview' | 'book' | 'fitness' | 'language' | 'presentation';
+
+export interface MissionTopic {
+  id: string;
+  title: string;
+  /** Self-assessed mastery when the mission starts, 1 (new) … 5 (mastered). */
+  mastery: number;
+}
+
+export interface MissionLogEntry {
+  date: ISODate;
+  minutes: number;
+  topicId?: string | null;
+  step?: string | null;
+  rating?: 'easy' | 'good' | 'hard' | null;
+  /** Book: page reached at the end of the session. */
+  page?: number | null;
+}
+
+export interface Mission extends Doc {
+  kind: MissionKind;
+  title: string;
+  targetDate?: ISODate | null;
+  status: 'active' | 'done' | 'archived';
+  minutesPerDay: number;
+  daysPerWeek: number;
+  topics: MissionTopic[];
+  totalPages?: number | null;
+  startPage?: number | null;
+  level?: 'beginner' | 'intermediate' | 'advanced' | null;
+  log: MissionLogEntry[];
+  notes?: string;
+}
+
 export interface CollectionMap {
   tasks: Task;
   projects: Project;
@@ -358,6 +399,7 @@ export interface CollectionMap {
   checkins: Checkin;
   feedback: DecisionFeedback;
   coachMessages: CoachMessage;
+  missions: Mission;
 }
 
 export type CollectionName = keyof CollectionMap;
@@ -384,6 +426,7 @@ export const COLLECTIONS: readonly CollectionName[] = [
   'checkins',
   'feedback',
   'coachMessages',
+  'missions',
 ] as const;
 
 /**

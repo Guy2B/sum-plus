@@ -8,6 +8,7 @@ export type RouteId =
   | 'plan'
   | 'coach'
   | 'sources'
+  | 'missions'
   | 'tasks'
   | 'projects'
   | 'calendar'
@@ -38,6 +39,7 @@ export const ROUTES: RouteDef[] = [
   { id: 'attention', icon: 'bell', group: 'main' },
   { id: 'plan', icon: 'map', group: 'main' },
   { id: 'coach', icon: 'sigma', group: 'main' },
+  { id: 'missions', icon: 'flame', group: 'tools' },
   { id: 'tasks', icon: 'check', group: 'tools' },
   { id: 'projects', icon: 'folder', group: 'tools' },
   { id: 'calendar', icon: 'calendar', group: 'tools', domain: 'calendar' },

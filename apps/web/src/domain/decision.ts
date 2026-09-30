@@ -188,7 +188,7 @@ export function inferIntent(signal: Signal): Intent {
   if (includesAny(text, OPPORTUNITY_TERMS)) return 'opportunity';
   if (signal.needsReply || includesAny(text, REQUEST_TERMS)) return 'request';
   if (signal.sourceType === 'event') return 'prepare';
-  if (['task', 'project', 'habit', 'learning', 'household', 'career'].includes(signal.sourceType))
+  if (['task', 'project', 'habit', 'learning', 'household', 'career', 'mission'].includes(signal.sourceType))
     return 'execute';
   return 'information';
 }
@@ -628,6 +628,7 @@ export function decide(signal: Signal, ctx: DecisionContext, profile: BehaviorPr
   const band = rules.band ?? bandFor(score);
   const ruleReasons: Reason[] = rules.fired.map((id) => ({ key: `reason.rule.${id}` }));
   const reasons = dedupeReasons([
+    ...(signal.explain ?? []),
     ...ruleReasons,
     ...dimensionReasons(facts),
     ...behavior.reasons,
@@ -694,6 +695,7 @@ export const DEFAULT_SOURCE_LIMITS: Partial<Record<SourceType, number>> = {
   habit: 1,
   household: 1,
   career: 1,
+  mission: 2,
 };
 
 export type RejectionReason =

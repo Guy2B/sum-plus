@@ -81,6 +81,11 @@ export async function completeDecision(d: Decision): Promise<void> {
     case 'schoolItems':
       await update('schoolItems', id, { done: true });
       break;
+    case 'missions': {
+      const m = snapshot.value.missions.find((x) => x.id === id);
+      if (m && d.signal.session) await update('missions', id, { log: [...(m.log ?? []), d.signal.session] });
+      break;
+    }
     case 'projects': {
       const p = snapshot.value.projects.find((x) => x.id === id);
       const next = p?.milestones.find((m) => !m.done);

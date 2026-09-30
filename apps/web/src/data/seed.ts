@@ -134,6 +134,41 @@ export async function seedDemo(edition: EditionKey, locale: Locale, now: Date = 
     }),
   );
 
+  const fitness = { fr: 'Remise en forme', en: 'Get fit', de: 'Fit werden', es: 'Ponerse en forma' }[locale];
+  await createMany('missions', [
+    {
+      id: newId('demo'),
+      kind: 'fitness',
+      title: fitness,
+      status: 'active',
+      minutesPerDay: 30,
+      daysPerWeek: 3,
+      level: 'beginner',
+      topics: [],
+      targetDate: d(42),
+      log: [
+        { date: d(-5), minutes: 20, rating: 'good' },
+        { date: d(-3), minutes: 25, rating: 'good' },
+      ],
+    },
+    {
+      id: newId('demo'),
+      kind: 'book',
+      title: 'Atomic Habits',
+      status: 'active',
+      minutesPerDay: 20,
+      daysPerWeek: 5,
+      topics: [],
+      totalPages: 320,
+      startPage: 40,
+      targetDate: d(30),
+      log: [
+        { date: d(-2), minutes: 20, page: 58, rating: 'good' },
+        { date: d(-1), minutes: 25, page: 80, rating: 'good' },
+      ],
+    },
+  ]);
+
   await createMany('health', [
     { id: newId('demo'), date: d(-1), sleepHours: 6.8, energy: 3, stress: 3, steps: 7400, source: 'manual' },
     { id: newId('demo'), date: d(0), sleepHours: 7.4, energy: 4, stress: 2, steps: 2100, source: 'manual' },

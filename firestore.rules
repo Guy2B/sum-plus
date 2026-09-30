@@ -53,7 +53,7 @@ service cloud.firestore {
       return col in [
         'tasks', 'projects', 'finance', 'health', 'journal', 'skills', 'events',
         'habits', 'habitLogs', 'goals', 'contacts', 'mailAccounts', 'socialAccounts',
-        'household', 'schoolItems', 'applications', 'checkins', 'feedback'
+        'household', 'schoolItems', 'applications', 'checkins', 'feedback', 'missions'
       ];
     }
 

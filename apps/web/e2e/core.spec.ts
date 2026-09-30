@@ -102,6 +102,24 @@ test.describe('core journey', () => {
     await expect(page.locator('.task-row', { hasText: 'Tâche héritée' })).toBeVisible();
   });
 
+  test('a mission becomes a dated plan with a forecast and adapts to logged sessions', async ({ page }) => {
+    await onboard(page);
+    await page.goto('/app.html#missions');
+    await page.getByRole('button', { name: /Préparer un examen/ }).click();
+    await page.getByLabel('Intitulé').fill('Contrôle de maths');
+    const date = new Date(Date.now() + 9 * 86_400_000).toISOString().slice(0, 10);
+    await page.getByLabel('Date', { exact: true }).fill(date);
+    await page.getByLabel('Chapitres ou thèmes').fill(['Fractions', 'Géométrie'].join('\n'));
+    await page.getByRole('button', { name: 'Créer le plan' }).click();
+    const card = page.locator('.mission', { hasText: 'Contrôle de maths' });
+    await expect(card.getByText(/Préparation estimée à \d+ % le jour J/)).toBeVisible();
+    await expect(card.getByText(/Réviser « (Fractions|Géométrie) »/)).toBeVisible();
+    await card.getByRole('button', { name: 'Fait', exact: true }).click();
+    await page.getByRole('button', { name: 'Enregistrer la séance' }).click();
+    await expect(page.getByText('Séance enregistrée, plan recalculé')).toBeVisible();
+    await expect(card.getByText('Pas de séance prévue aujourd’hui.')).toBeVisible();
+  });
+
   test('works offline after the first visit (PWA)', async ({ page, context }) => {
     await onboard(page, { demo: true });
     await page.waitForFunction(async () => Boolean(await navigator.serviceWorker?.getRegistration()));
