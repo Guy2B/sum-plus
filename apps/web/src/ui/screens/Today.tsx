@@ -223,7 +223,9 @@ export function Today() {
           <ul>
             {removed.groups.map((g) => (
               <li key={g.key}>
-                <strong>{t(`today.removed.group.${g.key}`, { count: g.items.length })}</strong>
+                <strong>
+                  {t(`today.removed.group.${g.key.replace('whynot.', '')}`, { count: g.items.length })}
+                </strong>
                 <span class="muted small">
                   {' '}
                   {g.items

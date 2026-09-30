@@ -84,7 +84,11 @@ export function pickToday(
   const pool = ranked.filter((d) => d.action !== 'ignore');
   const first = pool[0] ?? null;
   const rest = pool.slice(1);
-  const protectD = rest.find(isDeepWork) ?? rest[rest.length > 1 ? 1 : 0] ?? null;
+  // A protected slot is for real work: deep work first, never a quick mail or notification.
+  const protectD =
+    rest.find(isDeepWork) ??
+    rest.find((d) => d.signal.sourceType !== 'mail' && d.facts.effortMinutes >= 15) ??
+    null;
   const others = rest.filter((d) => d !== protectD);
   const watch =
     [...others].sort((a, b) => watchPriority(b) - watchPriority(a) || b.score - a.score)[0] ?? null;

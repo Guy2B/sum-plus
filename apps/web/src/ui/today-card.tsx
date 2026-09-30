@@ -54,7 +54,11 @@ export function TodayCard({
   const freeNow = freeMinutesNow(events, ctx, now);
   const planSlot = slot ?? freeSlot(events, ctx, now, blockMinutes(d));
   const trigger = d.reasons[0] ? t(d.reasons[0].key, d.reasons[0].params) : null;
-  const isMail = d.signal.sourceType === 'mail' && Boolean(d.signal.senderEmail || d.signal.url);
+  // Reply only makes sense to a person: never to notifications or newsletters.
+  const isMail =
+    d.signal.sourceType === 'mail' &&
+    Boolean(d.signal.senderEmail || d.signal.url) &&
+    !['automated', 'marketing'].includes(d.facts.relationshipType);
   const running = focus.value?.d.signal.id === d.signal.id;
   const slotLabel = (s: Slot) =>
     `${isoDay(s.start) !== isoDay(now) ? `${t('today.tomorrow')} ` : ''}${fmtTime(s.start)}–${fmtTime(s.end)}`;
