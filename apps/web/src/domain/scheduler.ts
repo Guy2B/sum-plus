@@ -196,7 +196,6 @@ export const competesForToday = (d: Decision) =>
  * "my day has changed" limits). Someday items never count — only real pressure.
  */
 export function overloadAvoided(plan: DayPlan, factors: Factors = {}): number {
-  if (plan.tomorrow) return 0;
   return Math.round(
     plan.left
       .filter((l) => competesForToday(l.decision))

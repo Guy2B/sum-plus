@@ -17,6 +17,7 @@ import {
 } from '../../data/store';
 import { visibleDecisions, visibleTop } from '../../data/actions';
 import { enhance, semanticIntent } from '../../services/ai';
+import { track } from '../../services/telemetry';
 import { t, fmtDate } from '../../i18n';
 import { Badge, Button, attempt, confirmDialog } from '../components';
 import { Icon } from '../icons';
@@ -75,6 +76,7 @@ export function Coach() {
   }, [messages.length]);
 
   const ask = async (question: string) => {
+    void track('coach_used');
     const q = question.trim().slice(0, 1000);
     if (!q || busy || remaining <= 0) return;
     setBusy(true);
@@ -108,6 +110,7 @@ export function Coach() {
           usedSources: a.usedSources.map((u) => `${u.source}:${u.count}`),
           confidence: a.confidence,
           enhancedBy: better?.by ?? null,
+          enhancedModel: better?.model ?? null,
           actions: a.actions,
           proposal: a.proposal,
         },
@@ -179,7 +182,11 @@ export function Coach() {
               })
             : t('coach.noSources')}
         </span>
-        {m.meta.enhancedBy && <span class="muted small">· {t(`coach.enhanced.${m.meta.enhancedBy}`)}</span>}
+        {m.meta.enhancedBy && (
+          <span class={`muted small ${m.meta.enhancedBy === 'local' ? 'local-badge' : ''}`}>
+            · {t(`coach.enhanced.${m.meta.enhancedBy}`, { model: m.meta.enhancedModel ?? '' })}
+          </span>
+        )}
         {m.meta.proposal && m.meta.proposal.length > 0 && (
           <div class="proposal">
             <p class="small strong">{t('coach.proposal.title')}</p>

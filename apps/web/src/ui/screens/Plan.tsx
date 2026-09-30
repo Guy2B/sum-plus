@@ -2,7 +2,9 @@ import { useState } from 'preact/hooks';
 import { capacity, settings, snapshot, clock, remove } from '../../data/store';
 import { completeDecision, visibleDecisions, visibleTop } from '../../data/actions';
 import { findConflicts, eventsOn } from '../../domain/planning';
-import { comparePlans, scheduleDay, type WhatIf } from '../../domain/scheduler';
+import { comparePlans, overloadAvoided, scheduleDay, type WhatIf } from '../../domain/scheduler';
+import { calibration } from '../../domain/calibration';
+import { isDeepWork } from '../../domain/today';
 import { learnTimeRules, periodOf, type TimeRule } from '../../domain/decision';
 import { weeklyReview } from '../../domain/review';
 import { decisionQuality } from '../../domain/quality';
@@ -40,8 +42,15 @@ export function Plan() {
     skipEvents: skip,
   };
   const active = scenarios.size > 0 || skip.length > 0;
-  const base = scheduleDay(ranked, events, ctx, now);
-  const plan = active ? scheduleDay(ranked, events, ctx, now, whatIf) : base;
+  const factors = calibration(snapshot.value.feedback.filter((f) => !f.deletedAt));
+  const base = scheduleDay(ranked, events, ctx, now, {}, factors);
+  const plan = active ? scheduleDay(ranked, events, ctx, now, whatIf, factors) : base;
+  // "Σ protects my capacity": what is available, committed, protected and kept off your plate.
+  const minutesOf = (b: { start: Date; end: Date }) => (b.end.getTime() - b.start.getTime()) / 60_000;
+  const protectedMinutes = plan.blocks
+    .filter((b) => isDeepWork(b.decision))
+    .reduce((a, b) => a + minutesOf(b), 0);
+  const avoided = overloadAvoided(plan, factors);
   const diff = active ? comparePlans(base, plan) : null;
   const todayEvents = eventsOn(events, now).filter((e) => !e.allDay && e.end >= now.toISOString());
 
@@ -80,6 +89,21 @@ export function Plan() {
   return (
     <div class="page page-narrow">
       <PageHeader eyebrow={fmtLongDate(now)} title={t('nav.plan')} subtitle={t('plan.subtitleNew')} />
+
+      <section class="card shield" aria-labelledby="shield-title">
+        <h2 id="shield-title">{t(plan.tomorrow ? 'plan.shield.titleTomorrow' : 'plan.shield.title')}</h2>
+        <div class="stats">
+          <Stat label={t('plan.shield.available')} value={fmtMinutes(plan.freeMinutes)} />
+          <Stat label={t('plan.shield.committed')} value={fmtMinutes(Math.round(plan.usedMinutes))} />
+          <Stat label={t('plan.shield.protected')} value={fmtMinutes(Math.round(protectedMinutes))} />
+          <Stat
+            label={t('plan.shield.avoided')}
+            value={fmtMinutes(avoided)}
+            tone={avoided > 0 ? 'good' : undefined}
+            detail={t('plan.shield.avoidedHint')}
+          />
+        </div>
+      </section>
 
       <section class="whatif" aria-labelledby="whatif-title">
         <h2 id="whatif-title">{t('plan.whatIf.title')}</h2>

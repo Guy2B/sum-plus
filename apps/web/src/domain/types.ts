@@ -292,6 +292,8 @@ export interface CoachMessage extends Doc {
     usedSources?: string[];
     confidence?: 'low' | 'medium' | 'high';
     enhancedBy?: string | null;
+    /** Local model that rephrased the answer (shown to prove it ran on this machine). */
+    enhancedModel?: string | null;
     actions?: { key: string; route: string }[];
     /** Changes the coach proposes; applied only after confirmation. */
     proposal?: { id: string; title: string; to: ISODate }[];
@@ -354,6 +356,16 @@ export interface Settings {
     coachDate: ISODate;
     coachCount: number;
     eveningDone?: ISODate | null;
+    /** Largest overload kept off the plate today (for the end-of-day summary). */
+    avoided?: { date: ISODate; minutes: number } | null;
+    /** Opt-in anonymous usage measurement (off by default). */
+    telemetry?: boolean;
+    /** Install date, kept locally; only its ISO week is ever sent. */
+    installedAt?: ISODate;
+    pingedOn?: ISODate;
+    sentEvents?: string[];
+    /** Where the onboarding started from (landing deep link). */
+    startedFrom?: 'demo' | 'mine' | 'direct';
     /** "My day has changed": today's constraints, reset automatically the next day. */
     day?: {
       date: ISODate;

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
+import { setTelemetry } from '../../services/telemetry';
 import type { Currency, EditionKey, Locale, Settings } from '../../domain/types';
 import { COLLECTIONS, LOCAL_ONLY_COLLECTIONS } from '../../domain/types';
 import {
@@ -441,6 +442,12 @@ function Data() {
 
   return (
     <Card title={t('account.data')} id="data">
+      <Toggle
+        label={t('telemetry.toggle')}
+        hint={t('telemetry.hint')}
+        checked={Boolean(settings.value.usage.telemetry)}
+        onChange={(v) => void setTelemetry(v)}
+      />
       <p class="small muted">
         {t('data.summary', {
           list: counts.map(([c, n]) => `${t(`collection.${c}`)} ${n}`).join(' · ') || '—',

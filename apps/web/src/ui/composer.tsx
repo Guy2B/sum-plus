@@ -8,7 +8,8 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { create, settings, updateSettings } from '../data/store';
 import { parseCapture } from '../domain/capture';
 import { interpret, type Interpretation } from '../domain/command';
-import { allowed } from '../services/llm';
+import { allowed, modelLabel } from '../services/llm';
+import { track } from '../services/telemetry';
 import { structureWithModel } from '../services/structure';
 import { isoDay } from '../domain/dates';
 import { t, fmtDate, fmtTime } from '../i18n';
@@ -110,6 +111,7 @@ export async function runCommand(text: string, i: Interpretation): Promise<boole
       });
       toast(t('command.missionSaved', { title: i.title }), 'good');
     } else if (i.kind === 'day') {
+      void track('day_replanned');
       const s = settings.value;
       const today = isoDay();
       const current = s.usage.day?.date === today ? s.usage.day : { date: today };
@@ -221,7 +223,9 @@ export function Composer({ prompts }: { prompts: [string, string][] }) {
         />
         <div class="composer-bar">
           <span id="composer-preview" class="composer-preview" aria-live="polite">
-            {action ? `${fromAi && !forced ? '✨ ' : ''}→ ${describe(action)}` : t('command.hint')}
+            {action
+              ? `${fromAi && !forced ? `✨ ${modelLabel(settings.value.ai)} ` : ''}→ ${describe(action)}`
+              : t('command.hint')}
           </span>
           {action && action.kind !== 'task' && (
             <button type="button" class="link small" onClick={() => setForced('task')}>

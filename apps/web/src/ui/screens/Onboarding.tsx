@@ -3,7 +3,7 @@
  * first plan. Captures describing a test, an interview or a talk with a date
  * become missions; everything else becomes a task.
  */
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import type { EditionKey, Locale } from '../../domain/types';
 import { detectMission, parseCapture } from '../../domain/capture';
 import { createMany, settings, updateSettings } from '../../data/store';
@@ -13,6 +13,7 @@ import { Button, Field, attempt, toast } from '../components';
 import { cloudConfigured } from '../../config';
 import { googleAvailable, syncGoogleCalendar } from '../../services/connectors/google';
 import { navigate } from '../router';
+import { track } from '../../services/telemetry';
 
 const LOCALES: { value: Locale; label: string }[] = [
   { value: 'fr', label: 'Français' },
@@ -115,6 +116,7 @@ export function Onboarding() {
         );
       if (withDemo) await seedDemo(settings.value.edition, settings.value.locale);
       await updateSettings({ onboardingComplete: true });
+      void track('onboarding_complete');
       navigate('today');
     });
     setBusy(false);
@@ -124,12 +126,33 @@ export function Onboarding() {
   const tryDemo = async () => {
     setBusy(true);
     await attempt(async () => {
+      void track('onboarding_started');
       await seedDemo(settings.value.edition, settings.value.locale);
       await updateSettings({ onboardingComplete: true });
+      void track('onboarding_complete');
       navigate('today');
     });
     setBusy(false);
   };
+
+  // Deep links from the landing page: ?start=demo opens the sample week, ?start=mine the real onboarding.
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const start = params.get('start');
+    const lang = params.get('lang');
+    if (!start && !lang) return;
+    history.replaceState(null, '', location.pathname + location.hash);
+    void (async () => {
+      if (lang && LOCALES.some((l) => l.value === lang)) await updateSettings({ locale: lang as Locale });
+      if (start === 'demo' || start === 'mine')
+        await updateSettings((cur) => ({ ...cur, usage: { ...cur.usage, startedFrom: start } }));
+      if (start === 'demo') await tryDemo();
+      else if (start === 'mine') {
+        setStep(0);
+        void track('onboarding_started');
+      }
+    })();
+  }, []);
 
   const connectCalendar = async () => {
     setBusy(true);
@@ -174,7 +197,14 @@ export function Onboarding() {
               <strong>{t('onboarding.tryWeek')}</strong>
               <small class="muted">{t('onboarding.tryWeekHint')}</small>
             </button>
-            <button type="button" class="kind-card" onClick={() => setStep(0)}>
+            <button
+              type="button"
+              class="kind-card"
+              onClick={() => {
+                setStep(0);
+                void track('onboarding_started');
+              }}
+            >
               <span class="kind-icon" aria-hidden="true">
                 ✎
               </span>

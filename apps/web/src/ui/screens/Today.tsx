@@ -1,4 +1,5 @@
 import { settings, snapshot, capacity, clock, create, remove, updateSettings } from '../../data/store';
+import { setTelemetry, track } from '../../services/telemetry';
 import { rememberShown, visibleTop, visibleDecisions } from '../../data/actions';
 import { hasDemoData, clearDemo } from '../../data/seed';
 import { getEdition } from '../../domain/editions';
@@ -52,23 +53,24 @@ export function Today() {
   }
   const pick = pickToday(ranked, events, s.context, now);
   const [dayOpen, setDayOpen] = useState(false);
-  const setDay = (patch: NonNullable<typeof s.usage.day>) =>
+  const setDay = (patch: NonNullable<typeof s.usage.day>) => {
+    void track('day_replanned');
     void updateSettings({
       usage: {
         ...s.usage,
         day: { ...(s.usage.day?.date === isoDay(now) ? s.usage.day : {}), ...patch, date: isoDay(now) },
       },
     });
+  };
   const shown = [pick.now, pick.watch, pick.protect?.decision].filter(Boolean);
   const sources = new Set(shown.map((d) => d!.signal.sourceType));
   // "Why not something else?": what was set aside, with the arbitration reason when there is one.
   const rejected = new Map(visibleTop.value.rejected.map((r) => [r.decision.signal.id, r.reason]));
   const setAside = allRanked.filter((d) => !shown.includes(d) && d.action !== 'ignore');
   const removed = groupSetAside(pick.now ?? null, setAside, rejected);
-  const avoided = overloadAvoided(
-    scheduleDay(allRanked, events, s.context, now, override ?? {}, factors),
-    factors,
-  );
+  const dayPlan = scheduleDay(allRanked, events, s.context, now, override ?? {}, factors);
+  // After work hours the planner looks at tomorrow: that is not today's overload.
+  const avoided = dayPlan.tomorrow ? 0 : overloadAvoided(dayPlan, factors);
   const alternatives = (chosen: Decision | null | undefined, n: number) =>
     chosen ? setAside.slice(0, n).map((alt) => whyNot(chosen, alt, rejected.get(alt.signal.id))) : [];
 
@@ -76,6 +78,16 @@ export function Today() {
   const endHour = Number((s.context.workEnd || '18:00').slice(0, 2));
   const evening = now.getHours() >= Math.min(endHour, 18) && s.usage.eveningDone !== isoDay(now);
   const summary = daySummary(snapshot.value, now);
+  // Remember the day's overload avoided: after work hours the planner already looks at tomorrow.
+  const avoidedToday = s.usage.avoided?.date === isoDay(now) ? s.usage.avoided.minutes : 0;
+  useEffect(() => {
+    if (avoided > avoidedToday)
+      void updateSettings((cur) => ({
+        ...cur,
+        usage: { ...cur.usage, avoided: { date: isoDay(now), minutes: avoided } },
+      }));
+  }, [avoided, avoidedToday]);
+  const closedToday = s.usage.eveningDone === isoDay(now);
   const closeEvening = (note: boolean) =>
     void updateSettings({ usage: { ...s.usage, eveningDone: isoDay(now) } }).then(() => {
       if (note) composerFocus.value++;
@@ -90,6 +102,7 @@ export function Today() {
       ['watch', pick.watch],
       ['protect', pick.protect?.decision],
     ];
+    if (shown.length) void track('first_plan');
     void rememberShown(
       roles
         .filter((x): x is [TodayRole, Decision] => Boolean(x[1]))
@@ -273,21 +286,45 @@ export function Today() {
       )}
 
       {evening && (
-        <div class="ritual ritual-compact" role="status">
-          <p>
-            <strong>{t('today.ritual.title')}</strong>{' '}
-            {t('today.ritual.summary', { done: summary.done, deferred: summary.deferred })}{' '}
-            {t('today.ritual.question')}
-          </p>
+        <section class="day-end" aria-labelledby="day-end-title">
+          <h2 id="day-end-title">{t('today.end.title')}</h2>
+          <ul class="day-end-facts">
+            <li>{t('today.end.done', { count: summary.done })}</li>
+            <li>{t('today.end.moved', { count: summary.deferred })}</li>
+            {Math.max(avoided, avoidedToday) > 0 && (
+              <li>{t('today.end.avoided', { time: fmtMinutes(Math.max(avoided, avoidedToday)) })}</li>
+            )}
+          </ul>
+          <p class="day-end-permission">{t('today.end.permission')}</p>
           <div class="row-actions">
-            <Button size="sm" onClick={() => closeEvening(false)}>
-              {t('today.ritual.nothing')}
+            <Button size="sm" variant="primary" onClick={() => closeEvening(false)}>
+              {t('today.end.close')}
             </Button>
-            <Button size="sm" variant="primary" onClick={() => closeEvening(true)}>
-              {t('today.ritual.note')}
+            <Button size="sm" variant="ghost" onClick={() => closeEvening(true)}>
+              {t('today.end.note')}
             </Button>
           </div>
-        </div>
+        </section>
+      )}
+      {closedToday && <p class="day-closed small muted">{t('today.end.closed')}</p>}
+
+      {s.usage.telemetry === undefined && s.onboardingComplete && shown.length > 0 && (
+        <aside class="consent-note" aria-labelledby="consent-title">
+          <p>
+            <strong id="consent-title">{t('telemetry.askTitle')}</strong> {t('telemetry.askBody')}{' '}
+            <a href="legal/privacy.html#telemetry" target="_blank" rel="noopener">
+              {t('telemetry.details')}
+            </a>
+          </p>
+          <div class="row-actions">
+            <Button size="sm" onClick={() => void setTelemetry(true)}>
+              {t('telemetry.yes')}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => void setTelemetry(false)}>
+              {t('telemetry.no')}
+            </Button>
+          </div>
+        </aside>
       )}
 
       <section class="section" aria-label={t('capture.label')}>

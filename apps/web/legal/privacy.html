@@ -87,10 +87,12 @@
 
       <h2>6. Intelligence artificielle</h2>
       <p>
-        Le Coach est déterministe et s'exécute sur votre appareil. Les options d'IA (modèle sémantique local,
-        modèle intégré au navigateur, passerelle auto-hébergée) sont désactivées par défaut. Elles peuvent
-        seulement reformuler une réponse déjà calculée ; aucune donnée n'est envoyée à un fournisseur d'IA
-        tiers par défaut.
+        Le moteur de décision de Σ est déterministe et s'exécute sur votre appareil. Les options d'IA sont
+        désactivées par défaut : modèle intégré au navigateur, ou modèle local (Ollama, LM Studio ou serveur
+        compatible) que vous faites tourner sur votre propre machine. Elles peuvent seulement reformuler une
+        réponse déjà calculée ou transformer une phrase en tâche, vérifiée par Σ. Les données de finances, de
+        santé et le contenu des e-mails ne sont jamais envoyés à un modèle. Aucune donnée n'est envoyée à un
+        fournisseur d'IA tiers.
       </p>
 
       <h2>7. Sous-traitants</h2>
@@ -119,6 +121,19 @@
       <p>
         Chiffrement en transit (TLS), règles d'accès par utilisateur, App Check, chiffrement applicatif des
         identifiants de connecteurs, politique de sécurité du contenu (CSP) stricte.
+      </p>
+
+      <h2 id="telemetry">11. Mesure d'usage anonyme (facultative)</h2>
+      <p>
+        Désactivée par défaut. Si vous l'activez (question dans Aujourd'hui, ou <em>Compte → Données</em>),
+        Σ envoie quelques compteurs pour savoir si le produit est utile : ouverture de l'application,
+        onboarding commencé ou terminé, premier plan affiché, décision commencée ou terminée, Coach utilisé,
+        journée replanifiée. Chaque compteur contient seulement : le nom de l'événement, la date, la semaine
+        d'installation, le nombre de jours depuis l'installation, l'édition, la langue et la version de
+        l'application. Aucun identifiant, aucun compte, aucune adresse, aucun contenu (tâches, mails,
+        agenda…). Les compteurs ne permettent pas de relier des événements entre eux ni de vous identifier.
+        Base légale : votre consentement (art. 6 (1) a RGPD, § 25 TDDDG), révocable à tout moment dans
+        <em>Compte → Données</em>. Stockage : Google Firebase (UE), 13 mois maximum.
       </p>
     </main>
     <footer class="site-footer">

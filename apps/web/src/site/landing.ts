@@ -26,6 +26,9 @@ const FR: Dict = {
 
 const T: Record<Exclude<Lang, 'fr'>, Dict> = {
   en: {
+    'cta.demo': 'Try without my data',
+    'cta.mine': 'Start with my data',
+    'cta.demoNote': 'A sample week, nothing to type, nothing to share.',
     skip: 'Skip to content',
     'nav.product': 'Product',
     'nav.why': 'Why Σ',
@@ -220,6 +223,9 @@ const T: Record<Exclude<Lang, 'fr'>, Dict> = {
     'footer.support': 'Support',
   },
   de: {
+    'cta.demo': 'Ohne meine Daten testen',
+    'cta.mine': 'Mit meinen Daten starten',
+    'cta.demoNote': 'Eine Beispielwoche, nichts eintippen, nichts teilen.',
     skip: 'Zum Inhalt springen',
     'nav.product': 'Produkt',
     'nav.why': 'Warum Σ',
@@ -417,6 +423,9 @@ const T: Record<Exclude<Lang, 'fr'>, Dict> = {
     'footer.support': 'Support',
   },
   es: {
+    'cta.demo': 'Probar sin mis datos',
+    'cta.mine': 'Empezar con mis datos',
+    'cta.demoNote': 'Una semana de ejemplo, nada que escribir, nada que compartir.',
     skip: 'Ir al contenido',
     'nav.product': 'Producto',
     'nav.why': 'Por qué Σ',
@@ -674,6 +683,12 @@ function apply(next: Lang) {
   if (pressed && answer)
     answer.textContent = tr(`coach.a${pressed.dataset.q?.slice(1)}`, answer.textContent ?? '');
   renderDate();
+  // The app opens in the language chosen here.
+  $$<HTMLAnchorElement>('a[data-start]').forEach((a) => {
+    const target = new URL(a.getAttribute('href') ?? 'app.html', location.href);
+    target.searchParams.set('lang', next);
+    a.href = target.pathname.split('/').pop() + target.search;
+  });
   try {
     localStorage.setItem('sigma-site-lang', next);
   } catch {

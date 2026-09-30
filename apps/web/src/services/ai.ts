@@ -100,7 +100,7 @@ export async function enhance(
   locale: Locale,
   tone: string,
   prefs: AiPreferences,
-): Promise<{ text: string; by: 'browser' | 'gateway' } | null> {
+): Promise<{ text: string; by: 'browser' | 'local' | 'gateway'; model?: string } | null> {
   try {
     const mode = aiMode(prefs);
     if (!allowed(prefs, 'coach')) return null;
@@ -110,8 +110,12 @@ export async function enhance(
       out = await complete(prefs, 'coach', rewritePrompt('', locale, tone), text);
     else if (prefs.gateway && prefs.gatewayUrl)
       out = await rewriteWithGateway(prefs.gatewayUrl, text, locale, tone);
-    if (out && preservesFacts(text, out))
-      return { text: out.trim(), by: mode === 'browser' ? 'browser' : 'gateway' };
+    if (out && preservesFacts(text, out)) {
+      if (mode === 'browser') return { text: out.trim(), by: 'browser' };
+      if (prefs.mode === 'local')
+        return { text: out.trim(), by: 'local', model: prefs.localModel ?? undefined };
+      return { text: out.trim(), by: 'gateway' };
+    }
   } catch {
     /* enhancement is best-effort */
   }

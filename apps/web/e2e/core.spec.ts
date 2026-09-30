@@ -16,6 +16,18 @@ test.describe('core journey', () => {
     expect(errors).toEqual([]);
   });
 
+  test('landing deep link opens the sample week in the chosen language', async ({ page }) => {
+    const errors = watchErrors(page);
+    await page.goto('/app.html?start=demo&lang=en');
+    await expect(page.locator('#top3 .decision')).toHaveCount(3);
+    await expect(page.locator('#top3')).toContainText('Do now');
+    expect(page.url()).not.toContain('start=');
+    // Attention leads with what could slip through the cracks.
+    await page.goto('/app.html#attention');
+    await expect(page.getByRole('heading', { name: 'What could slip through the cracks' })).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+
   test('two-minute onboarding turns what is on your mind into a first plan', async ({ page }) => {
     await onboard(page, { name: 'Léa', mind: ['Répondre à Marc demain 10min', 'Contrôle de maths jeudi'] });
     await expect(page.locator('#top3 .today-card').first()).toBeVisible();

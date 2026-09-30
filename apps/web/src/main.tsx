@@ -6,6 +6,7 @@ import { loadSnoozes } from './data/actions';
 import { initAuth } from './services/auth';
 import { installGlobalHandlers, reportError } from './services/monitoring';
 import { startReminders } from './services/reminders';
+import { ensureInstalled, track } from './services/telemetry';
 import { toast } from './ui/components';
 import { t } from './i18n';
 
@@ -17,6 +18,8 @@ async function boot() {
   try {
     const { migratedLegacy } = await initStore();
     await loadSnoozes();
+    await ensureInstalled();
+    void track('app_open');
     if (migratedLegacy) {
       const total = Object.values(migratedLegacy).reduce((a, b) => a + b, 0);
       if (total) toast(t('app.legacyMigrated', { count: total }), 'good');

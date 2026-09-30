@@ -3,6 +3,7 @@
  * logs feedback so the behaviour profile can learn (after enough evidence).
  */
 import { computed, signal } from '@preact/signals';
+import { track } from '../services/telemetry';
 import type { Decision } from '../domain/decision';
 import type { CollectionName, FeedbackAction, DecisionOutcome, DecisionRecord } from '../domain/types';
 import { create, createMany, snapshot, update } from './store';
@@ -62,6 +63,7 @@ async function markOutcome(d: Decision, outcome: DecisionOutcome, extra: Partial
 }
 
 export async function markStarted(d: Decision): Promise<void> {
+  void track('decision_started');
   await markOutcome(d, 'started', { startedAt: new Date().toISOString() });
 }
 
@@ -88,6 +90,7 @@ async function logFeedback(d: Decision, action: FeedbackAction, minutes?: number
 
 /** Marks done; `minutes` = real time spent (focus timer), used to calibrate estimates. */
 export async function completeDecision(d: Decision, minutes?: number): Promise<void> {
+  void track('decision_completed');
   const { collection, id } = d.signal.ref;
   const now = new Date().toISOString();
   switch (collection) {

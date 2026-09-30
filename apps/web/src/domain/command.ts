@@ -8,7 +8,7 @@
  *  - task  "rappeler assurance mardi"                             → task
  */
 import { addDays, atTime, isoDay } from './dates';
-import { detectMission, parseCapture, type Captured } from './capture';
+import { detectCommitment, detectMission, parseCapture, type Captured } from './capture';
 import { normalizeText } from './text';
 
 export type Energy = 'low' | 'normal' | 'high';
@@ -202,12 +202,15 @@ export function structurePrompt(now: Date): string {
     'date ("YYYY-MM-DD" or null), time ("HH:MM" or null), minutes (number or null), promisedTo (person or null),',
     'energy ("low" | "normal" | "high" or null), endAt ("HH:MM" or null), minutesLeft (number or null).',
     '"day" = the user describes their energy or how much time they have today. "ask" = a question.',
+    '"14h", "2pm", "à 9h30" are clock times (time field), not durations. minutes only for an explicit duration such as "30 min".',
+    'promisedTo only when the sentence says something was promised to someone.',
     'Use null for anything not stated. Never invent people, dates or times.',
   ].join(' ');
 }
 
 const HHMM = /^([01]?\d|2[0-3]):([0-5]\d)$/;
 const YMD = /^\d{4}-\d{2}-\d{2}$/;
+const DURATION = /\d+\s?(?:min|mn|minutes?|minuten|minutos|heures?|hours?|stunden?|horas?)\b/i;
 
 function wordsOf(text: string): string[] {
   return normalizeText(text)
@@ -235,8 +238,10 @@ export function fromModel(raw: unknown, input: string, now: Date): Interpretatio
     const tw = wordsOf(title);
     if (tw.length && tw.filter((w) => inputWords.has(w)).length / tw.length < 0.6) return null;
   }
-  const promisedTo = str('promisedTo');
-  if (promisedTo && !normalizeText(input).includes(normalizeText(promisedTo))) return null;
+  // A person mentioned is not a promise: only keep promisedTo when the sentence reads as one.
+  const claimed = str('promisedTo');
+  if (claimed && !normalizeText(input).includes(normalizeText(claimed))) return null;
+  const promisedTo = claimed && detectCommitment(input) ? claimed : null;
   const date = str('date');
   if (date) {
     const d = new Date(`${date}T12:00:00`);
@@ -266,14 +271,22 @@ export function fromModel(raw: unknown, input: string, now: Date): Interpretatio
     }
     case 'task': {
       if (!title) return null;
-      const base = parseCapture(input, now);
+      // A task with a clock time is an appointment: place it in the calendar.
+      if (time) {
+        const start = atTime(date ? new Date(`${date}T12:00:00`) : now, time.padStart(5, '0'));
+        return { kind: 'event', title, start, end: new Date(start.getTime() + 30 * 60_000) };
+      }
+      // Never let a clock time ("à 14h") be read back as a duration.
+      const clock = clockTime(input, true);
+      const base = parseCapture(clock ? input.replace(clock.raw, ' ') : input, now);
       return {
         kind: 'task',
         captured: {
           ...base,
           title,
           dueDate: date ?? base.dueDate,
-          estimateMinutes: num('minutes') ?? base.estimateMinutes,
+          // Durations only when the sentence states one ("14h" is a time, not 840 minutes).
+          estimateMinutes: base.estimateMinutes ?? (DURATION.test(input) ? num('minutes') : null),
           promisedTo: promisedTo ?? base.promisedTo,
         },
       };

@@ -15,6 +15,11 @@ export function aiMode(p: AiPreferences): AiMode {
   return p.mode ?? (p.browserModel ? 'browser' : p.gateway ? 'local' : 'core');
 }
 
+/** Short name of the model in use, shown next to anything it produced. */
+export function modelLabel(p: AiPreferences): string {
+  return aiMode(p) === 'local' ? p.localModel || 'local' : 'Chrome';
+}
+
 export function allowed(p: AiPreferences, purpose: Purpose): boolean {
   if (aiMode(p) === 'core') return false;
   return p.allow?.[purpose] ?? true;
@@ -52,6 +57,51 @@ export async function testLocal(url: string, model: string): Promise<LocalTest> 
   } finally {
     clearTimeout(timer);
   }
+}
+
+export const LOCAL_PRESETS = [
+  { label: 'Ollama', url: 'http://localhost:11434', model: 'qwen3:8b' },
+  { label: 'LM Studio', url: 'http://localhost:1234', model: 'qwen/qwen3-8b' },
+] as const;
+
+export interface Detected {
+  label: string;
+  url: string;
+  models: string[];
+}
+
+/** Finds local servers already running on this machine (Ollama, LM Studio). */
+export async function detectLocal(): Promise<Detected[]> {
+  const found = await Promise.all(
+    LOCAL_PRESETS.map(async (p): Promise<Detected | null> => {
+      const r = await testLocal(p.url, '');
+      return r.error === 'model' || r.ok ? { label: p.label, url: p.url, models: r.models } : null;
+    }),
+  );
+  return found.filter((x): x is Detected => Boolean(x));
+}
+
+/** Embedding / reranking models cannot chat: never offer them. */
+export const isChatModel = (id: string) => !/embed|bge|nomic|minilm|rerank|e5-|clip/i.test(id);
+
+/** Good instruction-following models of a size that answers in seconds on a laptop. */
+const PREFERRED = [
+  /qwen3[:/-]?8b/i,
+  /qwen3\.5[:/-]?9b/i,
+  /qwen2\.5[:/-]?7b/i,
+  /qwen3[:/-]?4b/i,
+  /gemma3[:/-]?12b/i,
+  /llama3\.[12][:/-]?8b/i,
+  /mistral/i,
+];
+
+export function recommendModel(models: string[]): string | null {
+  const chat = models.filter(isChatModel);
+  for (const re of PREFERRED) {
+    const m = chat.find((x) => re.test(x) && !/vl|vision/i.test(x));
+    if (m) return m;
+  }
+  return chat[0] ?? null;
 }
 
 export function stripThinking(text: string): string {

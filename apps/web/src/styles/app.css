@@ -1671,6 +1671,111 @@ main {
   cursor: not-allowed;
 }
 
+/* ---------------------------- pack 3 ---------------------------- */
+.risks h2,
+.shield h2 {
+  font-size: 0.95rem;
+  margin: 0 0 10px;
+}
+.risk {
+  display: grid;
+  grid-template-columns: 12px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+.risk:first-child {
+  border-top: 0;
+}
+.risk-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.risk-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.risk-high .risk-dot {
+  background: var(--bad);
+  box-shadow: 0 0 0 3px var(--bad-soft);
+}
+.risk-medium .risk-dot {
+  background: var(--warn);
+  box-shadow: 0 0 0 3px var(--warn-soft);
+}
+.risk-low .risk-dot {
+  background: #c9a227;
+}
+.attention-rest {
+  margin-top: 16px;
+}
+.attention-rest > summary {
+  cursor: pointer;
+  color: var(--text-2);
+  padding: 8px 0;
+  font-weight: 600;
+}
+.shield {
+  margin-bottom: 16px;
+}
+.day-end {
+  margin-top: 16px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.day-end h2 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+}
+.day-end-facts {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  color: var(--text-2);
+  font-size: 0.9rem;
+}
+.day-end-permission {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  margin: 6px 0 12px;
+}
+.day-closed {
+  margin-top: 12px;
+}
+.consent-note {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  font-size: 0.88rem;
+}
+.consent-note p {
+  margin: 0 0 8px;
+}
+.try-model {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 10px;
+}
+.try-model > .btn {
+  justify-self: start;
+}
+.local-badge {
+  font-variant-numeric: tabular-nums;
+}
+
 /* -------------------------------- missions -------------------------------- */
 
 .kind-grid {

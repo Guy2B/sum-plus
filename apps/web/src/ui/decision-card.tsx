@@ -26,6 +26,12 @@ export function decisionTitle(d: Decision): string {
   return d.signal.titleKey ? t(d.signal.titleKey, d.signal.titleParams) : (d.signal.title ?? '');
 }
 
+/** Opens a record by collection (task, mail, mission…). */
+export function openRecord(collection: string, id: string): void {
+  const route = ROUTE_FOR[collection];
+  if (route) navigate(route, id);
+}
+
 /** Opens the record behind a decision (task, mail, mission…). */
 export function openDecisionSource(d: Decision): void {
   const route = ROUTE_FOR[d.signal.ref.collection];
