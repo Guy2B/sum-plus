@@ -4,6 +4,14 @@
 
 Le secret client Google OAuth `GOCSPX-…` a été publié dans l'historique de l'ancien dépôt `guy2b/sum`. **Révoquez-le** : Google Cloud Console → APIs & Services → Credentials → client OAuth Web → _Reset secret_. Ce nouveau dépôt ne contient aucun secret (vérifié par gitleaks en CI et par `release:check`).
 
+## Mise en ligne statique actuelle (sans backend)
+
+La version actuelle est publiée sur **https://sum-plus.web.app**, un site d'hébergement séparé du projet `project-sum-b961a` (le site principal et les règles Firestore de l'ancienne application ne sont pas modifiés). Toutes les fonctions locales sont disponibles ; le compte, la synchronisation, les connecteurs et le paiement affichent « Non configuré » jusqu'au déploiement complet décrit ci-dessous.
+
+```bash
+npm run deploy:static
+```
+
 ## 1. Projets Firebase
 
 Deux projets : `staging` et `production` (alias dans `.firebaserc`, à adapter).
