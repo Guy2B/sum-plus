@@ -1,144 +1,173 @@
+/*
+ * Σ design tokens — calm, warm-neutral, ink-first (in the spirit of Claude /
+ * ChatGPT): one neutral canvas, hairline borders, no decorative shadows, a
+ * single edition accent used sparingly. All text pairs meet WCAG AA.
+ */
 :root {
   color-scheme: light;
   --font:
     'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --serif: 'Iowan Old Style', 'Charter', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
-  --bg: #f6f7fb;
+  --bg: #fbfaf8;
+  --sidebar-bg: #f3f2ee;
+  --sidebar-hover: #eae8e2;
+  --sidebar-active: #e4e1d9;
   --surface: #ffffff;
-  --surface-2: #f1f3f8;
-  --border: #e3e6ef;
-  --text: #151827;
-  --text-2: #4a5068;
-  --muted: #5f657c;
-  --accent: #4f46e5;
-  --accent-soft: #eef0ff;
+  --surface-2: #f4f3ef;
+  --border: #e7e5df;
+  --border-strong: #d6d3cb;
+  --text: #1d1c1a;
+  --text-2: #45433e;
+  --muted: #6b6862;
+  --ink: #1d1c1a;
+  --ink-text: #ffffff;
+  --accent: #b4532a;
+  --accent-soft: #f7ebe4;
   --accent-text: #ffffff;
   --good: #117a4b;
-  --good-soft: #e6f6ee;
+  --good-soft: #e7f4ec;
   --warn: #9a5b00;
-  --warn-soft: #fff3de;
+  --warn-soft: #fbf0dc;
   --bad: #b42318;
-  --bad-soft: #fdecea;
+  --bad-soft: #fbeae8;
   --focus: #2563eb;
-  --shadow: 0 1px 2px rgb(16 24 40 / 6%), 0 1px 3px rgb(16 24 40 / 8%);
-  --shadow-lg: 0 12px 32px rgb(16 24 40 / 16%);
+  --shadow: 0 1px 2px rgb(20 18 14 / 4%);
+  --shadow-md: 0 1px 2px rgb(20 18 14 / 4%), 0 4px 16px rgb(20 18 14 / 6%);
+  --shadow-lg: 0 24px 64px rgb(20 18 14 / 16%), 0 0 0 1px rgb(20 18 14 / 5%);
 
-  --radius: 14px;
-  --radius-sm: 9px;
+  --radius: 16px;
+  --radius-sm: 10px;
   --space: 16px;
-  --sidebar: 260px;
+  --sidebar: 264px;
+  --content: 1040px;
+  --reading: 760px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
-    --bg: #0f1222;
-    --surface: #171a2e;
-    --surface-2: #1f2338;
-    --border: #2b3050;
-    --text: #eef0fa;
-    --text-2: #c3c7dc;
-    --muted: #9aa0bb;
-    --accent: #8b85ff;
-    --accent-soft: #25264a;
-    --accent-text: #0f1222;
-    --good: #4ade9a;
-    --good-soft: #143528;
-    --warn: #f7b955;
-    --warn-soft: #3a2d12;
+    --bg: #1f1e1c;
+    --sidebar-bg: #181715;
+    --sidebar-hover: #24231f;
+    --sidebar-active: #2e2d29;
+    --surface: #262522;
+    --surface-2: #2e2d29;
+    --border: #363531;
+    --border-strong: #46443f;
+    --text: #f1efe9;
+    --text-2: #d3d0c8;
+    --muted: #a29f97;
+    --ink: #f1efe9;
+    --ink-text: #1d1c1a;
+    --accent: #e08a63;
+    --accent-soft: #3a2a22;
+    --accent-text: #1d1c1a;
+    --good: #5fd08f;
+    --good-soft: #17301f;
+    --warn: #f0b75a;
+    --warn-soft: #372b15;
     --bad: #ff8a80;
-    --bad-soft: #3d1a1a;
+    --bad-soft: #3b1d1b;
     --focus: #93b4ff;
-    --shadow: 0 1px 2px rgb(0 0 0 / 40%);
-    --shadow-lg: 0 16px 40px rgb(0 0 0 / 55%);
+    --shadow: 0 1px 2px rgb(0 0 0 / 30%);
+    --shadow-md: 0 1px 2px rgb(0 0 0 / 30%), 0 6px 20px rgb(0 0 0 / 30%);
+    --shadow-lg: 0 24px 64px rgb(0 0 0 / 55%), 0 0 0 1px rgb(255 255 255 / 6%);
   }
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #0f1222;
-  --surface: #171a2e;
-  --surface-2: #1f2338;
-  --border: #2b3050;
-  --text: #eef0fa;
-  --text-2: #c3c7dc;
-  --muted: #9aa0bb;
-  --accent: #8b85ff;
-  --accent-soft: #25264a;
-  --accent-text: #0f1222;
-  --good: #4ade9a;
-  --good-soft: #143528;
-  --warn: #f7b955;
-  --warn-soft: #3a2d12;
+  --bg: #1f1e1c;
+  --sidebar-bg: #181715;
+  --sidebar-hover: #24231f;
+  --sidebar-active: #2e2d29;
+  --surface: #262522;
+  --surface-2: #2e2d29;
+  --border: #363531;
+  --border-strong: #46443f;
+  --text: #f1efe9;
+  --text-2: #d3d0c8;
+  --muted: #a29f97;
+  --ink: #f1efe9;
+  --ink-text: #1d1c1a;
+  --accent: #e08a63;
+  --accent-soft: #3a2a22;
+  --accent-text: #1d1c1a;
+  --good: #5fd08f;
+  --good-soft: #17301f;
+  --warn: #f0b75a;
+  --warn-soft: #372b15;
   --bad: #ff8a80;
-  --bad-soft: #3d1a1a;
+  --bad-soft: #3b1d1b;
   --focus: #93b4ff;
-  --shadow: 0 1px 2px rgb(0 0 0 / 40%);
-  --shadow-lg: 0 16px 40px rgb(0 0 0 / 55%);
+  --shadow: 0 1px 2px rgb(0 0 0 / 30%);
+  --shadow-md: 0 1px 2px rgb(0 0 0 / 30%), 0 6px 20px rgb(0 0 0 / 30%);
+  --shadow-lg: 0 24px 64px rgb(0 0 0 / 55%), 0 0 0 1px rgb(255 255 255 / 6%);
 }
 
-/* Edition accents (light values; dark mode keeps a lighter variant of the same hue). */
+/* Edition accents: a single hue per edition, used for small highlights only. */
 :root[data-edition='student'] {
   --accent: #4f46e5;
-  --accent-soft: #eef0ff;
+  --accent-soft: #eeeefc;
 }
 :root[data-edition='solo'] {
   --accent: #066a74;
-  --accent-soft: #e5f6f7;
+  --accent-soft: #e6f3f3;
 }
 :root[data-edition='creator'] {
   --accent: #9333ea;
-  --accent-soft: #f6ecff;
+  --accent-soft: #f4ecfd;
 }
 :root[data-edition='life'] {
   --accent: #13703a;
-  --accent-soft: #e8f7ee;
+  --accent-soft: #e8f3eb;
 }
 :root[data-edition='nomad'] {
   --accent: #c2410c;
-  --accent-soft: #fff0e6;
+  --accent-soft: #fbece3;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light'])[data-edition='student'] {
     --accent: #8b85ff;
-    --accent-soft: #25264a;
+    --accent-soft: #28273f;
   }
   :root:not([data-theme='light'])[data-edition='solo'] {
     --accent: #3fc6d3;
-    --accent-soft: #10323a;
+    --accent-soft: #15302f;
   }
   :root:not([data-theme='light'])[data-edition='creator'] {
     --accent: #c58bff;
-    --accent-soft: #2e1d44;
+    --accent-soft: #2f2438;
   }
   :root:not([data-theme='light'])[data-edition='life'] {
     --accent: #5fd88c;
-    --accent-soft: #15331f;
+    --accent-soft: #19301f;
   }
   :root:not([data-theme='light'])[data-edition='nomad'] {
     --accent: #ff9a5c;
-    --accent-soft: #3a2213;
+    --accent-soft: #3a2519;
   }
 }
 :root[data-theme='dark'][data-edition='student'] {
   --accent: #8b85ff;
-  --accent-soft: #25264a;
+  --accent-soft: #28273f;
 }
 :root[data-theme='dark'][data-edition='solo'] {
   --accent: #3fc6d3;
-  --accent-soft: #10323a;
+  --accent-soft: #15302f;
 }
 :root[data-theme='dark'][data-edition='creator'] {
   --accent: #c58bff;
-  --accent-soft: #2e1d44;
+  --accent-soft: #2f2438;
 }
 :root[data-theme='dark'][data-edition='life'] {
   --accent: #5fd88c;
-  --accent-soft: #15331f;
+  --accent-soft: #19301f;
 }
 :root[data-theme='dark'][data-edition='nomad'] {
   --accent: #ff9a5c;
-  --accent-soft: #3a2213;
+  --accent-soft: #3a2519;
 }

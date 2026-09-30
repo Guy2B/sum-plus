@@ -105,38 +105,38 @@ export function Admin() {
       </Card>
 
       {config.functionsEnabled && (
-      <Card title={t('admin.server')}>
-        <Button
-          icon="refresh"
-          loading={busy === 'diag'}
-          onClick={() =>
-            void run('diag', async () =>
-              setServer(
-                await call<Record<string, never>, Record<string, boolean | number | string>>(
-                  'adminDiagnostics',
-                  {},
+        <Card title={t('admin.server')}>
+          <Button
+            icon="refresh"
+            loading={busy === 'diag'}
+            onClick={() =>
+              void run('diag', async () =>
+                setServer(
+                  await call<Record<string, never>, Record<string, boolean | number | string>>(
+                    'adminDiagnostics',
+                    {},
+                  ),
                 ),
-              ),
-            )
-          }
-        >
-          {t('admin.runServer')}
-        </Button>
-        {server && (
-          <ul class="plain-list">
-            {Object.entries(server).map(([k, v]) => (
-              <li key={k} class="ledger-row">
-                <span>{k}</span>
-                {typeof v === 'boolean' ? (
-                  <Badge tone={v ? 'good' : 'bad'}>{v ? 'OK' : '✗'}</Badge>
-                ) : (
-                  <strong>{String(v)}</strong>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
+              )
+            }
+          >
+            {t('admin.runServer')}
+          </Button>
+          {server && (
+            <ul class="plain-list">
+              {Object.entries(server).map(([k, v]) => (
+                <li key={k} class="ledger-row">
+                  <span>{k}</span>
+                  {typeof v === 'boolean' ? (
+                    <Badge tone={v ? 'good' : 'bad'}>{v ? 'OK' : '✗'}</Badge>
+                  ) : (
+                    <strong>{String(v)}</strong>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
       )}
 
       <Card title={t('admin.scenarios')}>
@@ -173,48 +173,48 @@ export function Admin() {
       </Card>
 
       {config.functionsEnabled && (
-      <Card title={t('admin.grant')}>
-        <p class="small muted">{t('admin.grantHint')}</p>
-        <form
-          class="inline-form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            void run(
-              'grant',
-              () => call('adminSetEntitlement', { email: email.trim(), plan: 'pro' }),
-              t('admin.granted'),
-            );
-          }}
-        >
-          <Field label={t('sources.email')}>
-            {(id) => (
-              <input
-                id={id}
-                type="email"
-                required
-                value={email}
-                onInput={(e) => setEmail((e.currentTarget as HTMLInputElement).value)}
-              />
-            )}
-          </Field>
-          <Button type="submit" loading={busy === 'grant'}>
-            {t('admin.grantPro')}
-          </Button>
-          <Button
-            variant="ghost"
-            loading={busy === 'revoke'}
-            onClick={() =>
+        <Card title={t('admin.grant')}>
+          <p class="small muted">{t('admin.grantHint')}</p>
+          <form
+            class="inline-form"
+            onSubmit={(e) => {
+              e.preventDefault();
               void run(
-                'revoke',
-                () => call('adminSetEntitlement', { email: email.trim(), plan: 'free' }),
-                t('admin.revoked'),
-              )
-            }
+                'grant',
+                () => call('adminSetEntitlement', { email: email.trim(), plan: 'pro' }),
+                t('admin.granted'),
+              );
+            }}
           >
-            {t('admin.revoke')}
-          </Button>
-        </form>
-      </Card>
+            <Field label={t('sources.email')}>
+              {(id) => (
+                <input
+                  id={id}
+                  type="email"
+                  required
+                  value={email}
+                  onInput={(e) => setEmail((e.currentTarget as HTMLInputElement).value)}
+                />
+              )}
+            </Field>
+            <Button type="submit" loading={busy === 'grant'}>
+              {t('admin.grantPro')}
+            </Button>
+            <Button
+              variant="ghost"
+              loading={busy === 'revoke'}
+              onClick={() =>
+                void run(
+                  'revoke',
+                  () => call('adminSetEntitlement', { email: email.trim(), plan: 'free' }),
+                  t('admin.revoked'),
+                )
+              }
+            >
+              {t('admin.revoke')}
+            </Button>
+          </form>
+        </Card>
       )}
     </div>
   );

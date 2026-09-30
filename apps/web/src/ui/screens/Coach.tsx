@@ -17,8 +17,9 @@ import {
 import { visibleDecisions, visibleTop } from '../../data/actions';
 import { enhance, semanticIntent } from '../../services/ai';
 import { t } from '../../i18n';
-import { Badge, Button, Card, PageHeader, confirmDialog } from '../components';
-import { navigate, type RouteId } from '../router';
+import { Badge, Button, confirmDialog } from '../components';
+import { Icon } from '../icons';
+import { navigate, route, type RouteId } from '../router';
 
 function lineText(l: Line): string {
   if (l.text != null && !l.key) return l.text;
@@ -100,86 +101,108 @@ export function Coach() {
     for (const m of messages) await remove('coachMessages', m.id);
   };
 
+  // A question handed over from the home composer or the palette (#coach/<question>).
+  const handed = useRef<string | null>(null);
+  const param = route.value.param;
+  useEffect(() => {
+    if (!param) {
+      handed.current = null;
+      return;
+    }
+    if (handed.current === param) return;
+    handed.current = param;
+    navigate('coach');
+    void ask(param);
+  }, [param]);
+
+  const Meta = ({ m }: { m: (typeof messages)[number] }) =>
+    m.meta ? (
+      <div class="bubble-meta">
+        <Badge
+          tone={m.meta.confidence === 'high' ? 'good' : m.meta.confidence === 'low' ? 'warn' : 'neutral'}
+        >
+          {t(`coach.confidence.${m.meta.confidence ?? 'medium'}`)}
+        </Badge>
+        <span class="muted small">
+          {m.meta.usedSources?.length
+            ? t('coach.usedSources', {
+                sources: m.meta.usedSources
+                  .map((u) => {
+                    const [src, n] = u.split(':');
+                    return `${t(`source.${src}`)} (${n})`;
+                  })
+                  .join(', '),
+              })
+            : t('coach.noSources')}
+        </span>
+        {m.meta.enhancedBy && <span class="muted small">· {t(`coach.enhanced.${m.meta.enhancedBy}`)}</span>}
+        {m.meta.actions?.map((a) => (
+          <button key={a.key} type="button" class="chip" onClick={() => navigate(a.route as RouteId)}>
+            {t(a.key)}
+          </button>
+        ))}
+      </div>
+    ) : null;
+
   return (
-    <div class="page coach-page">
-      <PageHeader
-        title={t('nav.coach')}
-        subtitle={ed.coachWelcome}
-        actions={
-          messages.length ? (
-            <Button variant="ghost" size="sm" icon="trash" onClick={() => void clear()}>
-              {t('coach.clear')}
-            </Button>
-          ) : undefined
-        }
-      />
-      <Card>
-        <div class="chat" ref={listRef} aria-live="polite">
-          {!messages.length && <p class="muted">{t('coach.intro')}</p>}
-          {messages.map((m) => (
-            <div key={m.id} class={`bubble bubble-${m.role}`}>
+    <div class={`page page-narrow coach-page ${messages.length || busy ? '' : 'is-empty'}`}>
+      {messages.length ? (
+        <div class="coach-top">
+          <h1>{t('nav.coach')}</h1>
+          <Button variant="ghost" size="sm" icon="trash" onClick={() => void clear()}>
+            {t('coach.clear')}
+          </Button>
+        </div>
+      ) : (
+        <header class="coach-hero">
+          <span class="brand-mark brand-lg hero-mark" aria-hidden="true">
+            Σ
+          </span>
+          <h1 class="display">{t('coach.heroTitle')}</h1>
+          <p class="muted">{ed.coachWelcome}</p>
+        </header>
+      )}
+
+      <div class="chat" ref={listRef} aria-live="polite">
+        {messages.map((m) =>
+          m.role === 'assistant' ? (
+            <div key={m.id} class="bubble bubble-assistant">
+              <div class="bubble-content">
+                <p class="bubble-text">{m.text}</p>
+                <Meta m={m} />
+              </div>
+            </div>
+          ) : (
+            <div key={m.id} class="bubble bubble-user">
               <p class="bubble-text">{m.text}</p>
-              {m.role === 'assistant' && m.meta && (
-                <div class="bubble-meta">
-                  <Badge
-                    tone={
-                      m.meta.confidence === 'high' ? 'good' : m.meta.confidence === 'low' ? 'warn' : 'neutral'
-                    }
-                  >
-                    {t(`coach.confidence.${m.meta.confidence ?? 'medium'}`)}
-                  </Badge>
-                  <span class="muted small">
-                    {m.meta.usedSources?.length
-                      ? t('coach.usedSources', {
-                          sources: m.meta.usedSources
-                            .map((u) => {
-                              const [src, n] = u.split(':');
-                              return `${t(`source.${src}`)} (${n})`;
-                            })
-                            .join(', '),
-                        })
-                      : t('coach.noSources')}
-                  </span>
-                  {m.meta.enhancedBy && (
-                    <span class="muted small">· {t(`coach.enhanced.${m.meta.enhancedBy}`)}</span>
-                  )}
-                  {m.meta.actions?.map((a) => (
-                    <button
-                      key={a.key}
-                      type="button"
-                      class="link small"
-                      onClick={() => navigate(a.route as RouteId)}
-                    >
-                      {t(a.key)}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
-          ))}
-          {busy && (
-            <div class="bubble bubble-assistant">
-              <span class="spinner" aria-label={t('common.loading')} />
-            </div>
-          )}
-        </div>
+          ),
+        )}
+        {busy && (
+          <div class="bubble bubble-assistant">
+            <span class="spinner muted" aria-label={t('common.loading')} />
+          </div>
+        )}
+      </div>
 
-        <div class="chips" role="group" aria-label={t('coach.suggestions')}>
-          {ed.prompts.map(([label, prompt]) => (
-            <button
-              key={label}
-              type="button"
-              class="chip"
-              disabled={busy || remaining <= 0}
-              onClick={() => void ask(prompt)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
+      <div class="coach-dock">
+        {!messages.length && (
+          <div class="chips composer-chips" role="group" aria-label={t('coach.suggestions')}>
+            {ed.prompts.map(([label, prompt]) => (
+              <button
+                key={label}
+                type="button"
+                class="chip"
+                disabled={busy || remaining <= 0}
+                onClick={() => void ask(prompt)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
         <form
-          class="chat-input"
+          class="composer chat-input"
           onSubmit={(e) => {
             e.preventDefault();
             void ask(text);
@@ -190,35 +213,36 @@ export function Coach() {
           </label>
           <textarea
             id="coach-input"
-            rows={2}
+            rows={1}
             value={text}
             maxLength={1000}
             placeholder={t('coach.placeholder')}
             onInput={(e) => setText((e.currentTarget as HTMLTextAreaElement).value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
+              if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
                 e.preventDefault();
                 void ask(text);
               }
             }}
           />
-          <Button
-            type="submit"
-            variant="primary"
-            icon="send"
-            loading={busy}
-            disabled={!text.trim() || remaining <= 0}
-          >
-            {t('coach.send')}
-          </Button>
+          <div class="composer-bar">
+            <span class="composer-hint">
+              {unlimited
+                ? t('coach.unlimited')
+                : t('coach.remaining', { count: remaining, max: FREE_LIMITS.coachPerDay })}
+            </span>
+            <button
+              type="submit"
+              class="send-btn"
+              aria-label={t('coach.send')}
+              disabled={!text.trim() || busy || remaining <= 0}
+            >
+              <Icon name="arrowUp" size={18} />
+            </button>
+          </div>
         </form>
-        <p class="small muted">
-          {unlimited
-            ? t('coach.unlimited')
-            : t('coach.remaining', { count: remaining, max: FREE_LIMITS.coachPerDay })}{' '}
-          · {t('coach.disclaimer')}
-        </p>
-      </Card>
+        <p class="coach-foot">{t('coach.disclaimer')}</p>
+      </div>
     </div>
   );
 }

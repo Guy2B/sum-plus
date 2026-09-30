@@ -63,7 +63,7 @@ const tokenPath = (uid: string, p: SocialProviderId) => `private/${uid}/connecto
 
 /* ------------------------------ start / callback ------------------------------ */
 
-const StartInput = z.object({ provider: z.string(), returnUrl: z.string().max(500).optional() });
+const StartInput = z.object({ provider: z.string(), returnUrl: z.string().max(500).nullish() });
 
 export const socialStartAuth = onCall({ ...callableDefaults, secrets: SOCIAL_SECRETS }, async (req) => {
   const uid = requireAuth(req);

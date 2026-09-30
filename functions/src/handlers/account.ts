@@ -69,11 +69,11 @@ export const exportMyData = onCall(
 
 const ErrorReport = z.object({
   message: z.string().max(4000),
-  stack: z.string().max(4000).optional(),
-  where: z.string().max(200).optional(),
-  version: z.string().max(40).optional(),
-  url: z.string().max(500).optional(),
-  ua: z.string().max(300).optional(),
+  stack: z.string().max(4000).nullish(),
+  where: z.string().max(200).nullish(),
+  version: z.string().max(40).nullish(),
+  url: z.string().max(500).nullish(),
+  ua: z.string().max(300).nullish(),
 });
 
 /** Client error sink → Cloud Logging (alerting policies are defined on these entries). */

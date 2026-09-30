@@ -4,13 +4,12 @@ import { signal } from '@preact/signals';
 import { t } from '../i18n';
 import { Icon } from './icons';
 import { ROUTES, navigate, route, type RouteDef } from './router';
-import { authUser, create, entitlement, settings, snapshot, syncState } from '../data/store';
+import { authUser, entitlement, settings, snapshot, syncState } from '../data/store';
 import { visibleAttention } from '../data/actions';
 import { can, isPro } from '../domain/entitlements';
 import { getEdition } from '../domain/editions';
-import { parseCapture } from '../domain/capture';
 import { search } from '../domain/search';
-import { toast, attempt } from './components';
+import { askCoach, captureTask, composerFocus } from './composer';
 import { domainEnabled } from '../domain/signals';
 
 export const drawerOpen = signal(false);
@@ -95,47 +94,8 @@ function SyncBadge() {
   return (
     <a href="#account/sync" class={`sync-badge sync-${s.status}`} title={t(m.key)}>
       <Icon name={m.icon} size={16} />
-      <span class="hide-sm">{t(m.key)}</span>
+      <span>{t(m.key)}</span>
     </a>
-  );
-}
-
-function QuickCapture() {
-  const [value, setValue] = useState('');
-  const submit = async (e: Event) => {
-    e.preventDefault();
-    const text = value.trim();
-    if (!text) return;
-    const c = parseCapture(text);
-    await attempt(async () => {
-      await create('tasks', {
-        title: c.title.slice(0, 300),
-        category: c.category ?? 'work',
-        status: c.dueDate || c.scheduledFor ? 'todo' : 'inbox',
-        priority: c.priority,
-        dueDate: c.dueDate,
-        scheduledFor: c.scheduledFor,
-        estimateMinutes: c.estimateMinutes ?? undefined,
-      });
-      setValue('');
-      toast(t('capture.saved', { title: c.title }), 'good');
-    });
-  };
-  return (
-    <form class="capture" onSubmit={submit} aria-label={t('capture.label')}>
-      <Icon name="plus" />
-      <input
-        value={value}
-        onInput={(e) => setValue((e.currentTarget as HTMLInputElement).value)}
-        placeholder={t('capture.placeholder')}
-        aria-label={t('capture.label')}
-        maxLength={300}
-        enterKeyHint="done"
-      />
-      <button type="submit" class="btn btn-primary btn-sm" disabled={!value.trim()}>
-        {t('capture.add')}
-      </button>
-    </form>
   );
 }
 
@@ -169,7 +129,30 @@ function CommandPalette() {
           go: () => navigate(h.route as never, h.id),
         }))
       : [];
-  const items = [...routes.slice(0, 6), ...hits];
+  const query = q.trim();
+  const commands = query
+    ? [
+        {
+          key: 'c:task',
+          icon: 'plus',
+          title: t('palette.createTask', { q: query }),
+          detail: t('composer.task'),
+          go: () => void captureTask(query),
+        },
+        {
+          key: 'c:ask',
+          icon: 'sigma',
+          title: t('palette.ask', { q: query }),
+          detail: t('composer.ask'),
+          go: () => askCoach(query),
+        },
+      ]
+    : [];
+  const items: { key: string; icon?: string; title: string; detail: string; go: () => void }[] = [
+    ...routes.slice(0, 6),
+    ...commands,
+    ...hits,
+  ];
   const pick = (i: number) => {
     items[i]?.go();
     paletteOpen.value = false;
@@ -219,6 +202,7 @@ function CommandPalette() {
               onMouseEnter={() => setIdx(i)}
               onClick={() => pick(i)}
             >
+              {it.icon && <Icon name={it.icon} size={16} />}
               <span>{it.title}</span>
               <small class="muted">{it.detail}</small>
             </li>
@@ -244,6 +228,12 @@ export function Shell({ children, banner }: { children: ComponentChildren; banne
   const s = settings.value;
   const ed = getEdition(s.edition, s.locale);
   const user = authUser.value;
+  const current = ROUTES.find((r) => r.id === route.value.id);
+  const newCapture = () => {
+    drawerOpen.value = false;
+    navigate('today');
+    composerFocus.value++;
+  };
   const mobileMain = ROUTES.filter((r) => r.group === 'main');
   return (
     <div class="app">
@@ -260,8 +250,27 @@ export function Shell({ children, banner }: { children: ComponentChildren; banne
             <small class="muted">{ed.name}</small>
           </div>
         </div>
+        <div class="sidebar-actions">
+          <button type="button" class="sidebar-action" onClick={newCapture}>
+            <Icon name="edit" size={18} />
+            <span>{t('nav.new')}</span>
+          </button>
+          <button
+            type="button"
+            class="sidebar-action"
+            onClick={() => {
+              drawerOpen.value = false;
+              paletteOpen.value = true;
+            }}
+          >
+            <Icon name="search" size={18} />
+            <span>{t('palette.title')}</span>
+            <kbd class="hide-sm">Ctrl K</kbd>
+          </button>
+        </div>
         <NavList onPick={() => (drawerOpen.value = false)} />
         <div class="sidebar-foot">
+          <SyncBadge />
           <a href="#account" class="account-chip">
             <span class="avatar" aria-hidden="true">
               {(s.name || user?.email || 'Σ').slice(0, 1).toUpperCase()}
@@ -279,23 +288,24 @@ export function Shell({ children, banner }: { children: ComponentChildren; banne
         <header class="topbar">
           <button
             type="button"
-            class="icon-btn show-sm"
+            class="icon-btn"
             aria-label={t('nav.open')}
             onClick={() => (drawerOpen.value = true)}
           >
             <Icon name="menu" />
           </button>
-          <QuickCapture />
+          <span class="topbar-title">{current ? navLabel(current) : 'Σ'}</span>
           <button
             type="button"
             class="icon-btn"
             aria-label={t('palette.title')}
-            title={`${t('palette.title')} (Ctrl+K)`}
             onClick={() => (paletteOpen.value = true)}
           >
             <Icon name="search" />
           </button>
-          <SyncBadge />
+          <button type="button" class="icon-btn" aria-label={t('nav.new')} onClick={newCapture}>
+            <Icon name="edit" />
+          </button>
         </header>
         {banner}
         <main id="main" tabIndex={-1}>

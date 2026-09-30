@@ -1,7 +1,7 @@
 import { useState } from 'preact/hooks';
 import type { Decision } from '../domain/decision';
 import { t, fmtRelative, fmtMinutes } from '../i18n';
-import { Badge, Button, attempt } from './components';
+import { Button, attempt } from './components';
 import { Icon } from './icons';
 import { completeDecision, deferDecision, dismissDecision } from '../data/actions';
 import { navigate, type RouteId } from './router';
@@ -25,8 +25,6 @@ export function decisionTitle(d: Decision): string {
   return d.signal.titleKey ? t(d.signal.titleKey, d.signal.titleParams) : (d.signal.title ?? '');
 }
 
-const BAND_TONE = { critical: 'bad', high: 'warn', medium: 'accent', low: 'neutral' } as const;
-
 export function DecisionCard({ d, rank, compact }: { d: Decision; rank?: number; compact?: boolean }) {
   const [open, setOpen] = useState(false);
   const title = decisionTitle(d);
@@ -44,31 +42,31 @@ export function DecisionCard({ d, rank, compact }: { d: Decision; rank?: number;
           </span>
         )}
         <div class="decision-body">
-          <div class="decision-meta">
-            <Badge tone={BAND_TONE[d.band]}>{t(`band.${d.band}`)}</Badge>
-            <span class="muted">{t(`source.${d.signal.sourceType}`)}</span>
-            <span class="decision-hint">· {t(`action.${d.action}`)}</span>
-            {d.signal.provider && !['local', 'demo'].includes(d.signal.provider) && (
-              <span class="muted">· {d.signal.provider}</span>
-            )}
-            {due && (
-              <span class="muted">
-                · <Icon name="clock" size={13} /> {due}
-              </span>
-            )}
-            <span class="muted">· {fmtMinutes(d.facts.effortMinutes)}</span>
-          </div>
           <h3 class="decision-title">
             <button type="button" class="link-title" onClick={openSource}>
               {title}
             </button>
           </h3>
-          {d.signal.sender && <p class="muted small">{d.signal.sender}</p>}
+          <div class="decision-meta">
+            <span class={`band-dot band-${d.band}`} aria-hidden="true" />
+            <span class="decision-band">{t(`band.${d.band}`)}</span>
+            <span>· {t(`source.${d.signal.sourceType}`)}</span>
+            <span class="decision-hint">· {t(`action.${d.action}`)}</span>
+            {d.signal.provider && !['local', 'demo'].includes(d.signal.provider) && (
+              <span>· {d.signal.provider}</span>
+            )}
+            {due && (
+              <span>
+                · <Icon name="clock" size={13} /> {due}
+              </span>
+            )}
+            <span>· {fmtMinutes(d.facts.effortMinutes)}</span>
+            {d.signal.sender && <span>· {d.signal.sender}</span>}
+          </div>
           {!compact && d.reasons[0] && <p class="decision-why">{t(d.reasons[0].key, d.reasons[0].params)}</p>}
         </div>
         <div class="decision-score" title={t('decision.scoreHint')}>
-          <strong>{d.score}</strong>
-          <small>/100</small>
+          <strong>{d.score}</strong>/100
         </div>
       </div>
 

@@ -19,7 +19,9 @@ export const handler = createHandler({
     purgeMyConnectors,
   },
   requests: { 'oauth/callback': socialOAuthCallback },
-  verifyIdToken: async (token) => auth.verifyIdToken(token, true),
+  // Signature + expiry check only: revocation lookups need Auth admin rights the
+  // least-privilege Netlify service account deliberately does not have.
+  verifyIdToken: async (token) => auth.verifyIdToken(token),
   allowedOrigins,
   log: (message, detail) => logger.warn(message, detail),
 });

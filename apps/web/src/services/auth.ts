@@ -36,13 +36,13 @@ export async function initAuth(): Promise<void> {
       authUser.value = next;
       if (!config.openAccess)
         unsubEntitlement = onSnapshot(
-        doc(db, 'entitlements', user.uid),
-        (snap) =>
-          void setEntitlement(
-            snap.exists() ? { ...FREE_ENTITLEMENT, ...(snap.data() as Entitlement) } : FREE_ENTITLEMENT,
-          ),
-        (err) => reportError(err, { where: 'entitlement-listener' }),
-      );
+          doc(db, 'entitlements', user.uid),
+          (snap) =>
+            void setEntitlement(
+              snap.exists() ? { ...FREE_ENTITLEMENT, ...(snap.data() as Entitlement) } : FREE_ENTITLEMENT,
+            ),
+          (err) => reportError(err, { where: 'entitlement-listener' }),
+        );
       void startSync(user.uid);
     });
   } catch (err) {
@@ -148,7 +148,12 @@ export async function exportCloudData(): Promise<unknown> {
   return {
     format: 'sigma-life-os-cloud-export',
     exportedAt: new Date().toISOString(),
-    account: { uid: user.uid, email: user.email, displayName: user.displayName, createdAt: user.metadata.creationTime },
+    account: {
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+      createdAt: user.metadata.creationTime,
+    },
     settings: settingsSnap.exists() ? settingsSnap.data() : null,
     collections,
   };

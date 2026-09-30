@@ -33,7 +33,8 @@ export const de: Record<MessageKey, string> = {
   'error.storage':
     'Lokaler Speicher nicht verfügbar (privates Surfen?). Ihre Daten werden nicht gespeichert.',
   'error.fileTooLarge': 'Datei zu groß.',
-  'error.requires-recent-login': 'Melden Sie sich aus Sicherheitsgründen erneut an und wiederholen Sie die Löschung.',
+  'error.requires-recent-login':
+    'Melden Sie sich aus Sicherheitsgründen erneut an und wiederholen Sie die Löschung.',
   'error.popup-closed-by-user': 'Anmeldefenster geschlossen.',
   'error.popup_closed': 'Anmeldefenster geschlossen.',
   'error.popup-blocked': 'Der Browser hat das Anmeldefenster blockiert.',
@@ -62,6 +63,16 @@ export const de: Record<MessageKey, string> = {
   'error.native-health-unavailable': 'Nur in der mobilen App verfügbar.',
   'error.health-permission-denied': 'Gesundheitsberechtigung in den Telefoneinstellungen verweigert.',
 
+  'nav.new': 'Neue Notiz',
+  'composer.task': 'Aufgabe',
+  'composer.ask': 'Σ fragen',
+  'composer.mode': 'Eingabeart',
+  'composer.placeholderAsk': 'Stellen Sie Σ eine Frage…',
+  'composer.hintTask': 'Enter zum Hinzufügen · „?“ für eine Frage',
+  'composer.hintAsk': 'Σ antwortet nur auf Basis Ihrer Daten',
+  'palette.createTask': 'Aufgabe „{q}“ erstellen',
+  'palette.ask': 'Σ fragen: „{q}“',
+  'coach.heroTitle': 'Wie kann ich helfen?',
   'nav.label': 'Hauptnavigation',
   'nav.mobile': 'Schnellnavigation',
   'nav.more': 'Mehr',

@@ -21,6 +21,7 @@ const PRESETS = {
   icloud: { host: 'imap.mail.me.com', port: 993 },
 } as const;
 
+// nullish, not optional: the Firebase callable SDK encodes `undefined` as `null`.
 const ConnectInput = z.object({
   preset: z.enum(['yahoo', 'gmx', 'icloud', 'custom']),
   email: z.string().email().max(200),
@@ -29,8 +30,8 @@ const ConnectInput = z.object({
     .string()
     .max(200)
     .regex(/^[a-z0-9.-]+\.[a-z]{2,}$/i)
-    .optional(),
-  port: z.number().int().min(1).max(65535).optional(),
+    .nullish(),
+  port: z.number().int().min(1).max(65535).nullish(),
 });
 
 /** Blocks internal / link-local targets for custom hosts (SSRF protection). */
