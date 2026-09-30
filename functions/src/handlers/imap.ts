@@ -82,12 +82,22 @@ export const imapConnect = onCall(
     if (!target.host) throw new HttpsError('invalid-argument', 'Host required');
     assertPublicHost(target.host);
 
-    const c = client(target.host, target.port, input.email, input.password);
+    // Provider app passwords are shown in groups ("abcd efgh ijkl mnop") and often
+    // pasted with the spaces; none of the presets allow whitespace in them.
+    const password = input.preset === 'custom' ? input.password : input.password.replace(/\s+/g, '');
+    const c = client(target.host, target.port, input.email, password);
     try {
       await c.connect();
       await c.logout();
     } catch (err) {
-      logger.warn('imap login failed', { host: target.host, code: (err as { code?: string }).code });
+      const e = err as { code?: string; authenticationFailed?: boolean; responseText?: string };
+      // responseText is the server's reply (e.g. "[AUTHENTICATIONFAILED] Invalid credentials"), never the secret.
+      logger.warn('imap login failed', {
+        host: target.host,
+        code: e.code,
+        authenticationFailed: e.authenticationFailed,
+        response: e.responseText?.slice(0, 200),
+      });
       throw new HttpsError('permission-denied', 'IMAP login failed: check the app password');
     }
 
@@ -98,7 +108,7 @@ export const imapConnect = onCall(
       host: target.host,
       port: target.port,
       user: input.email,
-      secret: seal(input.password, CONNECTOR_ENCRYPTION_KEY.value(), `${uid}:${accountId}`),
+      secret: seal(password, CONNECTOR_ENCRYPTION_KEY.value(), `${uid}:${accountId}`),
       createdAt: FieldValue.serverTimestamp(),
     };
     await db.doc(`private/${uid}/connectors/${accountId}`).set(doc);
