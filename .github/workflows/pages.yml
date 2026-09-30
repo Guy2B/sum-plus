@@ -31,8 +31,9 @@ jobs:
       - name: Build for the Pages sub-path
         run: npm run build -w apps/web
         env:
-          VITE_BASE: /${{ github.event.repository.name }}/
-          VITE_PUBLIC_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+          # Custom domain (Settings → Pages): served at the root of lifeos.guybeaho.com.
+          VITE_BASE: /
+          VITE_PUBLIC_URL: https://lifeos.guybeaho.com
           VITE_LEGAL_ENTITY: ${{ vars.VITE_LEGAL_ENTITY }}
           VITE_LEGAL_ADDRESS: ${{ vars.VITE_LEGAL_ADDRESS }}
           VITE_SUPPORT_EMAIL: ${{ vars.VITE_SUPPORT_EMAIL }}
