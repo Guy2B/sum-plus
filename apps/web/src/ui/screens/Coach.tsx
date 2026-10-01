@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
+import { LimitNotice } from '../pro';
 import { answer, detectIntent, type CoachAnswer, type Line } from '../../domain/coach';
 import { FREE_LIMITS, can } from '../../domain/entitlements';
 import { getEdition } from '../../domain/editions';
@@ -296,6 +297,9 @@ export function Coach() {
               }
             }}
           />
+          {!unlimited && remaining <= 0 && (
+            <LimitNotice from="coach" text={t('pro.limit.coach', { max: FREE_LIMITS.coachPerDay })} />
+          )}
           <div class="composer-bar">
             <span class="composer-hint">
               {unlimited

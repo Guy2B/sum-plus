@@ -370,6 +370,11 @@ export interface Settings {
     summaryFor?: ISODate;
     /** Weekly pulse already shown ('d7', 'd30'). */
     pulseAsked?: string[];
+    /** Day the beta price question was answered or dismissed. */
+    priceAsked?: ISODate;
+    /** Founder programme: last day counted and active days (mirror of founders/{uid}). */
+    founderDay?: ISODate;
+    founderDays?: number;
     /** "My day has changed": today's constraints, reset automatically the next day. */
     day?: {
       date: ISODate;

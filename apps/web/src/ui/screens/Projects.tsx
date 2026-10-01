@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
+import { LimitNotice } from '../pro';
 import type { Project } from '../../domain/types';
 import { create, snapshot, update, entitlement, settings } from '../../data/store';
 import { projectNextStep, projectProgress, isStalled } from '../../domain/learning';
@@ -272,7 +273,7 @@ export function Projects() {
           </Button>
         }
       />
-      {!canAdd && <p class="notice">{t('projects.limit', { max: FREE_LIMITS.projects })}</p>}
+      {!canAdd && <LimitNotice from="projects" text={t('projects.limit', { max: FREE_LIMITS.projects })} />}
       {active.length ? (
         <div class="grid grid-2">
           {active.map((p) => (

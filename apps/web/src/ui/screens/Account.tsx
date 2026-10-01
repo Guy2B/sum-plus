@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
-import { setTelemetry } from '../../services/telemetry';
+import { FounderCard } from '../pro';
+import { setTelemetry, track } from '../../services/telemetry';
 import type { Currency, EditionKey, Locale, Settings } from '../../domain/types';
 import { COLLECTIONS, LOCAL_ONLY_COLLECTIONS } from '../../domain/types';
 import {
@@ -144,7 +145,9 @@ function Plan() {
   const user = authUser.value;
   const go = (billing: 'monthly' | 'annual') => {
     const url = checkoutUrl(billing);
-    if (url) location.assign(url);
+    if (!url) return;
+    void track('checkout_started', { from: 'account' });
+    location.assign(url);
   };
   return (
     <Card title={t('account.plan')} id="plan">
@@ -155,7 +158,7 @@ function Plan() {
           <span class="muted small">{t('plan.validUntil', { date: fmtDate(ent.validUntil) })}</span>
         )}
       </div>
-      {config.openAccess && <p class="notice small">{t('plan.openAccess')}</p>}
+      <FounderCard />
       {!pro && (
         <>
           <ul class="plan-features">

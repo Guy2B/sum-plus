@@ -42,7 +42,11 @@ export function buildDaily(rows: TelemetryRow[]) {
   const ai: Record<string, number> = {};
   const pf: Record<string, number> = {};
   const engine: Record<string, number> = {};
+  const byFrom: Record<string, Record<string, number>> = {};
+  const price: Record<string, number> = {};
   for (const r of rows) {
+    if (typeof r.from === 'string') inc((byFrom[r.from] ??= {}), r.e);
+    if (r.e === 'price_interest' && typeof r.ans === 'string') inc(price, r.ans);
     inc(events, r.e);
     if (r.lang) inc((byLang[r.lang] ??= {}), r.e);
     inc((bySrc[r.src ?? 'direct'] ??= {}), r.e);
@@ -70,7 +74,7 @@ export function buildDaily(rows: TelemetryRow[]) {
       }
     }
   }
-  return { events, byLang, bySrc, ai, pf, engine };
+  return { events, byLang, bySrc, ai, pf, engine, byFrom, price };
 }
 
 /** Installs per install week, and how many opened the app on day 1/3/7/14/30 (pure, tested). */
@@ -102,7 +106,7 @@ export async function aggregateDays(now = new Date(), back = 3): Promise<number>
       db.collection('analytics_daily').doc(day),
       { day, ...buildDaily(list), updatedAt: FieldValue.serverTimestamp() },
       // Replace the computed maps entirely, but never touch visits/visitsLang.
-      { mergeFields: ['day', 'events', 'byLang', 'bySrc', 'ai', 'pf', 'engine', 'updatedAt'] },
+      { mergeFields: ['day', 'events', 'byLang', 'bySrc', 'ai', 'pf', 'engine', 'byFrom', 'price', 'updatedAt'] },
     );
   await batch.commit();
   return byDay.size;

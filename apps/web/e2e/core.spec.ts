@@ -144,6 +144,19 @@ test.describe('core journey', () => {
     await expect(page.getByRole('button', { name: 'Découvrir Σ Pro' })).toBeVisible();
   });
 
+  test('paid mode: the way to Pro is visible but never grants Pro on the client', async ({ page }) => {
+    await onboard(page);
+    await page
+      .getByRole('button', { name: /Passer à Σ Pro/ })
+      .first()
+      .click();
+    const dialog = page.getByRole('dialog', { name: 'Σ Pro' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText('Coach illimité')).toBeVisible();
+    await dialog.getByRole('button', { name: 'Fermer' }).click();
+    await expect(page.locator('.account-chip')).toContainText('Σ Free');
+  });
+
   test('backup export produces a valid Σ backup file', async ({ page }) => {
     await onboard(page, { demo: true });
     await page.goto('/app.html#account/data');

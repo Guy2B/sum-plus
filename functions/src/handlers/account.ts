@@ -12,6 +12,7 @@ export async function purgeUser(uid: string): Promise<void> {
   await Promise.all(states.docs.map((d) => d.ref.delete()));
   // The entitlement is removed; billing records remain with the payment provider (legal retention).
   await db.doc(`entitlements/${uid}`).delete();
+  await db.doc(`founders/${uid}`).delete();
 }
 
 /** GDPR art. 17: erase account, synced data, connector credentials and the auth user. */

@@ -1,6 +1,7 @@
 import { settings, snapshot, capacity, clock, create, remove, updateSettings } from '../../data/store';
 import { setTelemetry, track } from '../../services/telemetry';
 import { PulseCard } from '../pulse';
+import { PriceQuestion } from '../pro';
 import { rememberShown, visibleTop, visibleDecisions } from '../../data/actions';
 import { hasDemoData, clearDemo } from '../../data/seed';
 import { getEdition } from '../../domain/editions';
@@ -310,6 +311,7 @@ export function Today() {
       {closedToday && <p class="day-closed small muted">{t('today.end.closed')}</p>}
 
       <PulseCard />
+      <PriceQuestion />
       {s.usage.telemetry === undefined && s.onboardingComplete && shown.length > 0 && (
         <aside class="consent-note" aria-labelledby="consent-title">
           <p>

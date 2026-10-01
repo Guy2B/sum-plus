@@ -42,6 +42,14 @@ export const config = Object.freeze({
     tiktok: bool(env.VITE_SOCIAL_TIKTOK_ENABLED),
     meta: bool(env.VITE_SOCIAL_META_ENABLED),
   },
+  /** Beta founder offer: shown while openAccess is on, honoured with a Lemon Squeezy code at launch. */
+  founder: {
+    annualPrice: str(env.VITE_FOUNDER_ANNUAL) || '39 €',
+    monthlyPrice: str(env.VITE_FOUNDER_MONTHLY) || '4,90 €',
+    years: 5,
+    seats: 100,
+    minDays: 14,
+  },
   payments: {
     mode: (str(env.VITE_PAYMENT_MODE) || 'test') as 'test' | 'live',
     monthlyCheckoutUrl: str(env.VITE_CHECKOUT_MONTHLY_URL),

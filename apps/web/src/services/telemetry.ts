@@ -29,6 +29,10 @@ export const EVENTS = [
   'coach_plan_applied',
   'day_replanned',
   'daily_summary',
+  'pro_gate_seen',
+  'pro_cta_clicked',
+  'checkout_started',
+  'price_interest',
 ] as const;
 export type TelemetryEvent = (typeof EVENTS)[number];
 
@@ -141,7 +145,15 @@ async function send(record: Record<string, unknown>, now: Date) {
   });
 }
 
-export async function track(e: TelemetryEvent, now = new Date()): Promise<void> {
+/** Where an upgrade path was seen or used (sidebar, a Free limit…). */
+export type ProTrigger = 'sidebar' | 'account' | 'coach' | 'projects' | 'habits' | 'feature';
+export type PriceAnswer = 'yes' | 'maybe' | 'expensive' | 'useless';
+
+export async function track(
+  e: TelemetryEvent,
+  extra: { from?: ProTrigger; ans?: PriceAnswer } = {},
+  now = new Date(),
+): Promise<void> {
   const s = settings.value;
   if (!s.usage.telemetry || !cloudConfigured()) return;
   const sent = s.usage.sentEvents ?? [];
@@ -165,7 +177,7 @@ export async function track(e: TelemetryEvent, now = new Date()): Promise<void> 
       ai: aiMode(s.ai),
       pf: platform(),
     });
-    await send(record, now);
+    await send({ ...record, ...extra }, now);
     if (e === 'app_open') await sendSummary(now);
   } catch {
     /* measurement is best-effort and never gets in the way */
@@ -199,6 +211,19 @@ export async function setTelemetry(on: boolean): Promise<void> {
   await track('app_open');
   await track('onboarding_started');
   if (settings.value.onboardingComplete) await track('onboarding_complete');
+}
+
+/** Beta price question: one anonymous click, sent because the person chose to answer. */
+export async function sendPriceAnswer(ans: PriceAnswer, now = new Date()): Promise<void> {
+  const s = settings.value;
+  await updateSettings((cur) => ({ ...cur, usage: { ...cur.usage, priceAsked: isoDay(now) } }));
+  if (!cloudConfigured()) return;
+  const record = telemetryRecord('price_interest', s.usage.installedAt ?? isoDay(now), now, {
+    edition: s.edition,
+    locale: s.locale,
+    version: APP_VERSION,
+  });
+  await send({ ...record, ans }, now).catch(() => undefined);
 }
 
 /* ------------------------------ feedback pulse ------------------------------ */
@@ -242,6 +267,8 @@ export interface DailyAggregate {
   engine?: Record<string, number>;
   visits?: Record<string, number>;
   visitsLang?: Record<string, number>;
+  byFrom?: Record<string, Record<string, number>>;
+  price?: Record<string, number>;
 }
 
 export interface CohortAggregate {

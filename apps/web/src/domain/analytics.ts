@@ -16,6 +16,8 @@ export interface Daily {
   engine?: Record<string, number>;
   visits?: Record<string, number>;
   visitsLang?: Record<string, number>;
+  byFrom?: Record<string, Record<string, number>>;
+  price?: Record<string, number>;
 }
 
 export interface Cohort {
@@ -51,7 +53,11 @@ export function sumPeriod(rows: Daily[], lang?: string) {
   const ai: Record<string, number> = {};
   const pf: Record<string, number> = {};
   const bySrc: Record<string, Record<string, number>> = {};
+  const byFrom: Record<string, Record<string, number>> = {};
+  const price: Record<string, number> = {};
   for (const r of rows) {
+    add(price, r.price);
+    for (const [from, counts] of Object.entries(r.byFrom ?? {})) add((byFrom[from] ??= {}), counts);
     add(events, lang ? r.byLang?.[lang] : r.events);
     add(engine, r.engine);
     add(visits, r.visits);
@@ -59,7 +65,7 @@ export function sumPeriod(rows: Daily[], lang?: string) {
     add(pf, r.pf);
     for (const [src, counts] of Object.entries(r.bySrc ?? {})) add((bySrc[src] ??= {}), counts);
   }
-  return { events, engine, visits, ai, pf, bySrc };
+  return { events, engine, visits, ai, pf, bySrc, byFrom, price };
 }
 
 /** Cohort retention: share of installs of that week that opened the app on day N ("—" when not reached yet). */
@@ -186,6 +192,29 @@ export function analyze(daily: Daily[], cohorts: Cohort[], days: number, now: Da
     ctr: pct((current.visits.cta_demo ?? 0) + (current.visits.cta_mine ?? 0), current.visits.landing ?? 0),
   };
 
+  // Free → Pro: offers seen, clicked, checkouts opened (purchases come from the webhook at launch).
+  const answers = Object.values(current.price).reduce((a, n) => a + n, 0);
+  const pro = {
+    seen: e.pro_gate_seen ?? 0,
+    clicked: e.pro_cta_clicked ?? 0,
+    checkout: e.checkout_started ?? 0,
+    clickRate: pct(e.pro_cta_clicked ?? 0, e.pro_gate_seen ?? 0),
+    byTrigger: Object.entries(current.byFrom)
+      .map(([from, c]) => ({
+        from,
+        seen: c.pro_gate_seen ?? 0,
+        clicked: c.pro_cta_clicked ?? 0,
+        checkout: c.checkout_started ?? 0,
+      }))
+      .sort((a, b) => b.checkout - a.checkout || b.clicked - a.clicked),
+    answers,
+    price: (['yes', 'maybe', 'expensive', 'useless'] as const).map((k) => ({
+      answer: k,
+      count: current.price[k] ?? 0,
+      share: pct(current.price[k] ?? 0, answers),
+    })),
+  };
+
   return {
     kpis: {
       activation,
@@ -201,6 +230,7 @@ export function analyze(daily: Daily[], cohorts: Cohort[], days: number, now: Da
     personalization,
     engagement,
     landing,
+    pro,
     retention: retentionRows(cohorts, now),
     empty: !opens && !landing.views && !(e.onboarding_started ?? 0),
   };

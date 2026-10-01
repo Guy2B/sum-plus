@@ -92,3 +92,33 @@ describe('weekly pulse', () => {
     expect(duePulse({ installedAt: '2026-08-20', pulseAsked: ['d7'] }, NOW)).toBe('d30');
   });
 });
+
+describe('Free → Pro readiness', () => {
+  it('computes the annual saving shown in the Pro window', async () => {
+    const { annualSaving } = await import('../src/ui/pro');
+    expect(annualSaving('8,90 €', '69 €')).toBe(35);
+    expect(annualSaving('', '69 €')).toBeNull();
+  });
+
+  it('reads the Pro funnel and price answers from the aggregates', () => {
+    const a = analyze(
+      [
+        {
+          day: '2026-09-29',
+          events: { pro_gate_seen: 10, pro_cta_clicked: 4, checkout_started: 1, app_open: 5 },
+          byFrom: {
+            coach: { pro_gate_seen: 6, pro_cta_clicked: 3, checkout_started: 1 },
+            sidebar: { pro_cta_clicked: 1 },
+          },
+          price: { yes: 3, maybe: 2, expensive: 4, useless: 1 },
+        },
+      ],
+      [],
+      7,
+      NOW,
+    );
+    expect(a.pro.clickRate).toBe(40);
+    expect(a.pro.byTrigger[0]).toMatchObject({ from: 'coach', checkout: 1 });
+    expect(a.pro.price.find((p) => p.answer === 'expensive')?.share).toBe(40);
+  });
+});

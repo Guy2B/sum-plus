@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
+import { LimitNotice } from '../pro';
 import type { Goal, Habit } from '../../domain/types';
 import { create, snapshot, update, clock, entitlement, remove } from '../../data/store';
 import { habitDueOn, habitStreak } from '../../domain/wellbeing';
@@ -287,7 +288,7 @@ export function Goals() {
             {t('common.add')}
           </Button>
         </form>
-        {!canAddHabit && <p class="small muted">{t('habits.limit', { max: FREE_LIMITS.habits })}</p>}
+        {!canAddHabit && <LimitNotice from="habits" text={t('habits.limit', { max: FREE_LIMITS.habits })} />}
       </Card>
 
       {achieved.length > 0 && (

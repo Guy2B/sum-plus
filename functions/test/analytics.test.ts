@@ -36,6 +36,17 @@ describe('analytics aggregation', () => {
     expect(d.engine).toMatchObject({ n: 1, p: 6, a: 4, ob5: 1, ob20: 1, ebSum: 40, eaSum: 20, ebN: 1, lateP: 6, lateA: 4 });
   });
 
+  it('splits the Pro funnel by trigger and counts price answers', () => {
+    const d = buildDaily([
+      row('pro_gate_seen', { from: 'coach' }),
+      row('pro_cta_clicked', { from: 'coach' }),
+      row('price_interest', { ans: 'maybe' }),
+      row('price_interest', { ans: 'yes' }),
+    ]);
+    expect(d.byFrom.coach).toEqual({ pro_gate_seen: 1, pro_cta_clicked: 1 });
+    expect(d.price).toEqual({ maybe: 1, yes: 1 });
+  });
+
   it('counts installs per week and returns on day 1/3/7/14/30 only', () => {
     const c = buildCohorts(
       [row('onboarding_complete'), row('onboarding_complete')],

@@ -26,6 +26,12 @@ const FR: Dict = {
 
 const T: Record<Exclude<Lang, 'fr'>, Dict> = {
   en: {
+    'cta.beta': 'Join the beta — Pro included',
+    'founder.eyebrow': 'Open beta · Founder offer',
+    'founder.body':
+      '<b>Σ Pro is free for the whole beta.</b> The first 100 testers who use Σ for at least 14 days then keep <b>€39/year instead of €69</b> (or €4.90/month) for 5 years.',
+    'founder.small':
+      'A free account is enough to keep the benefit. The 5 years start with the first payment, as long as the subscription stays active.',
     'cta.demo': 'Try without my data',
     'cta.mine': 'Start with my data',
     'cta.demoNote': 'A sample week, nothing to type, nothing to share.',
@@ -223,6 +229,12 @@ const T: Record<Exclude<Lang, 'fr'>, Dict> = {
     'footer.support': 'Support',
   },
   de: {
+    'cta.beta': 'Der Beta beitreten — Pro inklusive',
+    'founder.eyebrow': 'Offene Beta · Gründerangebot',
+    'founder.body':
+      '<b>Σ Pro ist während der gesamten Beta kostenlos.</b> Die ersten 100 Tester, die Σ mindestens 14 Tage nutzen, behalten danach <b>39 €/Jahr statt 69 €</b> (oder 4,90 €/Monat) für 5 Jahre.',
+    'founder.small':
+      'Ein kostenloses Konto genügt, um den Vorteil zu behalten. Die 5 Jahre beginnen mit der ersten Zahlung, solange das Abo aktiv bleibt.',
     'cta.demo': 'Ohne meine Daten testen',
     'cta.mine': 'Mit meinen Daten starten',
     'cta.demoNote': 'Eine Beispielwoche, nichts eintippen, nichts teilen.',
@@ -423,6 +435,12 @@ const T: Record<Exclude<Lang, 'fr'>, Dict> = {
     'footer.support': 'Support',
   },
   es: {
+    'cta.beta': 'Unirse a la beta — Pro incluido',
+    'founder.eyebrow': 'Beta abierta · Oferta Fundador',
+    'founder.body':
+      '<b>Σ Pro es gratis durante toda la beta.</b> Los 100 primeros testers que usen Σ al menos 14 días conservan después <b>39 €/año en lugar de 69 €</b> (o 4,90 €/mes) durante 5 años.',
+    'founder.small':
+      'Basta una cuenta gratuita para conservar la ventaja. Los 5 años empiezan con el primer pago, mientras la suscripción siga activa.',
     'cta.demo': 'Probar sin mis datos',
     'cta.mine': 'Empezar con mis datos',
     'cta.demoNote': 'Una semana de ejemplo, nada que escribir, nada que compartir.',

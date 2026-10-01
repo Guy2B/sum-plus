@@ -1,4 +1,6 @@
 import type { ComponentChildren } from 'preact';
+import { SidebarPro, UpgradeModal } from './pro';
+import { recordFounderDay } from '../services/founder';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { signal } from '@preact/signals';
 import { t } from '../i18n';
@@ -258,6 +260,9 @@ function CommandPalette() {
 }
 
 export function Shell({ children, banner }: { children: ComponentChildren; banner?: ComponentChildren }) {
+  // Founder programme: count today's use once the account is known.
+  const uid = authUser.value?.uid;
+  useEffect(() => void recordFounderDay(), [uid]);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
@@ -327,6 +332,7 @@ export function Shell({ children, banner }: { children: ComponentChildren; banne
         </div>
         <NavList onPick={() => (drawerOpen.value = false)} />
         <div class="sidebar-foot">
+          <SidebarPro />
           <SyncBadge />
           <a href="#account" class="account-chip">
             <span class="avatar" aria-hidden="true">
@@ -389,6 +395,7 @@ export function Shell({ children, banner }: { children: ComponentChildren; banne
       </nav>
       <FocusBar />
       <CommandPalette />
+      <UpgradeModal />
     </div>
   );
 }

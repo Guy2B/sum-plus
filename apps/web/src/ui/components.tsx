@@ -5,7 +5,6 @@ import { Icon } from './icons';
 import { t } from '../i18n';
 import { entitlement } from '../data/store';
 import { can, type Feature } from '../domain/entitlements';
-import { navigate } from './router';
 
 /* -------------------------------- layout ---------------------------------- */
 
@@ -503,7 +502,11 @@ export function ProGate({ feature, children }: { feature: Feature; children: Com
       <Icon name="lock" size={28} />
       <h2>{t(`pro.feature.${feature}`)}</h2>
       <p class="muted">{t('pro.gateBody')}</p>
-      <Button variant="primary" icon="star" onClick={() => navigate('account', 'plan')}>
+      <Button
+        variant="primary"
+        icon="star"
+        onClick={() => void import('./pro').then((m) => m.openUpgrade('feature'))}
+      >
         {t('pro.upgrade')}
       </Button>
     </div>

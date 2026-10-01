@@ -129,6 +129,8 @@ export async function deleteCloudAccount(): Promise<void> {
     }
   }
   await fs.deleteDoc(fs.doc(db, 'users', user.uid, 'meta', 'settings')).catch(() => undefined);
+  // Founder programme counter (beta).
+  await fs.deleteDoc(fs.doc(db, 'founders', user.uid)).catch(() => undefined);
   // Firebase requires a recent sign-in to delete the account itself.
   await deleteUser(user);
 }

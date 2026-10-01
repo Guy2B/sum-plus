@@ -1868,6 +1868,62 @@ main {
   margin-top: 3px;
 }
 
+/* ------------------------------- pro ready ------------------------------- */
+.sidebar-pro {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 0.82rem;
+  text-align: left;
+  cursor: pointer;
+}
+.sidebar-pro:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+.founder-card {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+}
+.founder-card p {
+  margin: 6px 0 0;
+}
+.founder-offer {
+  font-weight: 600;
+}
+.limit-notice {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.price-choice {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 12px 0;
+}
+.sub-title {
+  font-size: 0.9rem;
+  margin: 16px 0 6px;
+}
+@media (max-width: 560px) {
+  .price-choice {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* -------------------------------- missions -------------------------------- */
 
 .kind-grid {

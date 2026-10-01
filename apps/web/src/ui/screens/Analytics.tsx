@@ -6,6 +6,8 @@ import { useEffect, useState } from 'preact/hooks';
 import { authUser, clock } from '../../data/store';
 import { analyze, FUNNEL, RETENTION_AGES } from '../../domain/analytics';
 import { loadAnalytics, recomputeAnalytics, type TestimonialRow } from '../../services/telemetry';
+import { founderCandidates } from '../../services/founder';
+import { config } from '../../config';
 import { t } from '../../i18n';
 import { Badge, Button, Card, Empty, PageHeader, Stat, toast } from '../components';
 
@@ -84,6 +86,7 @@ export function Analytics() {
   const [data, setData] = useState<Data | null>(null);
   const [loading, setLoading] = useState(false);
   const [recomputing, setRecomputing] = useState(false);
+  const [founders, setFounders] = useState<{ eligible: number; total: number } | null>(null);
 
   const load = () => {
     setLoading(true);
@@ -93,6 +96,11 @@ export function Analytics() {
       .finally(() => setLoading(false));
   };
   useEffect(load, []);
+  useEffect(() => {
+    founderCandidates()
+      .then(setFounders)
+      .catch(() => setFounders(null));
+  }, []);
 
   if (!authUser.value?.isAdmin) return <p class="page muted">{t('admin.forbidden')}</p>;
 
@@ -351,6 +359,67 @@ export function Analytics() {
             </p>
           </Card>
         </>
+      )}
+
+      {a && (
+        <Card title={t('analytics.pro.title')}>
+          {config.openAccess && <p class="small notice">{t('analytics.pro.beta')}</p>}
+          <div class="stats">
+            <Stat label={t('analytics.pro.seen')} value={a.pro.seen} />
+            <Stat label={t('analytics.pro.clicked')} value={a.pro.clicked} detail={fmtPct(a.pro.clickRate)} />
+            <Stat label={t('analytics.pro.checkout')} value={a.pro.checkout} />
+            <Stat label={t('analytics.pro.bought')} value="—" detail={t('analytics.pro.boughtHint')} />
+          </div>
+          {a.pro.byTrigger.length > 0 && (
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th scope="col">{t('analytics.pro.trigger')}</th>
+                    <th scope="col">{t('analytics.pro.seen')}</th>
+                    <th scope="col">{t('analytics.pro.clicked')}</th>
+                    <th scope="col">{t('analytics.pro.checkout')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {a.pro.byTrigger.map((r) => (
+                    <tr key={r.from}>
+                      <th scope="row">{t(`analytics.from.${r.from}`)}</th>
+                      <td>{r.seen}</td>
+                      <td>{r.clicked}</td>
+                      <td>{r.checkout}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <h3 class="sub-title">{t('analytics.pro.priceTitle', { price: config.payments.monthlyPrice })}</h3>
+          {a.pro.answers ? (
+            <ul class="plain-list">
+              {a.pro.price.map((p) => (
+                <li key={p.answer} class="ledger-row">
+                  <span>{t(`price.${p.answer}`)}</span>
+                  <strong>
+                    {p.count} · {fmtPct(p.share)}
+                  </strong>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p class="small muted">{t('analytics.pro.priceNone')}</p>
+          )}
+          {founders && (
+            <p class="small">
+              {t('analytics.pro.founders', {
+                eligible: founders.eligible,
+                total: founders.total,
+                seats: config.founder.seats,
+                days: config.founder.minDays,
+              })}
+            </p>
+          )}
+        </Card>
       )}
 
       {data && <Pulse rows={data.testimonials} />}
