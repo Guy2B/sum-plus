@@ -184,7 +184,7 @@ Ajouter les traductions : **Traduire → Gérer les traductions → Ajouter : an
 
 ### Accès à l'application
 **Toutes les fonctionnalités sont disponibles sans accès spécial.** Note pour l'examinateur :
-> L'app fonctionne sans compte. Au premier lancement, toucher « Voir Σ décider sur une semaine fictive » (« See Σ decide on a sample week » en anglais). Un compte (Google ou e-mail) n'est nécessaire que pour la synchronisation et les connecteurs.
+> L'app fonctionne sans compte. Au premier lancement, toucher « Voir Σ décider sur une semaine fictive » (« Watch Σ decide on a sample week » en anglais). Un compte (Google ou e-mail) n'est nécessaire que pour la synchronisation et les connecteurs.
 
 ### Annonces
 **Non**, l'application ne contient pas d'annonces.
