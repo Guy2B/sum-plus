@@ -17,6 +17,13 @@ const config: CapacitorConfig = {
     // Default: WebView debugging on in debug builds (automated tests), off in release builds.
   },
   plugins: {
+    // Keep the Σ splash until the app has rendered (hidden from main.tsx), never a blank screen.
+    SplashScreen: {
+      launchAutoHide: false,
+      backgroundColor: '#fbfaf8',
+      androidScaleType: 'CENTER_INSIDE',
+      showSpinner: false,
+    },
     // Native Google / Microsoft sign-in: the plugin only returns the credential; the
     // Firebase JavaScript SDK in the web layer stays the single source of the session.
     FirebaseAuthentication: {

@@ -13,6 +13,11 @@ import { isNative } from './config';
 
 /** Android back button: go back in the app, leave it only from the first screen. */
 function installNativeShell() {
+  // First render is done: hide the native Σ splash.
+  type Splash = { hide(o?: { fadeOutDuration?: number }): Promise<void> };
+  const splash = (window as { Capacitor?: { Plugins?: { SplashScreen?: Splash } } }).Capacitor?.Plugins
+    ?.SplashScreen;
+  requestAnimationFrame(() => void splash?.hide({ fadeOutDuration: 200 }).catch(() => undefined));
   type AppPlugin = {
     addListener(e: 'backButton', cb: (ev: { canGoBack: boolean }) => void): void;
     exitApp(): void;
