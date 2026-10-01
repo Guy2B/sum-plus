@@ -26,6 +26,7 @@ import { Social } from './screens/Social';
 import { Context } from './screens/Context';
 import { Account } from './screens/Account';
 import { Admin } from './screens/Admin';
+import { Analytics } from './screens/Analytics';
 import type { FunctionComponent } from 'preact';
 
 const SCREENS: Record<RouteId, FunctionComponent> = {
@@ -49,6 +50,7 @@ const SCREENS: Record<RouteId, FunctionComponent> = {
   context: Context,
   account: Account,
   admin: Admin,
+  analytics: Analytics,
 };
 
 export const updateAvailable = signal<null | (() => void)>(null);

@@ -93,25 +93,66 @@ service cloud.firestore {
 
     // Opt-in, anonymous product measurement: counters only — no uid, no content.
     // Anyone may add one well-formed event; only admins can read them; nobody edits.
+    function smallInt(d, k) {
+      return !(k in d) || (d[k] is int && d[k] >= 0 && d[k] <= 10000);
+    }
+    function shortStr(d, k, n) {
+      return !(k in d) || (d[k] is string && d[k].size() <= n);
+    }
+    function isAdmin() {
+      return signedIn() && request.auth.token.admin == true;
+    }
+
     match /telemetry/{eventId} {
-      allow create: if request.resource.data.keys().hasOnly(['e', 'day', 'cohort', 'age', 'ed', 'lang', 'v', 'src', 'expireAt'])
+      allow create: if request.resource.data.keys().hasOnly(['e', 'day', 'cohort', 'age', 'ed', 'lang', 'v', 'src', 'ai', 'pf', 'expireAt',
+                                                              'p', 'a', 's', 'c', 'd', 'r', 'w', 'ov', 'ob', 'lr', 'eb', 'ea'])
         && request.resource.data.keys().hasAll(['e', 'day', 'cohort', 'age', 'expireAt'])
-        && request.resource.data.e in ['app_open', 'onboarding_started', 'onboarding_complete', 'first_plan',
-                                       'decision_started', 'decision_completed', 'coach_used', 'day_replanned']
+        && request.resource.data.e in ['app_open', 'onboarding_started', 'onboarding_complete', 'first_plan', 'first_decision',
+                                       'first_completed', 'decision_started', 'decision_completed', 'coach_used',
+                                       'coach_plan_applied', 'day_replanned', 'daily_summary']
         && request.resource.data.day is string && request.resource.data.day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
         && request.resource.data.cohort is string && request.resource.data.cohort.matches('^[0-9]{4}-W[0-9]{2}$')
         && request.resource.data.age is int && request.resource.data.age >= 0 && request.resource.data.age <= 90
-        && (!('ed' in request.resource.data) || (request.resource.data.ed is string && request.resource.data.ed.size() <= 16))
+        && shortStr(request.resource.data, 'ed', 16) && shortStr(request.resource.data, 'v', 16)
         && (!('lang' in request.resource.data) || request.resource.data.lang in ['fr', 'en', 'de', 'es'])
-        && (!('v' in request.resource.data) || (request.resource.data.v is string && request.resource.data.v.size() <= 16))
         && (!('src' in request.resource.data) || request.resource.data.src in ['demo', 'mine', 'direct'])
+        && (!('ai' in request.resource.data) || request.resource.data.ai in ['core', 'browser', 'local'])
+        && (!('pf' in request.resource.data) || request.resource.data.pf in ['web', 'pwa', 'app'])
+        && smallInt(request.resource.data, 'p') && smallInt(request.resource.data, 'a') && smallInt(request.resource.data, 's')
+        && smallInt(request.resource.data, 'c') && smallInt(request.resource.data, 'd') && smallInt(request.resource.data, 'r')
+        && smallInt(request.resource.data, 'w') && smallInt(request.resource.data, 'ov') && smallInt(request.resource.data, 'ob')
+        && smallInt(request.resource.data, 'lr') && smallInt(request.resource.data, 'eb') && smallInt(request.resource.data, 'ea')
         && request.resource.data.expireAt is timestamp
         && request.resource.data.expireAt < request.time + duration.value(400, 'd');
-      allow read: if signedIn() && request.auth.token.admin == true;
-      // Retention (13 months) without paid TTL: the admin funnel purges expired counters.
-      allow delete: if signedIn() && request.auth.token.admin == true
-        && resource.data.expireAt < request.time;
+      allow read: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // Weekly pulse answers: only what the person chose to type and send.
+    match /testimonials/{answerId} {
+      allow create: if request.resource.data.keys().hasOnly(['vote', 'text', 'sig', 'publish', 'day', 'lang', 'ed', 'age', 'expireAt'])
+        && request.resource.data.vote in ['up', 'down']
+        && request.resource.data.text is string && request.resource.data.text.size() <= 500
+        && request.resource.data.sig is string && request.resource.data.sig.size() <= 60
+        && request.resource.data.publish is bool
+        && request.resource.data.day is string && request.resource.data.day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.lang in ['fr', 'en', 'de', 'es']
+        && shortStr(request.resource.data, 'ed', 16)
+        && request.resource.data.age is int && request.resource.data.age >= 0 && request.resource.data.age <= 3650
+        && request.resource.data.expireAt is timestamp
+        && request.resource.data.expireAt < request.time + duration.value(740, 'd');
+      allow read, delete: if isAdmin();
       allow update: if false;
+    }
+
+    // Aggregates written by the Netlify job (Admin SDK); read by admins only.
+    match /analytics_daily/{day} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    match /analytics_cohorts/{cohort} {
+      allow read: if isAdmin();
+      allow write: if false;
     }
 
     match /entitlements/{uid} {

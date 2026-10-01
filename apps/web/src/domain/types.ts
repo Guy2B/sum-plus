@@ -366,6 +366,10 @@ export interface Settings {
     sentEvents?: string[];
     /** Where the onboarding started from (landing deep link). */
     startedFrom?: 'demo' | 'mine' | 'direct';
+    /** Day whose anonymous engine summary was already sent. */
+    summaryFor?: ISODate;
+    /** Weekly pulse already shown ('d7', 'd30'). */
+    pulseAsked?: string[];
     /** "My day has changed": today's constraints, reset automatically the next day. */
     day?: {
       date: ISODate;

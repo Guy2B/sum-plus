@@ -1,5 +1,4 @@
 import { useState } from 'preact/hooks';
-import { funnel } from '../../services/telemetry';
 import type { EditionKey } from '../../domain/types';
 import { COLLECTIONS } from '../../domain/types';
 import { authUser, settings, snapshot } from '../../data/store';
@@ -140,7 +139,12 @@ export function Admin() {
         </Card>
       )}
 
-      <Funnel />
+      <Card title={t('analytics.title')}>
+        <p class="small muted">{t('analytics.fromQa')}</p>
+        <a class="btn btn-secondary" href="#analytics">
+          {t('analytics.open')}
+        </a>
+      </Card>
 
       <Card title={t('admin.scenarios')}>
         <p class="small muted">{t('admin.scenariosHint')}</p>
@@ -220,60 +224,5 @@ export function Admin() {
         </Card>
       )}
     </div>
-  );
-}
-
-function Funnel() {
-  const [data, setData] = useState<Awaited<ReturnType<typeof funnel>> | null>(null);
-  const [loading, setLoading] = useState(false);
-  const load = () => {
-    setLoading(true);
-    void funnel()
-      .then(setData)
-      .catch(() => toast(t('admin.funnelError'), 'bad'))
-      .finally(() => setLoading(false));
-  };
-  const steps = [
-    'onboarding_started',
-    'onboarding_complete',
-    'first_plan',
-    'decision_started',
-    'decision_completed',
-  ];
-  return (
-    <Card title={t('admin.funnel')}>
-      <p class="small muted">{t('admin.funnelHint')}</p>
-      <Button icon="refresh" loading={loading} onClick={load}>
-        {t('admin.funnelLoad')}
-      </Button>
-      {data && (
-        <>
-          <ol class="plain-list funnel">
-            {steps.map((e) => (
-              <li key={e} class="ledger-row">
-                <span>{t(`admin.event.${e}`)}</span>
-                <strong>{data.counts[e] ?? 0}</strong>
-              </li>
-            ))}
-          </ol>
-          <p class="small">
-            {t('admin.funnelRetention', {
-              d1: data.retention.d1,
-              d7: data.retention.d7,
-              d30: data.retention.d30,
-            })}
-          </p>
-          <p class="small muted">
-            {t('admin.funnelUse', {
-              coach: data.counts.coach_used ?? 0,
-              replan: data.counts.day_replanned ?? 0,
-              demo: data.sources.demo ?? 0,
-              mine: data.sources.mine ?? 0,
-              direct: data.sources.direct ?? 0,
-            })}
-          </p>
-        </>
-      )}
-    </Card>
   );
 }

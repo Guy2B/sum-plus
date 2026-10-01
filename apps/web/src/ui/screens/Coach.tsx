@@ -137,6 +137,7 @@ export function Coach() {
         for (const p of moves)
           await update('tasks', p.id, { dueDate: p.to, scheduledFor: null, essential: false });
         await update('coachMessages', m.id, { meta: { ...m.meta, applied: true } });
+        void track('coach_plan_applied');
       },
       t('coach.proposal.done', { count: moves.length }),
     );

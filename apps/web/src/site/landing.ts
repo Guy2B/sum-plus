@@ -796,3 +796,18 @@ if ('IntersectionObserver' in window) {
   );
   reveal.forEach((el) => io.observe(el));
 } else reveal.forEach((el) => el.classList.add('visible'));
+
+// Cookie-less counter: one anonymous "view" per page load and one per app button
+// click. Nothing is stored on the device and no identifier is sent.
+function beacon(k: 'landing' | 'cta_demo' | 'cta_mine') {
+  if (!config.functionsUrl || navigator.webdriver || !('sendBeacon' in navigator)) return;
+  try {
+    navigator.sendBeacon(`${config.functionsUrl}/visit`, `k=${k}&lang=${lang}`);
+  } catch {
+    /* counting never gets in the way */
+  }
+}
+beacon('landing');
+$$<HTMLAnchorElement>('a[data-start]').forEach((a) =>
+  a.addEventListener('click', () => beacon(a.href.includes('start=mine') ? 'cta_mine' : 'cta_demo')),
+);

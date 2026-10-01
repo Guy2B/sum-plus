@@ -22,7 +22,8 @@ export type RouteId =
   | 'context'
   | 'intelligence'
   | 'account'
-  | 'admin';
+  | 'admin'
+  | 'analytics';
 
 export interface RouteDef {
   id: RouteId;
@@ -53,6 +54,7 @@ export const ROUTES: RouteDef[] = [
   { id: 'context', icon: 'compass', group: 'settings' },
   { id: 'intelligence', icon: 'sparkles', group: 'settings' },
   { id: 'account', icon: 'user', group: 'settings' },
+  { id: 'analytics', icon: 'chart', group: 'settings', adminOnly: true },
   { id: 'admin', icon: 'shield', group: 'settings', adminOnly: true },
 ];
 

@@ -183,13 +183,16 @@ test.describe('core journey', () => {
     await page.goto('/app.html#missions');
     await page.getByRole('button', { name: /Préparer un examen/ }).click();
     await page.getByLabel('Intitulé').fill('Contrôle de maths');
-    const date = new Date(Date.now() + 9 * 86_400_000).toISOString().slice(0, 10);
+    // Close exam, several chapters: a session is due today whatever the weekday.
+    const date = new Date(Date.now() + 4 * 86_400_000).toISOString().slice(0, 10);
     await page.getByLabel('Date', { exact: true }).fill(date);
-    await page.getByLabel('Chapitres ou thèmes').fill(['Fractions', 'Géométrie'].join('\n'));
+    await page
+      .getByLabel('Chapitres ou thèmes')
+      .fill(['Fractions', 'Géométrie', 'Équations', 'Statistiques'].join('\n'));
     await page.getByRole('button', { name: 'Créer le plan' }).click();
     const card = page.locator('.mission', { hasText: 'Contrôle de maths' });
     await expect(card.getByText(/Préparation estimée à \d+ % le jour J/)).toBeVisible();
-    await expect(card.getByText(/Réviser « (Fractions|Géométrie) »/)).toBeVisible();
+    await expect(card.getByText(/Réviser « (Fractions|Géométrie|Équations|Statistiques) »/)).toBeVisible();
     await card.getByRole('button', { name: 'Fait', exact: true }).click();
     await page.getByRole('button', { name: 'Enregistrer la séance' }).click();
     await expect(page.getByText('Séance enregistrée, plan recalculé')).toBeVisible();

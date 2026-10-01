@@ -9,6 +9,13 @@
   node_bundler = "esbuild"
   external_node_modules = ["firebase-admin", "firebase-functions", "imapflow"]
 
+# Anonymous analytics (free tier scheduled functions, UTC).
+[functions."analytics-aggregate"]
+  schedule = "0 */3 * * *"
+
+[functions."analytics-daily"]
+  schedule = "0 5 * * *"
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"

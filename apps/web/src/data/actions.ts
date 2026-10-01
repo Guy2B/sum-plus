@@ -64,6 +64,7 @@ async function markOutcome(d: Decision, outcome: DecisionOutcome, extra: Partial
 
 export async function markStarted(d: Decision): Promise<void> {
   void track('decision_started');
+  void track('first_decision');
   await markOutcome(d, 'started', { startedAt: new Date().toISOString() });
 }
 
@@ -91,6 +92,7 @@ async function logFeedback(d: Decision, action: FeedbackAction, minutes?: number
 /** Marks done; `minutes` = real time spent (focus timer), used to calibrate estimates. */
 export async function completeDecision(d: Decision, minutes?: number): Promise<void> {
   void track('decision_completed');
+  void track('first_completed');
   const { collection, id } = d.signal.ref;
   const now = new Date().toISOString();
   switch (collection) {
