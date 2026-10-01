@@ -11,10 +11,21 @@ const bool = (v: unknown) => str(v) === 'true' || str(v) === '1';
 
 export const APP_VERSION: string = typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : '0.0.0-dev';
 
+/**
+ * Sign-in helper served from the app's own domain (lifeos.guybeaho.com hosts a
+ * copy in public/__/auth, Firebase Hosting serves it natively): Safari and iOS
+ * block cross-site sign-in storage, so the login page must be same-origin.
+ */
+function authDomain(fallback: string): string {
+  if (typeof location === 'undefined') return fallback;
+  const host = location.hostname;
+  return host === 'lifeos.guybeaho.com' || host.endsWith('.web.app') ? location.host : fallback;
+}
+
 export const config = Object.freeze({
   firebase: {
     apiKey: str(env.VITE_FIREBASE_API_KEY),
-    authDomain: str(env.VITE_FIREBASE_AUTH_DOMAIN),
+    authDomain: authDomain(str(env.VITE_FIREBASE_AUTH_DOMAIN)),
     projectId: str(env.VITE_FIREBASE_PROJECT_ID),
     storageBucket: str(env.VITE_FIREBASE_STORAGE_BUCKET),
     messagingSenderId: str(env.VITE_FIREBASE_MESSAGING_SENDER_ID),

@@ -1,3 +1,4 @@
+import { signal } from '@preact/signals';
 import { authUser, setEntitlement, type AuthUser } from '../data/store';
 import { FREE_ENTITLEMENT, type Entitlement } from '../domain/entitlements';
 import { cloud, call } from './firebase';
@@ -8,12 +9,20 @@ import { reportError } from './monitoring';
 
 let unsubEntitlement: (() => void) | null = null;
 
+/** Last sign-in error coming back from a redirect (shown in Account). */
+export const authError = signal<string | null>(null);
+
 /** Wires Firebase Auth state into the store and starts per-user listeners. */
 export async function initAuth(): Promise<void> {
   if (!cloudConfigured()) return;
   try {
     const { auth, db } = await cloud();
-    const { onIdTokenChanged } = await import('firebase/auth');
+    const { onIdTokenChanged, getRedirectResult } = await import('firebase/auth');
+    // Coming back from a Google redirect sign-in: surface any error instead of failing silently.
+    getRedirectResult(auth).catch((err: unknown) => {
+      authError.value = (err as { code?: string }).code ?? 'unknown';
+      reportError(err, { where: 'redirect-sign-in' });
+    });
     const { doc, onSnapshot } = await import('firebase/firestore');
     onIdTokenChanged(auth, async (user) => {
       unsubEntitlement?.();
@@ -55,12 +64,27 @@ export async function signInWithGoogle(): Promise<void> {
   const { GoogleAuthProvider, signInWithPopup, signInWithRedirect } = await import('firebase/auth');
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
+  // iPhone/iPad and home-screen apps cannot use sign-in popups: go through a redirect.
+  if (preferRedirect()) return signInWithRedirect(auth, provider);
   try {
     await signInWithPopup(auth, provider);
   } catch (err) {
-    if ((err as { code?: string }).code === 'auth/popup-blocked') await signInWithRedirect(auth, provider);
+    const code = (err as { code?: string }).code;
+    if (code === 'auth/popup-blocked' || code === 'auth/cancelled-popup-request')
+      await signInWithRedirect(auth, provider);
     else throw err;
   }
+}
+
+export function preferRedirect(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  const ios =
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const standalone =
+    window.matchMedia?.('(display-mode: standalone)').matches ||
+    (navigator as { standalone?: boolean }).standalone === true;
+  return ios || standalone;
 }
 
 export async function signInWithMicrosoft(): Promise<void> {

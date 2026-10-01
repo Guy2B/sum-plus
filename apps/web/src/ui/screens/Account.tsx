@@ -20,6 +20,7 @@ import { APP_VERSION, cloudConfigured, config, isNative } from '../../config';
 import {
   signInWithEmail,
   signInWithGoogle,
+  authError,
   signInWithMicrosoft,
   signOut,
   sendPasswordReset,
@@ -31,7 +32,18 @@ import { checkoutConfigured, checkoutUrl } from '../../services/payments';
 import { driveBackup, driveRestore, googleAvailable } from '../../services/connectors/google';
 import { requestNotificationPermission } from '../../services/reminders';
 import { t, fmtDate, fmtRelative } from '../../i18n';
-import { Badge, Button, Card, Field, PageHeader, Toggle, attempt, confirmDialog, toast } from '../components';
+import {
+  errorText,
+  Badge,
+  Button,
+  Card,
+  Field,
+  PageHeader,
+  Toggle,
+  attempt,
+  confirmDialog,
+  toast,
+} from '../components';
 import { route } from '../router';
 
 function download(name: string, text: string, type = 'application/json') {
@@ -247,6 +259,7 @@ function CloudAccount() {
   return (
     <Card title={t('account.cloud')} id="cloud">
       <p class="small muted">{t('account.cloudWhy')}</p>
+      {authError.value && <p class="notice bad small">{errorText(authError.value)}</p>}
       {isNative() ? (
         <p class="small muted">{t('native.signInEmail')}</p>
       ) : (

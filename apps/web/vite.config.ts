@@ -73,7 +73,7 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2,json}'],
         // The optional semantic-model chunk is large; it is fetched on demand only.
-        globIgnores: ['**/transformers*.js', '**/ort*.wasm'],
+        globIgnores: ['**/transformers*.js', '**/ort*.wasm', '__/**'],
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         navigateFallback: `${base}app.html`,
         navigateFallbackDenylist: [/^\/legal\//, /^\/__\//, /^\/api\//],
