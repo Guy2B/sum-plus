@@ -95,14 +95,19 @@ export function Analytics() {
       .catch(() => toast(t('analytics.loadError'), 'bad'))
       .finally(() => setLoading(false));
   };
-  useEffect(load, []);
+  const admin = Boolean(authUser.value?.isAdmin);
+  // Nothing is requested unless the signed-in account is an admin (rules refuse it anyway).
   useEffect(() => {
+    if (admin) load();
+  }, [admin]);
+  useEffect(() => {
+    if (!admin) return;
     founderCandidates()
       .then(setFounders)
       .catch(() => setFounders(null));
-  }, []);
+  }, [admin]);
 
-  if (!authUser.value?.isAdmin) return <p class="page muted">{t('admin.forbidden')}</p>;
+  if (!admin) return <p class="page muted">{t('admin.forbidden')}</p>;
 
   const recompute = () => {
     setRecomputing(true);
