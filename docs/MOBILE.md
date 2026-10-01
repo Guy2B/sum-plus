@@ -35,6 +35,14 @@ Google et Microsoft refusent la connexion dans un WebView. L'app utilise `@capac
 - App Android déclarée dans Firebase (`google-services.json`) avec les empreintes de la **clé de test fixe** (`app/debug.keystore`, publique par convention) et de la **clé d'envoi** (hors dépôt, `lifeOS/android-keys/`).
 - **À la première publication sur Google Play** : ajouter dans Firebase (Paramètres du projet → app Android → Ajouter une empreinte) les empreintes SHA-1 et SHA-256 de la **clé de signature d'application** affichées par Play Console (Intégrité de l'app), sinon la connexion Google échoue pour les utilisateurs du Play Store.
 
+## Sources automatiques et notifications
+
+- **Synchronisation automatique** (web et app) : à l'ouverture, toutes les 15 minutes tant que Σ est ouvert, et au retour au premier plan. Jamais de fenêtre : une source qui demande un clic s'affiche « reconnecter » sous les 3 cartes.
+- **Google sur Android** : module natif `SigmaGoogle` (API d'autorisation Android) : jeton sans écran quand l'accès a déjà été accordé. Sur le web, un jeton Google dure 1 h ; au-delà, un clic.
+- **Microsoft** : session MSAL conservée sur l'appareil (localStorage) pour rester silencieuse entre deux ouvertures.
+- **Journée modifiée** : après une synchronisation, si un nouveau rendez-vous empêche du travail prévu, Today l'explique (« Votre journée a changé… ») au lieu de réordonner en silence.
+- **Notifications locales (Android)** : « Votre journée est prête » 15 min avant le début de journée, et la veille d'une promesse à 16 h. Programmées sur le téléphone, sans serveur ; actives seulement si Compte → Notifications est activé.
+
 ## Ce qui diffère de la version web
 
 - Réseaux sociaux (LinkedIn, X, TikTok) : connexion depuis la version web (redirections OAuth hors de l'app).

@@ -9,6 +9,7 @@ import { can } from '../../domain/entitlements';
 import { ingestEvents } from '../../services/connectors/ingest';
 import { googleAvailable, syncGoogleCalendar } from '../../services/connectors/google';
 import { microsoftAvailable, syncOutlookCalendar } from '../../services/connectors/microsoft';
+import { rememberCalendar } from '../../services/autosync';
 import { t, fmtDate, fmtTime, fmtLongDate, locale } from '../../i18n';
 import { Badge, Button, Field, Modal, PageHeader, attempt, toast } from '../components';
 import { Icon } from '../icons';
@@ -235,6 +236,7 @@ export function Calendar() {
     setBusy(which);
     await attempt(async () => {
       const r = which === 'google' ? await syncGoogleCalendar() : await syncOutlookCalendar();
+      await rememberCalendar(which);
       toast(t('calendar.synced', { count: r.added, updated: r.updated }), 'good');
     });
     setBusy('');

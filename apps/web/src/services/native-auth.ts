@@ -92,3 +92,23 @@ export async function nativeMicrosoft(scopes: string[]): Promise<NativeTokens> {
   await p.signOut().catch(() => undefined);
   return r;
 }
+
+interface SigmaGooglePlugin {
+  authorize(options: {
+    scopes: string[];
+    email?: string;
+  }): Promise<{ accessToken: string; grantedScopes: string[] }>;
+}
+
+/** Android only: Google access token without any screen, when the scopes were already granted. */
+export async function nativeGoogleSilent(scopes: string[], email?: string): Promise<string | null> {
+  const p = (window as { Capacitor?: { Plugins?: { SigmaGoogle?: SigmaGooglePlugin } } }).Capacitor?.Plugins
+    ?.SigmaGoogle;
+  if (!p) return null;
+  try {
+    const r = await p.authorize({ scopes: scopes.filter((s) => s.startsWith('https://')), email });
+    return r.accessToken || null;
+  } catch {
+    return null;
+  }
+}

@@ -31,6 +31,7 @@ import { flush } from '../../services/sync';
 import { checkoutConfigured, checkoutUrl } from '../../services/payments';
 import { driveBackup, driveRestore, googleAvailable } from '../../services/connectors/google';
 import { requestNotificationPermission } from '../../services/reminders';
+import { requestNativeNotifications, scheduleNativeNotifications } from '../../services/native-notify';
 import { t, fmtDate, fmtRelative } from '../../i18n';
 import {
   errorText,
@@ -142,9 +143,10 @@ function Profile() {
         hint={t('account.notificationsHint')}
         checked={s.notifications}
         onChange={async (v) => {
-          if (v && !(await requestNotificationPermission()))
+          if (v && !(await (isNative() ? requestNativeNotifications() : requestNotificationPermission())))
             return toast(t('account.notificationsDenied'), 'bad');
           set({ notifications: v });
+          if (isNative()) setTimeout(() => void scheduleNativeNotifications(), 300);
         }}
       />
     </Card>

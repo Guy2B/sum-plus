@@ -1,6 +1,7 @@
 import { settings, snapshot, capacity, clock, create, remove, updateSettings } from '../../data/store';
 import { setTelemetry, track } from '../../services/telemetry';
 import { PulseCard } from '../pulse';
+import { DayChangeBanner, Freshness } from '../sources-status';
 import { PriceQuestion } from '../pro';
 import { rememberShown, visibleTop, visibleDecisions } from '../../data/actions';
 import { hasDemoData, clearDemo } from '../../data/seed';
@@ -147,6 +148,8 @@ export function Today() {
         <p class="muted">{shown.length ? t('today.lead') : t('today.leadEmpty')}</p>
       </header>
 
+      <DayChangeBanner />
+
       {hasDemoData() && (
         <div class="notice">
           <span>{t('today.demoNotice')}</span>
@@ -234,6 +237,7 @@ export function Today() {
           {override ? t('today.day.active') : t('today.day.changed')}
         </button>
       </p>
+      <Freshness />
 
       {(dayOpen || override) && (
         <section class="day-panel" aria-label={t('today.day.changed')}>

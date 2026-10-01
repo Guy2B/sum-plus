@@ -375,6 +375,8 @@ export interface Settings {
     /** Founder programme: last day counted and active days (mirror of founders/{uid}). */
     founderDay?: ISODate;
     founderDays?: number;
+    /** Calendars connected for automatic sync. */
+    calendars?: ('google' | 'microsoft')[];
     /** "My day has changed": today's constraints, reset automatically the next day. */
     day?: {
       date: ISODate;

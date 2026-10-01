@@ -5,7 +5,8 @@
  * Mail content is processed on the device and never sent to Σ servers.
  */
 import { config, isNative } from '../../config';
-import { nativeAuthAvailable, nativeGoogle } from '../native-auth';
+import { nativeAuthAvailable, nativeGoogle, nativeGoogleSilent } from '../native-auth';
+import { NeedsUserError, isSilent } from './mode';
 import type { CalendarEvent, MailAccount } from '../../domain/types';
 import {
   guessNeedsReply,
@@ -90,12 +91,21 @@ export async function googleToken(scopes: GoogleScope[], hint?: string): Promise
   if (isNative()) {
     // Google refuses its web sign-in inside apps: ask Android for the scopes instead.
     const all = [...new Set([...(token?.scopes ?? []), ...wanted.flatMap((w) => w.split(' '))])];
+    // Already granted: Android returns a token without any screen.
+    const quiet = await nativeGoogleSilent(all, hint);
+    if (quiet) {
+      token = { value: quiet, expiresAt: Date.now() + 55 * 60_000, scopes: new Set(all) };
+      return quiet;
+    }
+    if (isSilent()) throw new NeedsUserError('google');
     const r = await nativeGoogle(all);
     if (!r.accessToken) throw new GoogleAuthError('no-token');
     // Android does not report the lifetime: Google access tokens last one hour.
     token = { value: r.accessToken, expiresAt: Date.now() + 55 * 60_000, scopes: new Set(all) };
     return r.accessToken;
   }
+  // Web: a new Google token needs a click (popup). Automatic syncs never open one.
+  if (isSilent()) throw new NeedsUserError('google');
   await loadGis();
   const scopeString = [...new Set([...(token?.scopes ?? []), ...wanted.flatMap((w) => w.split(' '))])].join(
     ' ',

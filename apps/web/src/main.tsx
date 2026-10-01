@@ -4,6 +4,8 @@ import { App, updateAvailable } from './ui/App';
 import { initStore } from './data/store';
 import { loadSnoozes } from './data/actions';
 import { initAuth } from './services/auth';
+import { startAutoSync } from './services/autosync';
+import { scheduleNativeNotifications } from './services/native-notify';
 import { installGlobalHandlers, reportError } from './services/monitoring';
 import { startReminders } from './services/reminders';
 import { ensureInstalled, track } from './services/telemetry';
@@ -49,6 +51,9 @@ async function boot() {
   }
 
   void initAuth();
+  // Connected sources sync by themselves: now, every 15 minutes, and when Σ comes back.
+  startAutoSync();
+  if (isNative()) void scheduleNativeNotifications();
   startReminders(() => ({ eventSoon: t('reminder.eventSoon'), taskDue: t('reminder.taskDue') }));
 
   if (isNative()) installNativeShell();

@@ -1,11 +1,12 @@
 /**
  * Microsoft 365 / Outlook.com via MSAL (Authorization Code + PKCE, SPA).
- * Tokens are cached by MSAL in sessionStorage only; Graph calls happen on the
+ * Tokens are cached by MSAL in this browser's localStorage only; Graph calls happen on the
  * device and mail content never transits through Σ servers.
  */
 import type { IPublicClientApplication, AccountInfo } from '@azure/msal-browser';
 import { config, isNative } from '../../config';
 import { nativeAuthAvailable, nativeMicrosoft } from '../native-auth';
+import { NeedsUserError, isSilent } from './mode';
 import type { CalendarEvent, MailAccount } from '../../domain/types';
 import { guessNeedsReply, ingestEvents, ingestMail, upsertMailAccount } from './ingest';
 
@@ -30,7 +31,8 @@ async function client(): Promise<IPublicClientApplication> {
         authority: `https://login.microsoftonline.com/${config.microsoft.tenant}`,
         redirectUri: new URL('app.html', location.href).toString().replace(/#.*$/, ''),
       },
-      cache: { cacheLocation: 'sessionStorage' },
+      // Kept on this device across restarts so automatic syncs stay silent (never sent anywhere).
+      cache: { cacheLocation: 'localStorage' },
     });
     await app.handleRedirectPromise().catch(() => null);
     return app;
@@ -55,6 +57,7 @@ async function tokenFor(
     const cached = key ? nativeTokens.get(key) : undefined;
     if (cached && cached.expiresAt > Date.now() + 60_000)
       return { token: cached.token, account: asAccount(key) };
+    if (isSilent()) throw new NeedsUserError('microsoft');
     const r = await nativeMicrosoft(SCOPES);
     if (!r.accessToken) throw new Error('microsoft-no-token');
     const email = (r.email ?? hint ?? 'outlook').toLowerCase();
@@ -74,6 +77,7 @@ async function tokenFor(
       /* fall through to interactive */
     }
   }
+  if (isSilent()) throw new NeedsUserError('microsoft');
   const r = await app.acquireTokenPopup({
     scopes: SCOPES,
     loginHint: hint,
