@@ -14,7 +14,7 @@ const config: CapacitorConfig = {
   android: {
     allowMixedContent: false,
     captureInput: true,
-    webContentsDebuggingEnabled: false,
+    // Default: WebView debugging on in debug builds (automated tests), off in release builds.
   },
   ios: {
     contentInset: 'automatic',

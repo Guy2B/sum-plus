@@ -1,0 +1,101 @@
+#!/usr/bin/env node
+/**
+ * Android smoke test (runs in CI on an emulator): installs the debug APK,
+ * opens the app, walks through the main screens, presses the Android back
+ * button and writes screenshots + a report to mobile/smoke/.
+ * Usage: node mobile/scripts/smoke-android.mjs path/to/app-debug.apk
+ */
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { createRequire } from 'node:module';
+
+// Playwright comes with the web app's dev dependencies.
+const require = createRequire(resolve(import.meta.dirname, '..', '..', 'apps', 'web', 'package.json'));
+const { _android: android } = require('@playwright/test');
+
+const PKG = 'com.algbr.lifeos';
+const apk = process.argv[2];
+const out = resolve(import.meta.dirname, '..', 'smoke');
+mkdirSync(out, { recursive: true });
+
+const report = { checks: [], errors: [], screenshots: [] };
+const check = (name, ok, detail = '') => {
+  report.checks.push({ name, ok, detail });
+  console.log(`${ok ? '✓' : '✗'} ${name}${detail ? ` — ${detail}` : ''}`);
+};
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+const [device] = await android.devices();
+if (!device) throw new Error('no Android device');
+console.log('device', device.model(), device.serial());
+
+await device.installApk(apk);
+await device.shell(`am start -n ${PKG}/.MainActivity`);
+await sleep(4000);
+
+const shot = async (name) => {
+  const file = `${String(report.screenshots.length + 1).padStart(2, '0')}-${name}.png`;
+  await device.screenshot({ path: join(out, file) });
+  report.screenshots.push(file);
+};
+await shot('launch');
+
+const webview = await device.webView({ pkg: PKG }, { timeout: 60_000 });
+const page = await webview.page();
+page.on('pageerror', (e) => report.errors.push(String(e)));
+page.on('console', (m) => {
+  if (m.type() === 'error') report.errors.push(m.text());
+});
+
+check('opens on the app, not the landing page', (await page.locator('.onboarding, .app').count()) > 0, page.url());
+
+// Sample week, in French, through the same deep link as the landing page.
+await page.evaluate(() => {
+  location.href = '/index.html?start=demo&lang=fr';
+});
+await page.locator('#top3 .decision').first().waitFor({ timeout: 30_000 });
+check('Today shows three decisions', (await page.locator('#top3 .decision').count()) === 3);
+await sleep(800);
+await shot('today');
+
+for (const route of ['attention', 'plan', 'coach']) {
+  await page.evaluate((r) => {
+    location.hash = r;
+  }, route);
+  await sleep(1500);
+  check(`${route} renders`, (await page.locator('h1').count()) > 0);
+  await shot(route);
+}
+
+// Android back button: from Coach, back must return to Plan (not close the app).
+await device.shell('input keyevent 4');
+await sleep(1500);
+const afterBack = await page.evaluate(() => location.hash);
+check('back button goes back inside the app', afterBack.includes('plan'), afterBack);
+await shot('after-back');
+
+// Composer on a phone keyboard: type a capture and read the preview.
+await page.evaluate(() => {
+  location.hash = 'today';
+});
+await sleep(1000);
+const composer = page.locator('.composer textarea, .composer input').first();
+if (await composer.count()) {
+  await composer.fill('rappeler Marc demain 20min');
+  await sleep(600);
+  await shot('capture');
+  check('capture preview shows a task', /Tâche|Task/.test(await page.locator('.composer').innerText()));
+}
+
+check('no JavaScript errors', report.errors.length === 0, report.errors.slice(0, 3).join(' | '));
+writeFileSync(join(out, 'report.json'), JSON.stringify(report, null, 2));
+const md = [
+  `# Σ Life OS — test Android (${device.model()})`,
+  '',
+  ...report.checks.map((c) => `- ${c.ok ? '✅' : '❌'} ${c.name}${c.detail ? ` — \`${c.detail}\`` : ''}`),
+  '',
+  ...report.screenshots.map((f) => `![${f}](${f})`),
+].join('\n');
+writeFileSync(join(out, 'README.md'), md);
+await device.close();
+process.exit(report.checks.every((c) => c.ok) ? 0 : 1);
