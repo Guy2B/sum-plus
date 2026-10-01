@@ -2,7 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 import type { MailAccount, RelationshipType, SocialAccount, SocialProvider } from '../../domain/types';
 import { authUser, create, entitlement, snapshot, update, clock, remove } from '../../data/store';
 import { can, withinLimit } from '../../domain/entitlements';
-import { config, connectorServerAvailable } from '../../config';
+import { config, connectorServerAvailable, isNative } from '../../config';
 import {
   connectGmail,
   googleAvailable,
@@ -328,7 +328,8 @@ export function Sources() {
             : 'needsPro'
           : 'needsSignIn'
         : 'approval';
-    if (!config.social[p] || !connectorServerAvailable()) return 'notConfigured';
+    // OAuth redirects leave the app: social accounts are connected from the web version for now.
+    if (!config.social[p] || !connectorServerAvailable() || isNative()) return 'notConfigured';
     if (!user) return 'needsSignIn';
     if (!can('social', ent)) return 'needsPro';
     return 'ready';
@@ -346,6 +347,7 @@ export function Sources() {
   return (
     <div class="page">
       <PageHeader title={t('nav.sources')} subtitle={t('sources.subtitle')} />
+      {isNative() && <p class="notice small">{t('native.sourcesWeb')}</p>}
 
       <Card title={t('sources.connected')}>
         {accounts.length || socials.length ? (

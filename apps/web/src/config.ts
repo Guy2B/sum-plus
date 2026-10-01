@@ -71,3 +71,12 @@ export const cloudConfigured = (): boolean =>
 /** Server-side connectors (IMAP, LinkedIn, X, TikTok) are reachable. */
 export const connectorServerAvailable = (): boolean =>
   cloudConfigured() && (config.functionsEnabled || Boolean(config.functionsUrl));
+
+/** Running inside the Android / iOS app (Capacitor), not in a browser. */
+export function isNative(): boolean {
+  const cap =
+    typeof window === 'undefined'
+      ? undefined
+      : (window as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
+  return Boolean(cap?.isNativePlatform?.());
+}

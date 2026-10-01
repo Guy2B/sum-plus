@@ -9,6 +9,20 @@ import { startReminders } from './services/reminders';
 import { ensureInstalled, track } from './services/telemetry';
 import { toast } from './ui/components';
 import { t } from './i18n';
+import { isNative } from './config';
+
+/** Android back button: go back in the app, leave it only from the first screen. */
+function installNativeShell() {
+  type AppPlugin = {
+    addListener(e: 'backButton', cb: (ev: { canGoBack: boolean }) => void): void;
+    exitApp(): void;
+  };
+  const app = (window as { Capacitor?: { Plugins?: { App?: AppPlugin } } }).Capacitor?.Plugins?.App;
+  app?.addListener('backButton', ({ canGoBack }) => {
+    if (canGoBack && history.length > 1) history.back();
+    else app.exitApp();
+  });
+}
 
 async function boot() {
   installGlobalHandlers();
@@ -32,7 +46,10 @@ async function boot() {
   void initAuth();
   startReminders(() => ({ eventSoon: t('reminder.eventSoon'), taskDue: t('reminder.taskDue') }));
 
-  if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  if (isNative()) installNativeShell();
+
+  // The installed app ships its own files: the offline service worker is for the website.
+  if ('serviceWorker' in navigator && import.meta.env.PROD && !isNative()) {
     const { registerSW } = await import('virtual:pwa-register');
     const update = registerSW({
       onNeedRefresh() {

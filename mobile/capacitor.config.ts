@@ -1,10 +1,12 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.algbr.sigma',
+  appId: 'com.algbr.lifeos',
   appName: 'Σ Life OS',
-  // The native shells bundle the same production build as the web app.
-  webDir: '../apps/web/dist',
+  // The production web build with app.html as the entry page (scripts/prepare-web.mjs):
+  // the installed app opens on the app itself, never on the landing page.
+  webDir: 'www',
+  backgroundColor: '#fbfaf8',
   server: {
     androidScheme: 'https',
     iosScheme: 'capacitor',

@@ -768,6 +768,10 @@ export const en: Record<MessageKey, string> = {
   'analytics.pro.priceNone': 'No answer yet: the question is asked after 14 days of use.',
   'analytics.pro.founders':
     'Founders: {eligible} eligible accounts (≥ {days} days) out of {total} tracked · {seats} seats.',
+  'native.signInEmail':
+    'In the app, sign in with your email and a password. Google or Microsoft sign-in is coming in a later version (it already works on the web).',
+  'native.sourcesWeb':
+    'In the Android app, Gmail, Outlook, Google/Microsoft calendars and social accounts are coming in a later version. They already work on the web, lifeos.guybeaho.com.',
   'nav.label': 'Main navigation',
   'nav.mobile': 'Quick navigation',
   'nav.more': 'More',

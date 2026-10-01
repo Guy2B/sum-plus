@@ -16,7 +16,7 @@ import {
 import { isPro, can } from '../../domain/entitlements';
 import { listEditions } from '../../domain/editions';
 import { createBackup, parseBackup, mergeRecords, BackupError } from '../../domain/backup';
-import { APP_VERSION, cloudConfigured, config } from '../../config';
+import { APP_VERSION, cloudConfigured, config, isNative } from '../../config';
 import {
   signInWithEmail,
   signInWithGoogle,
@@ -247,14 +247,18 @@ function CloudAccount() {
   return (
     <Card title={t('account.cloud')} id="cloud">
       <p class="small muted">{t('account.cloudWhy')}</p>
-      <div class="row-actions">
-        <Button icon="user" onClick={() => void attempt(signInWithGoogle, t('account.signedIn'))}>
-          {t('account.withGoogle')}
-        </Button>
-        <Button icon="user" onClick={() => void attempt(signInWithMicrosoft, t('account.signedIn'))}>
-          {t('account.withMicrosoft')}
-        </Button>
-      </div>
+      {isNative() ? (
+        <p class="small muted">{t('native.signInEmail')}</p>
+      ) : (
+        <div class="row-actions">
+          <Button icon="user" onClick={() => void attempt(signInWithGoogle, t('account.signedIn'))}>
+            {t('account.withGoogle')}
+          </Button>
+          <Button icon="user" onClick={() => void attempt(signInWithMicrosoft, t('account.signedIn'))}>
+            {t('account.withMicrosoft')}
+          </Button>
+        </div>
+      )}
       <form class="form" onSubmit={submit}>
         <div class="row">
           <Field label={t('sources.email')}>

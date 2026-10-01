@@ -11,6 +11,7 @@ export default tseslint.config(
       '**/node_modules/**',
       '**/coverage/**',
       'mobile/android/**',
+      'mobile/www/**',
       'mobile/ios/**',
       'apps/web/playwright-report/**',
       'apps/web/test-results/**',

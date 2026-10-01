@@ -1,0 +1,86 @@
+name: Android
+
+# Builds the Android app (Capacitor) in the cloud — nothing to install locally.
+#  - always: an installable APK to test on a phone (artifact "sigma-android-apk");
+#  - when the upload-key secrets exist: a signed AAB for Google Play ("sigma-android-aab").
+# Secrets (Settings → Secrets and variables → Actions):
+#   ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
+on:
+  push:
+    branches: [main]
+    paths: ['apps/web/**', 'mobile/**', '.github/workflows/android.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      VERSION_CODE: ${{ github.run_number }}
+      HAS_KEY: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Web build (production config, app as entry page)
+        run: |
+          npm ci
+          npm run build -w apps/web
+        env:
+          VITE_BASE: /
+          VITE_PUBLIC_URL: https://lifeos.guybeaho.com
+
+      - name: Capacitor sync
+        working-directory: mobile
+        run: |
+          npm ci
+          npm run prepare:web
+          npx cap sync android
+
+      - name: App version
+        run: echo "VERSION_NAME=$(node -p "require('./package.json').version")" >> "$GITHUB_ENV"
+
+      - name: Debug APK (install on a phone)
+        working-directory: mobile/android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: sigma-android-apk
+          path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+
+      - name: Signed AAB for Google Play
+        if: ${{ env.HAS_KEY == 'true' }}
+        working-directory: mobile/android
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/upload.keystore"
+          ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/upload.keystore" ./gradlew --no-daemon bundleRelease
+          rm -f "$RUNNER_TEMP/upload.keystore"
+
+      - uses: actions/upload-artifact@v5
+        if: ${{ env.HAS_KEY == 'true' }}
+        with:
+          name: sigma-android-aab
+          path: mobile/android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 30

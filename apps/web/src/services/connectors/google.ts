@@ -4,7 +4,7 @@
  * short-lived, and every scope is requested incrementally when first needed.
  * Mail content is processed on the device and never sent to Σ servers.
  */
-import { config } from '../../config';
+import { config, isNative } from '../../config';
 import type { CalendarEvent, MailAccount } from '../../domain/types';
 import {
   guessNeedsReply,
@@ -57,7 +57,8 @@ declare global {
 let gisLoaded: Promise<void> | null = null;
 let token: { value: string; expiresAt: number; scopes: Set<string> } | null = null;
 
-export const googleAvailable = () => Boolean(config.google.clientId);
+// Google blocks its sign-in window inside apps (embedded WebView): web only for now.
+export const googleAvailable = () => Boolean(config.google.clientId) && !isNative();
 
 function loadGis(): Promise<void> {
   gisLoaded ??= new Promise((resolve, reject) => {

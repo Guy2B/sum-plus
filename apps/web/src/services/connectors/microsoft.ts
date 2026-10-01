@@ -4,7 +4,7 @@
  * device and mail content never transits through Σ servers.
  */
 import type { IPublicClientApplication, AccountInfo } from '@azure/msal-browser';
-import { config } from '../../config';
+import { config, isNative } from '../../config';
 import type { CalendarEvent, MailAccount } from '../../domain/types';
 import { guessNeedsReply, ingestEvents, ingestMail, upsertMailAccount } from './ingest';
 
@@ -12,7 +12,8 @@ const SCOPES = ['User.Read', 'Mail.Read', 'Calendars.Read', 'Contacts.Read'];
 
 let msal: Promise<IPublicClientApplication> | null = null;
 
-export const microsoftAvailable = () => Boolean(config.microsoft.clientId);
+// Microsoft sign-in windows are blocked inside apps (embedded WebView): web only for now.
+export const microsoftAvailable = () => Boolean(config.microsoft.clientId) && !isNative();
 
 async function client(): Promise<IPublicClientApplication> {
   if (!microsoftAvailable()) throw new Error('microsoft-not-configured');

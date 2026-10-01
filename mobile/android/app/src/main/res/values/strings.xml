@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">Σ Life OS</string>
     <string name="title_activity_main">Σ Life OS</string>
-    <string name="package_name">com.algbr.sigma</string>
-    <string name="custom_url_scheme">com.algbr.sigma</string>
+    <string name="package_name">com.algbr.lifeos</string>
+    <string name="custom_url_scheme">com.algbr.lifeos</string>
 </resources>

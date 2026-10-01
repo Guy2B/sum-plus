@@ -3,21 +3,24 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Σ Life OS iOS/Android shells (Capacitor) with native health bridges.",
+  "description": "Σ Life OS Android / iOS shells (Capacitor).",
   "scripts": {
     "build:web": "npm run build --prefix ../apps/web",
-    "native:init": "npx cap add android && npx cap add ios && node scripts/install-native.mjs",
-    "native:patch": "node scripts/install-native.mjs",
-    "sync": "npm run build:web && npx cap sync && node scripts/install-native.mjs",
+    "prepare:web": "node scripts/prepare-web.mjs",
+    "assets": "node scripts/make-assets.mjs && npx capacitor-assets generate --android --assetPath assets",
+    "sync": "npm run build:web && npm run prepare:web && npx cap sync android",
+    "health:patch": "node scripts/install-native.mjs",
     "open:android": "npx cap open android",
     "open:ios": "npx cap open ios"
   },
   "dependencies": {
-    "@capacitor/android": "^7.4.3",
-    "@capacitor/core": "^7.4.3",
-    "@capacitor/ios": "^7.4.3"
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/ios": "^8.5.2"
   },
   "devDependencies": {
-    "@capacitor/cli": "^7.4.3"
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.2"
   }
 }

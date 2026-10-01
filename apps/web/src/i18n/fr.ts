@@ -788,6 +788,10 @@ export const fr = {
   'analytics.pro.priceNone': 'Pas encore de réponse : la question est posée après 14 jours d’usage.',
   'analytics.pro.founders':
     'Fondateurs : {eligible} comptes éligibles (≥ {days} jours) sur {total} comptes suivis · {seats} places.',
+  'native.signInEmail':
+    'Dans l’application, connectez-vous avec votre e-mail et un mot de passe. La connexion Google ou Microsoft arrive dans une prochaine version (elle fonctionne déjà sur la version web).',
+  'native.sourcesWeb':
+    'Dans l’application Android, Gmail, Outlook, les agendas Google/Microsoft et les réseaux sociaux arrivent dans une prochaine version. Ils fonctionnent déjà sur la version web, lifeos.guybeaho.com.',
   'nav.label': 'Navigation principale',
   'nav.mobile': 'Navigation rapide',
   'nav.more': 'Plus',

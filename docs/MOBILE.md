@@ -1,33 +1,39 @@
-# Applications mobiles (Capacitor 7)
+# Applications mobiles (Capacitor 8)
 
-Les applications iOS et Android embarquent le même build web (`apps/web/dist`) et ajoutent un pont santé natif :
+L'app Android (et plus tard iOS) embarque le build web de production, avec **l'app** (`app.html`) comme page d'accueil : elle s'ouvre directement sur Aujourd'hui.
 
-- **iOS** : Apple Santé / Apple Watch via HealthKit (`mobile/native/ios/SigmaHealthPlugin.swift`).
-- **Android** : Health Connect (`mobile/native/android/SigmaHealthPlugin.kt`), qui agrège aussi **Samsung Health et Galaxy Watch**. Le SDK propriétaire Samsung n'est donc plus nécessaire.
+- Identifiant : **`com.algbr.lifeos`** (définitif une fois publié sur Google Play).
+- Android cible : API 36 (Android 16), minimum API 24.
+- Icône et écran de démarrage générés depuis le Σ de l'app (`mobile/scripts/make-assets.mjs`).
 
-Données lues : résumés quotidiens (sommeil, pas, minutes d'activité, fréquence cardiaque au repos), en lecture seule, après autorisation système **et** consentement dans Σ.
+## Construire — dans le cloud (GitHub Actions)
 
-## Construire
+Le workflow `.github/workflows/android.yml` tourne à chaque push sur `main` qui touche l'app ou `mobile/`, ou à la main (Actions → Android → Run workflow) :
+
+1. **APK de test** (`sigma-android-apk`) : à télécharger depuis l'onglet Actions et à installer sur un téléphone (autoriser « sources inconnues »).
+2. **AAB signé pour Google Play** (`sigma-android-aab`) : produit seulement quand les secrets de la clé d'envoi existent :
+   `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`.
+
+Le numéro de version Android (`versionCode`) est le numéro d'exécution du workflow ; le nom de version vient de `package.json`.
+
+## En local (facultatif)
 
 ```bash
 cd mobile
 npm ci
-npm run sync            # build web + cap sync + intégration native (idempotente)
-npm run open:android    # Android Studio (JDK 17, SDK 35)
-npm run open:ios        # Xcode 16 sur macOS (puis: cd ios/App && pod install)
+npm run sync           # build web + www + cap sync android
+npm run open:android   # Android Studio (JDK 21)
+npm run assets         # régénère icônes et splash
 ```
 
-`scripts/install-native.mjs` (relancé par `sync`) :
+## Ce qui diffère de la version web (v1)
 
-- **Android** : Kotlin, dépendances Health Connect et coroutines, `minSdk 26`, permissions `health.READ_*`, points d'entrée de la politique de confidentialité (Android 13 et 14+), enregistrement du plugin, sauvegardes désactivées.
-- **iOS** : ajout du plugin et d'un `SigmaBridgeViewController` à la cible Xcode, entitlement et capacité HealthKit, texte `NSHealthShareUsageDescription`.
+- Connexion : e-mail + mot de passe. Google et Microsoft bloquent leurs fenêtres de connexion dans une app (WebView) : à ajouter avec une connexion native.
+- Gmail, Outlook, agendas Google/Microsoft et réseaux sociaux : version web seulement pour l'instant. La messagerie IMAP (Yahoo…) fonctionne (origine `https://localhost` autorisée côté API Netlify).
+- Pas de service worker : l'app embarque ses fichiers ; les mises à jour passent par le Play Store.
+- Bouton retour Android : revient en arrière dans l'app, quitte depuis le premier écran.
+- Sauvegarde Android désactivée (`allowBackup=false`) : les données restent locales, comme promis dans la politique de confidentialité.
 
-## Publication
+## Santé (plus tard)
 
-- **App Store** : activer HealthKit dans l'App ID, fournir la politique de confidentialité, déclarer les données de santé dans _App Privacy_. HealthKit interdit la publicité et la revente de ces données.
-- **Google Play** : remplir la déclaration _Health Connect_ (justification de chaque permission) et la section _Data safety_.
-- Signature : clés de publication gérées hors dépôt (Play App Signing, certificats Apple).
-
-## État de vérification
-
-Les projets natifs sont générés et câblés, mais **n'ont pas été compilés** dans l'environnement de développement actuel (pas de SDK Android ni de Xcode). À vérifier sur un appareil réel : l'autorisation HealthKit, les permissions Health Connect et l'import de 14 jours depuis l'écran Santé.
+Le pont Health Connect (Samsung Health, Galaxy Watch…) et HealthKit est conservé dans `mobile/native/` ; `npm run health:patch` l'intègre. Il demande la déclaration Health Connect sur Google Play : prévu dans une mise à jour, pas dans la v1.
