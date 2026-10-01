@@ -117,7 +117,8 @@ if (await google.count()) {
 }
 
 // The test itself closes the Google screen: that cancellation is expected.
-const errors = report.errors.filter((e) => !/Cancelled by user|\[16\]/.test(e));
+// The emulator has no Google account: Android may answer "No credentials available".
+const errors = report.errors.filter((e) => !/Cancelled by user|\[16\]|No credentials available/.test(e));
 check('no JavaScript errors', errors.length === 0, errors.slice(0, 3).join(' | '));
 writeFileSync(join(out, 'report.json'), JSON.stringify(report, null, 2));
 const md = [

@@ -792,6 +792,7 @@ export const fr = {
     'Dans l’application, connectez-vous avec Google ou avec votre e-mail. La connexion d’un compte Σ par Microsoft se fait depuis la version web ; Outlook et l’agenda Microsoft se connectent bien dans Sources.',
   'native.sourcesWeb':
     'Dans l’application, les réseaux sociaux (LinkedIn, X, TikTok) se connectent depuis la version web, lifeos.guybeaho.com. Gmail, Outlook et les agendas se connectent ici.',
+  'error.no-google-account': "Aucun compte Google sur ce téléphone. Ajoutez-en un dans Paramètres → Comptes, ou connectez-vous avec votre e-mail.",
   'nav.label': 'Navigation principale',
   'nav.mobile': 'Navigation rapide',
   'nav.more': 'Plus',

@@ -788,6 +788,7 @@ export const de: Record<MessageKey, string> = {
     'Melden Sie sich in der App mit Google oder Ihrer E-Mail an. Die Σ-Anmeldung mit Microsoft erfolgt im Web; Outlook und der Microsoft-Kalender lassen sich unter Quellen verbinden.',
   'native.sourcesWeb':
     'In der App werden soziale Netzwerke (LinkedIn, X, TikTok) im Web verbunden: lifeos.guybeaho.com. Gmail, Outlook und Kalender verbinden Sie hier.',
+  'error.no-google-account': "Kein Google-Konto auf diesem Telefon. Fügen Sie eines unter Einstellungen → Konten hinzu oder melden Sie sich mit Ihrer E-Mail an.",
   'nav.label': 'Hauptnavigation',
   'nav.mobile': 'Schnellnavigation',
   'nav.more': 'Mehr',

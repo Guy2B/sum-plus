@@ -73,6 +73,9 @@ export async function signInWithGoogle(): Promise<void> {
       r = await nativeGoogle();
     } catch (err) {
       if (isCancelled(err)) return;
+      // No Google account on the phone: say so plainly.
+      if (/no credentials/i.test(String((err as { message?: string }).message ?? err)))
+        throw Object.assign(new Error('no-google-account'), { code: 'no-google-account' });
       throw err;
     }
     await signInWithCredential(auth, GoogleAuthProvider.credential(r.idToken ?? null, r.accessToken ?? null));
