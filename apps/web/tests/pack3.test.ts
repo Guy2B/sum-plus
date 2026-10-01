@@ -104,3 +104,13 @@ describe('model output replayed from a real qwen3:8b run', () => {
     if (withTime?.kind === 'event') expect(withTime.start.getHours()).toBe(14);
   });
 });
+
+describe('native sign-in', () => {
+  it('reads the account email from an ID token without trusting it for anything else', async () => {
+    const { emailFromIdToken } = await import('../src/services/native-auth');
+    const payload = btoa(JSON.stringify({ email: 'lea@example.com' })).replace(/=+$/, '');
+    expect(emailFromIdToken(`h.${payload}.s`)).toBe('lea@example.com');
+    expect(emailFromIdToken('garbage')).toBeNull();
+    expect(emailFromIdToken(undefined)).toBeNull();
+  });
+});

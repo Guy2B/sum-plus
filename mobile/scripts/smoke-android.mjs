@@ -87,6 +87,29 @@ if (await composer.count()) {
   check('capture preview shows a task', /Tâche|Task/.test(await page.locator('.composer').innerText()));
 }
 
+// Native Google sign-in: the phone's own account picker must open (no Google account on the emulator).
+await page.evaluate(() => {
+  location.hash = 'account/cloud';
+});
+await sleep(1500);
+const google = page.getByRole('button', { name: /Google/ }).first();
+check('Google sign-in button is offered in the app', (await google.count()) > 0);
+if (await google.count()) {
+  await google.click();
+  await sleep(5000);
+  await shot('google-native');
+  const focus = await device.shell('dumpsys window | grep -E "mCurrentFocus|mFocusedApp"');
+  const text = focus.toString();
+  const pageText = await page.locator('body').innerText().catch(() => '');
+  check(
+    'Google sign-in opens a native screen (not a blocked web page)',
+    !/disallowed_useragent/.test(text + pageText),
+    text.trim().split('\n')[0] ?? '',
+  );
+  await device.shell('input keyevent 4');
+  await sleep(1500);
+}
+
 check('no JavaScript errors', report.errors.length === 0, report.errors.slice(0, 3).join(' | '));
 writeFileSync(join(out, 'report.json'), JSON.stringify(report, null, 2));
 const md = [

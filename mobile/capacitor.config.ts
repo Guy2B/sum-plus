@@ -16,6 +16,14 @@ const config: CapacitorConfig = {
     captureInput: true,
     // Default: WebView debugging on in debug builds (automated tests), off in release builds.
   },
+  plugins: {
+    // Native Google / Microsoft sign-in: the plugin only returns the credential; the
+    // Firebase JavaScript SDK in the web layer stays the single source of the session.
+    FirebaseAuthentication: {
+      skipNativeAuth: true,
+      providers: ['google.com', 'microsoft.com'],
+    },
+  },
   ios: {
     contentInset: 'automatic',
     limitsNavigationsToAppBoundDomains: false,

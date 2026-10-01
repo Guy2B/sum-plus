@@ -26,13 +26,21 @@ npm run open:android   # Android Studio (JDK 21)
 npm run assets         # régénère icônes et splash
 ```
 
-## Ce qui diffère de la version web (v1)
+## Connexion native (Google, Microsoft)
 
-- Connexion : e-mail + mot de passe. Google et Microsoft bloquent leurs fenêtres de connexion dans une app (WebView) : à ajouter avec une connexion native.
-- Gmail, Outlook, agendas Google/Microsoft et réseaux sociaux : version web seulement pour l'instant. La messagerie IMAP (Yahoo…) fonctionne (origine `https://localhost` autorisée côté API Netlify).
+Google et Microsoft refusent la connexion dans un WebView. L'app utilise `@capacitor-firebase/authentication` (option `skipNativeAuth`) :
+
+- **Google** : sélecteur de comptes du téléphone → jeton d'identité → session Firebase JavaScript (la même que sur le web). Gmail / Google Agenda / Drive : écran d'autorisation Android pour les scopes demandés → jeton d'accès (1 h, en mémoire).
+- **Microsoft** : connexion dans un onglet de navigateur → jeton Microsoft Graph pour Outlook, agenda et contacts (1 h, en mémoire). La connexion d'un **compte Σ** par Microsoft reste sur le web : Firebase n'accepte pas les jetons Microsoft obtenus hors navigateur.
+- App Android déclarée dans Firebase (`google-services.json`) avec les empreintes de la **clé de test fixe** (`app/debug.keystore`, publique par convention) et de la **clé d'envoi** (hors dépôt, `lifeOS/android-keys/`).
+- **À la première publication sur Google Play** : ajouter dans Firebase (Paramètres du projet → app Android → Ajouter une empreinte) les empreintes SHA-1 et SHA-256 de la **clé de signature d'application** affichées par Play Console (Intégrité de l'app), sinon la connexion Google échoue pour les utilisateurs du Play Store.
+
+## Ce qui diffère de la version web
+
+- Réseaux sociaux (LinkedIn, X, TikTok) : connexion depuis la version web (redirections OAuth hors de l'app).
 - Pas de service worker : l'app embarque ses fichiers ; les mises à jour passent par le Play Store.
 - Bouton retour Android : revient en arrière dans l'app, quitte depuis le premier écran.
-- Sauvegarde Android désactivée (`allowBackup=false`) : les données restent locales, comme promis dans la politique de confidentialité.
+- Sauvegarde Android désactivée (`allowBackup=false`).
 
 ## Santé (plus tard)
 

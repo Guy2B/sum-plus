@@ -5,6 +5,7 @@
  */
 import type { IPublicClientApplication, AccountInfo } from '@azure/msal-browser';
 import { config, isNative } from '../../config';
+import { nativeAuthAvailable, nativeMicrosoft } from '../native-auth';
 import type { CalendarEvent, MailAccount } from '../../domain/types';
 import { guessNeedsReply, ingestEvents, ingestMail, upsertMailAccount } from './ingest';
 
@@ -12,8 +13,12 @@ const SCOPES = ['User.Read', 'Mail.Read', 'Calendars.Read', 'Contacts.Read'];
 
 let msal: Promise<IPublicClientApplication> | null = null;
 
-// Microsoft sign-in windows are blocked inside apps (embedded WebView): web only for now.
-export const microsoftAvailable = () => Boolean(config.microsoft.clientId) && !isNative();
+// In the Android / iOS app, the Graph token comes from a native browser-tab sign-in (native-auth.ts).
+export const microsoftAvailable = () =>
+  isNative() ? nativeAuthAvailable() : Boolean(config.microsoft.clientId);
+
+/** Native app: Graph tokens per account, kept in memory only (one hour). */
+const nativeTokens = new Map<string, { token: string; expiresAt: number }>();
 
 async function client(): Promise<IPublicClientApplication> {
   if (!microsoftAvailable()) throw new Error('microsoft-not-configured');
@@ -37,6 +42,25 @@ async function tokenFor(
   account?: AccountInfo | null,
   hint?: string,
 ): Promise<{ token: string; account: AccountInfo }> {
+  if (isNative()) {
+    const asAccount = (email: string) =>
+      ({
+        username: email,
+        homeAccountId: email,
+        environment: 'native',
+        tenantId: '',
+        localAccountId: email,
+      }) as AccountInfo;
+    const key = (account?.username ?? hint ?? '').toLowerCase();
+    const cached = key ? nativeTokens.get(key) : undefined;
+    if (cached && cached.expiresAt > Date.now() + 60_000)
+      return { token: cached.token, account: asAccount(key) };
+    const r = await nativeMicrosoft(SCOPES);
+    if (!r.accessToken) throw new Error('microsoft-no-token');
+    const email = (r.email ?? hint ?? 'outlook').toLowerCase();
+    nativeTokens.set(email, { token: r.accessToken, expiresAt: Date.now() + 55 * 60_000 });
+    return { token: r.accessToken, account: asAccount(email) };
+  }
   const app = await client();
   const acc =
     account ??
@@ -186,6 +210,10 @@ export async function outlookContacts(): Promise<{ name: string; email: string }
 }
 
 export async function signOutMicrosoft(email: string): Promise<void> {
+  if (isNative()) {
+    nativeTokens.delete(email.toLowerCase());
+    return;
+  }
   const app = await client();
   const acc = app.getAllAccounts().find((a) => a.username.toLowerCase() === email.toLowerCase());
   if (acc) await app.clearCache({ account: acc });

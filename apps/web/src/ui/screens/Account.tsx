@@ -261,7 +261,14 @@ function CloudAccount() {
       <p class="small muted">{t('account.cloudWhy')}</p>
       {authError.value && <p class="notice bad small">{errorText(authError.value)}</p>}
       {isNative() ? (
-        <p class="small muted">{t('native.signInEmail')}</p>
+        <>
+          <div class="row-actions">
+            <Button icon="user" onClick={() => void attempt(signInWithGoogle, t('account.signedIn'))}>
+              {t('account.withGoogle')}
+            </Button>
+          </div>
+          <p class="small muted">{t('native.signInEmail')}</p>
+        </>
       ) : (
         <div class="row-actions">
           <Button icon="user" onClick={() => void attempt(signInWithGoogle, t('account.signedIn'))}>

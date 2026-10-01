@@ -5,6 +5,7 @@
  * Mail content is processed on the device and never sent to Σ servers.
  */
 import { config, isNative } from '../../config';
+import { nativeAuthAvailable, nativeGoogle } from '../native-auth';
 import type { CalendarEvent, MailAccount } from '../../domain/types';
 import {
   guessNeedsReply,
@@ -57,8 +58,8 @@ declare global {
 let gisLoaded: Promise<void> | null = null;
 let token: { value: string; expiresAt: number; scopes: Set<string> } | null = null;
 
-// Google blocks its sign-in window inside apps (embedded WebView): web only for now.
-export const googleAvailable = () => Boolean(config.google.clientId) && !isNative();
+// In the Android / iOS app, Google tokens come from the phone's account picker (native-auth.ts).
+export const googleAvailable = () => (isNative() ? nativeAuthAvailable() : Boolean(config.google.clientId));
 
 function loadGis(): Promise<void> {
   gisLoaded ??= new Promise((resolve, reject) => {
@@ -85,6 +86,15 @@ export async function googleToken(scopes: GoogleScope[], hint?: string): Promise
     wanted.every((w) => w.split(' ').every((x) => token!.scopes.has(x)))
   ) {
     return token.value;
+  }
+  if (isNative()) {
+    // Google refuses its web sign-in inside apps: ask Android for the scopes instead.
+    const all = [...new Set([...(token?.scopes ?? []), ...wanted.flatMap((w) => w.split(' '))])];
+    const r = await nativeGoogle(all);
+    if (!r.accessToken) throw new GoogleAuthError('no-token');
+    // Android does not report the lifetime: Google access tokens last one hour.
+    token = { value: r.accessToken, expiresAt: Date.now() + 55 * 60_000, scopes: new Set(all) };
+    return r.accessToken;
   }
   await loadGis();
   const scopeString = [...new Set([...(token?.scopes ?? []), ...wanted.flatMap((w) => w.split(' '))])].join(
@@ -113,7 +123,7 @@ export async function googleToken(scopes: GoogleScope[], hint?: string): Promise
 }
 
 export function revokeGoogle(): void {
-  if (token && window.google) window.google.accounts.oauth2.revoke(token.value);
+  if (token && window.google && !isNative()) window.google.accounts.oauth2.revoke(token.value);
   token = null;
 }
 

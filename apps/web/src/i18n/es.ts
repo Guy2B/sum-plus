@@ -776,9 +776,9 @@ export const es: Record<MessageKey, string> = {
   'analytics.pro.founders':
     'Founders: {eligible} eligible accounts (≥ {days} days) out of {total} tracked · {seats} seats.',
   'native.signInEmail':
-    'En la app, inicia sesión con tu correo y una contraseña. El inicio de sesión con Google o Microsoft llegará en una próxima versión (ya funciona en la web).',
+    'En la app, inicia sesión con Google o con tu correo. El inicio de sesión en Σ con Microsoft se hace en la web; Outlook y el calendario de Microsoft se conectan en Fuentes.',
   'native.sourcesWeb':
-    'En la app de Android, Gmail, Outlook, los calendarios de Google/Microsoft y las redes sociales llegarán en una próxima versión. Ya funcionan en la web, lifeos.guybeaho.com.',
+    'En la app, las redes sociales (LinkedIn, X, TikTok) se conectan desde la web, lifeos.guybeaho.com. Gmail, Outlook y los calendarios se conectan aquí.',
   'nav.label': 'Navegación principal',
   'nav.mobile': 'Navegación rápida',
   'nav.more': 'Más',

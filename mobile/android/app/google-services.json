@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "282619101068",
+    "project_id": "sum-plus-app",
+    "storage_bucket": "sum-plus-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:282619101068:android:c6f828caf3d5b5978160a9",
+        "android_client_info": {
+          "package_name": "com.algbr.lifeos"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "282619101068-1psckg3phrt2b4bcqn4ap89cq7gsgkng.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.algbr.lifeos",
+            "certificate_hash": "6a0e9bdb8548d92e69309b154435234b3110d70d"
+          }
+        },
+        {
+          "client_id": "282619101068-a49uihpc8r588qpuv2peekngmabi4pr4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.algbr.lifeos",
+            "certificate_hash": "0ffb847ef3780cc358a3c83796740d7aa7fc4402"
+          }
+        },
+        {
+          "client_id": "282619101068-1g25sc204ktq64jr3hquqm16nvnu4pme.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACmiy48f6Tl0mODNwh705dIQauaJYYDWY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "282619101068-1g25sc204ktq64jr3hquqm16nvnu4pme.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

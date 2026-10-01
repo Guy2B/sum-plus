@@ -20,6 +20,14 @@ android {
     // Upload key for Google Play, provided by CI secrets (never committed).
     def keystore = System.getenv("ANDROID_KEYSTORE_PATH")
     signingConfigs {
+        // Fixed debug key (committed, public by convention): its fingerprint is registered in
+        // Firebase so native Google sign-in works on test builds made by CI.
+        debug {
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
         if (keystore) {
             release {
                 storeFile file(keystore)
@@ -30,6 +38,9 @@ android {
         }
     }
     buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
         release {
             if (keystore) signingConfig signingConfigs.release
             minifyEnabled false

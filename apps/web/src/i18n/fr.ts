@@ -789,9 +789,9 @@ export const fr = {
   'analytics.pro.founders':
     'Fondateurs : {eligible} comptes éligibles (≥ {days} jours) sur {total} comptes suivis · {seats} places.',
   'native.signInEmail':
-    'Dans l’application, connectez-vous avec votre e-mail et un mot de passe. La connexion Google ou Microsoft arrive dans une prochaine version (elle fonctionne déjà sur la version web).',
+    'Dans l’application, connectez-vous avec Google ou avec votre e-mail. La connexion d’un compte Σ par Microsoft se fait depuis la version web ; Outlook et l’agenda Microsoft se connectent bien dans Sources.',
   'native.sourcesWeb':
-    'Dans l’application Android, Gmail, Outlook, les agendas Google/Microsoft et les réseaux sociaux arrivent dans une prochaine version. Ils fonctionnent déjà sur la version web, lifeos.guybeaho.com.',
+    'Dans l’application, les réseaux sociaux (LinkedIn, X, TikTok) se connectent depuis la version web, lifeos.guybeaho.com. Gmail, Outlook et les agendas se connectent ici.',
   'nav.label': 'Navigation principale',
   'nav.mobile': 'Navigation rapide',
   'nav.more': 'Plus',

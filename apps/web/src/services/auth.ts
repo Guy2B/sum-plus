@@ -2,7 +2,8 @@ import { signal } from '@preact/signals';
 import { authUser, setEntitlement, type AuthUser } from '../data/store';
 import { FREE_ENTITLEMENT, type Entitlement } from '../domain/entitlements';
 import { cloud, call } from './firebase';
-import { cloudConfigured, config } from '../config';
+import { cloudConfigured, config, isNative } from '../config';
+import { nativeGoogle } from './native-auth';
 import { COLLECTIONS, LOCAL_ONLY_COLLECTIONS } from '../domain/types';
 import { startSync, stopSync } from './sync';
 import { reportError } from './monitoring';
@@ -64,6 +65,13 @@ export async function signInWithGoogle(): Promise<void> {
   const { GoogleAuthProvider, signInWithPopup, signInWithRedirect } = await import('firebase/auth');
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
+  // Android / iOS app: the phone's Google account picker, then the same Firebase session as the web.
+  if (isNative()) {
+    const { signInWithCredential } = await import('firebase/auth');
+    const r = await nativeGoogle();
+    await signInWithCredential(auth, GoogleAuthProvider.credential(r.idToken ?? null, r.accessToken ?? null));
+    return;
+  }
   // iPhone/iPad and home-screen apps cannot use sign-in popups: go through a redirect.
   if (preferRedirect()) return signInWithRedirect(auth, provider);
   try {
