@@ -60,8 +60,7 @@ jobs:
           chmod +x gradlew
           if ! ./gradlew --no-daemon assembleDebug > "$RUNNER_TEMP/gradle.log" 2>&1; then
             # Surface the cause as a public annotation (logs need a GitHub login).
-            msg=$(grep -E "What went wrong|error:|Error:|FAILURE|Could not|> " "$RUNNER_TEMP/gradle.log" | head -25 | sed ':a;N;$!ba;s/
-/%0A/g')
+            msg=$(grep -E "What went wrong|error:|Error:|FAILURE|Could not|> " "$RUNNER_TEMP/gradle.log" | head -25 | paste -sd '|' -)
             echo "::error title=Gradle assembleDebug::$msg"
             tail -80 "$RUNNER_TEMP/gradle.log"
             exit 1
