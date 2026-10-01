@@ -47,7 +47,13 @@ page.on('console', (m) => {
   if (m.type() === 'error') report.errors.push(m.text());
 });
 
-check('opens on the app, not the landing page', (await page.locator('.onboarding, .app').count()) > 0, page.url());
+const appShown = await page
+  .locator('.onboarding, .app')
+  .first()
+  .waitFor({ timeout: 30_000 })
+  .then(() => true)
+  .catch(() => false);
+check('opens on the app, not the landing page', appShown, page.url());
 
 // Sample week, in French, through the same deep link as the landing page.
 await page.evaluate(() => {
@@ -110,7 +116,9 @@ if (await google.count()) {
   await sleep(1500);
 }
 
-check('no JavaScript errors', report.errors.length === 0, report.errors.slice(0, 3).join(' | '));
+// The test itself closes the Google screen: that cancellation is expected.
+const errors = report.errors.filter((e) => !/Cancelled by user|\[16\]/.test(e));
+check('no JavaScript errors', errors.length === 0, errors.slice(0, 3).join(' | '));
 writeFileSync(join(out, 'report.json'), JSON.stringify(report, null, 2));
 const md = [
   `# Σ Life OS — test Android (${device.model()})`,

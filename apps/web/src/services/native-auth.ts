@@ -35,6 +35,10 @@ function plugin(): FirebaseAuthenticationPlugin | null {
 
 export const nativeAuthAvailable = () => plugin() !== null;
 
+/** The person closed the Google / Microsoft screen: not an error. */
+export const isCancelled = (err: unknown) =>
+  /cancel|\[16\]|12501/i.test(String((err as { message?: string })?.message ?? err));
+
 /** Email claim of an ID token (no signature check needed: it only labels the account). */
 export function emailFromIdToken(idToken?: string): string | null {
   if (!idToken) return null;

@@ -3,7 +3,7 @@ import { authUser, setEntitlement, type AuthUser } from '../data/store';
 import { FREE_ENTITLEMENT, type Entitlement } from '../domain/entitlements';
 import { cloud, call } from './firebase';
 import { cloudConfigured, config, isNative } from '../config';
-import { nativeGoogle } from './native-auth';
+import { isCancelled, nativeGoogle } from './native-auth';
 import { COLLECTIONS, LOCAL_ONLY_COLLECTIONS } from '../domain/types';
 import { startSync, stopSync } from './sync';
 import { reportError } from './monitoring';
@@ -68,7 +68,13 @@ export async function signInWithGoogle(): Promise<void> {
   // Android / iOS app: the phone's Google account picker, then the same Firebase session as the web.
   if (isNative()) {
     const { signInWithCredential } = await import('firebase/auth');
-    const r = await nativeGoogle();
+    let r;
+    try {
+      r = await nativeGoogle();
+    } catch (err) {
+      if (isCancelled(err)) return;
+      throw err;
+    }
     await signInWithCredential(auth, GoogleAuthProvider.credential(r.idToken ?? null, r.accessToken ?? null));
     return;
   }
