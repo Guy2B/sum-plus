@@ -15,4 +15,6 @@ ext {
     cordovaAndroidVersion = '14.0.1'
     // Native Google sign-in (Credential Manager + Authorization API) for @capacitor-firebase/authentication.
     rgcfaIncludeGoogle = true
+    // Same Google Play services auth library for the sign-in plugin and SigmaGooglePlugin (Authorization API).
+    playServicesAuthVersion = '21.3.0'
 }
