@@ -1537,3 +1537,10 @@ section.proof-strip {
   color: var(--text-2);
   font-size: 0.85rem;
 }
+.by-algbr{grid-column:1/-1;justify-self:center;display:inline-flex;align-items:center;gap:8px;margin-top:6px;padding:8px 14px;border-radius:999px;border:1px solid var(--border);text-decoration:none;color:var(--muted);font-size:.82rem;transition:border-color .15s ease,color .15s ease}
+.by-algbr:hover{border-color:var(--border-strong);color:var(--text)}
+.by-algbr img{border-radius:7px}
+.by-algbr b{color:var(--text);font-weight:800;letter-spacing:-.01em}
+.by-algbr b i,.by-algbr b u{font-style:normal;text-decoration:none}
+.by-algbr b i{color:#6d55e0}
+.by-algbr b u{color:#13918d}
