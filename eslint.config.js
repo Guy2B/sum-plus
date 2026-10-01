@@ -12,6 +12,8 @@ export default tseslint.config(
       '**/coverage/**',
       'mobile/android/**',
       'mobile/www/**',
+      // Firebase sign-in helper, copied verbatim from Google (minified).
+      'apps/web/public/__/**',
       'mobile/ios/**',
       'apps/web/playwright-report/**',
       'apps/web/test-results/**',
