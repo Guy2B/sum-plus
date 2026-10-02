@@ -1,0 +1,49 @@
+{
+  "checks": [
+    {
+      "name": "opens on the app, not the landing page",
+      "ok": true,
+      "detail": "https://localhost/"
+    },
+    {
+      "name": "Today shows three decisions",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "attention renders",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "plan renders",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "coach renders",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "back button goes back inside the app",
+      "ok": false,
+      "detail": "#coach"
+    },
+    {
+      "name": "test ran to the end",
+      "ok": false,
+      "detail": "locator.fill: Timeout 30000ms exceeded. | Call log: |   - waiting for locator('.composer textarea, .composer input').first() |     - locator resolved to <textarea rows=\"1\" maxlength=\"1000\" enterkeyhint=\"done\" aria-label=\"Capture rapide\" aria-describedby=\"composer-preview\" placeholder=\"Tâche, rendez-vous, question… ex. « déjeuner vendredi 13h avec Marc »\"></textarea>"
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    "01-launch.png",
+    "02-today.png",
+    "03-attention.png",
+    "04-plan.png",
+    "05-coach.png",
+    "06-after-back.png",
+    "99-crash.png"
+  ]
+}
