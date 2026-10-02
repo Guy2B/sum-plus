@@ -8,9 +8,10 @@ import { COLLECTIONS } from '../domain/types';
 import { editionDemo } from '../domain/editions';
 import { addDays, isoDay, atTime } from '../domain/dates';
 import { newId } from '../domain/ids';
+import { DEMO_PROVIDER, isDemoRecord } from '../domain/demo';
 import { convertModulesToMissions, createMany, remove, snapshot } from './store';
 
-export const DEMO_PROVIDER = 'demo';
+export { DEMO_PROVIDER };
 
 export async function seedDemo(edition: EditionKey, locale: Locale, now: Date = new Date()): Promise<void> {
   const demo = editionDemo(edition, locale);
@@ -272,12 +273,14 @@ export async function seedDemo(edition: EditionKey, locale: Locale, now: Date = 
   await convertModulesToMissions();
 }
 
-/** Removes every seeded record (ids are prefixed with "demo_"), leaving real data untouched. */
+type DemoCandidate = Parameters<typeof isDemoRecord>[0];
+
+/** Removes every demo record — seeded or converted from a seeded one — leaving real data untouched. */
 export async function clearDemo(): Promise<number> {
   let n = 0;
   for (const c of COLLECTIONS) {
-    for (const doc of snapshot.value[c] as { id: string; deletedAt?: string | null }[]) {
-      if (!doc.deletedAt && doc.id.startsWith('demo_')) {
+    for (const doc of [...(snapshot.value[c] as DemoCandidate[])]) {
+      if (!doc.deletedAt && isDemoRecord(doc)) {
         await remove(c, doc.id);
         n += 1;
       }
@@ -288,8 +291,6 @@ export async function clearDemo(): Promise<number> {
 
 export function hasDemoData(): boolean {
   return COLLECTIONS.some((c) =>
-    (snapshot.value[c] as { id: string; deletedAt?: string | null }[]).some(
-      (d) => !d.deletedAt && d.id.startsWith('demo_'),
-    ),
+    (snapshot.value[c] as DemoCandidate[]).some((d) => !d.deletedAt && isDemoRecord(d)),
   );
 }
