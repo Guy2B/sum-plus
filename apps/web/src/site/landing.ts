@@ -731,8 +731,6 @@ apply(initial as Lang);
 // Footer and prices from the deployment config.
 const year = $('#year');
 if (year) year.textContent = String(new Date().getFullYear());
-const legal = $('#legal-entity');
-if (legal) legal.textContent = config.legal.entity ? ` — ${config.legal.entity}` : '';
 const monthly = $('#price-monthly');
 if (monthly && config.payments.monthlyPrice) monthly.textContent = config.payments.monthlyPrice;
 const annual = $('#price-annual');
