@@ -1,6 +1,8 @@
-# Σ Life OS
+# NEXT by ALGBr
 
-Σ Life OS turns the signals you authorise (tasks, calendar, mail, social, money, energy, learning) into **at most three explained actions a day**. It is local-first, works offline, speaks French, English, German and Spanish, and never acts externally without confirmation.
+> Know what matters. Do what’s next. — Powered by Σ, the decision engine.
+
+NEXT turns the signals you authorise (tasks, calendar, mail, social, money, energy, learning) into **at most three explained actions a day**. It is local-first, works offline, speaks French, English, German and Spanish, and never acts externally without confirmation.
 
 ## Repository layout
 

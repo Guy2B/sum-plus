@@ -1,5 +1,5 @@
 /**
- * Σ Life OS — Cloud Functions (2nd gen, europe-west1).
+ * NEXT — Cloud Functions (2nd gen, europe-west1).
  *
  * account  : GDPR export / erasure, client error reporting
  * billing  : Lemon Squeezy webhook → entitlements (only path to Pro)

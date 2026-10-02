@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Optional self-hosted rephrasing gateway for Σ Life OS (Ollama). No dependencies.",
+  "description": "Optional self-hosted rephrasing gateway for NEXT (Ollama). No dependencies.",
   "engines": {
     "node": ">=20"
   },

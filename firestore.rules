@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// Σ Life OS — Firestore security rules.
+// NEXT — Firestore security rules.
 //
 // Principles
 // - Deny by default; every readable/writable path is listed explicitly.

@@ -171,7 +171,7 @@ export function Onboarding() {
           <span class="brand-mark" aria-hidden="true">
             Σ
           </span>
-          <strong>Σ Life OS</strong>
+          <strong>NEXT</strong> <small class="byline">by ALGBr</small>
         </div>
         <ol class="steps" aria-label={t('onboarding.progress')}>
           {step >= 0 &&

@@ -778,7 +778,7 @@ export const es: Record<MessageKey, string> = {
   'native.signInEmail':
     'En la app, inicia sesión con Google o con tu correo. El inicio de sesión en Σ con Microsoft se hace en la web; Outlook y el calendario de Microsoft se conectan en Fuentes.',
   'native.sourcesWeb':
-    'En la app, las redes sociales (LinkedIn, X, TikTok) se conectan desde la web, lifeos.algbr.eu. Gmail, Outlook y los calendarios se conectan aquí.',
+    'En la app, las redes sociales (LinkedIn, X, TikTok) se conectan desde la web, next.algbr.eu. Gmail, Outlook y los calendarios se conectan aquí.',
   'error.no-google-account':
     'No hay ninguna cuenta de Google en este teléfono. Añade una en Ajustes → Cuentas o inicia sesión con tu correo.',
   'sources.now': "ahora mismo",

@@ -141,7 +141,7 @@ try {
 }
 writeFileSync(join(out, 'report.json'), JSON.stringify(report, null, 2));
 const md = [
-  `# Σ Life OS — test Android (${device ? device.model() : 'no device'})`,
+  `# NEXT — test Android (${device ? device.model() : 'no device'})`,
   '',
   ...report.checks.map((c) => `- ${c.ok ? '✅' : '❌'} ${c.name}${c.detail ? ` — \`${c.detail}\`` : ''}`),
   '',

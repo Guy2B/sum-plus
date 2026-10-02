@@ -203,7 +203,7 @@ export function toIcs(
     v.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
   const stamp = (iso: string) => iso.replace(/[-:]/g, '').replace(/\.\d{3}/, '');
   const day = (iso: string) => iso.slice(0, 10).replace(/-/g, '');
-  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Sigma Life OS//EN', 'CALSCALE:GREGORIAN'];
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ALGBr NEXT//EN', 'CALSCALE:GREGORIAN'];
   for (const e of events) {
     lines.push('BEGIN:VEVENT', `UID:${e.id}@sigma-life-os`, `DTSTAMP:${stamp(new Date().toISOString())}`);
     if (e.allDay) lines.push(`DTSTART;VALUE=DATE:${day(e.start)}`, `DTEND;VALUE=DATE:${day(e.end)}`);

@@ -12,11 +12,11 @@ const bool = (v: unknown) => str(v) === 'true' || str(v) === '1';
 export const APP_VERSION: string = typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : '0.0.0-dev';
 
 /**
- * Sign-in helper served from the app's own domain (lifeos.algbr.eu hosts a
+ * Sign-in helper served from the app's own domain (next.algbr.eu hosts a
  * copy in public/__/auth, Firebase Hosting serves it natively): Safari and iOS
  * block cross-site sign-in storage, so the login page must be same-origin.
  */
-const SAME_ORIGIN_HOSTS = ['lifeos.algbr.eu', 'lifeos.guybeaho.com'];
+const SAME_ORIGIN_HOSTS = ['next.algbr.eu', 'lifeos.algbr.eu', 'lifeos.guybeaho.com'];
 
 function authDomain(fallback: string): string {
   if (typeof location === 'undefined') return fallback;

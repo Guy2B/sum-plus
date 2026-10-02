@@ -29,7 +29,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 
 /**
- * Σ Life OS — Android Health Connect bridge.
+ * NEXT — Android Health Connect bridge.
  *
  * Health Connect also aggregates Samsung Health / Galaxy Watch data, so a
  * single integration covers both. Reads daily summaries only, after the

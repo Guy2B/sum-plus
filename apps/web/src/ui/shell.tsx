@@ -308,7 +308,7 @@ export function Shell({ children, banner }: { children: ComponentChildren; banne
             Σ
           </span>
           <div>
-            <strong>Σ Life OS</strong>
+            <strong>NEXT</strong> <small class="byline">by ALGBr</small>
             <small class="muted">{ed.name}</small>
           </div>
         </div>

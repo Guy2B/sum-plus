@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Σ Life OS</string>
-    <string name="title_activity_main">Σ Life OS</string>
+    <string name="app_name">NEXT</string>
+    <string name="title_activity_main">NEXT</string>
     <string name="package_name">com.algbr.lifeos</string>
     <string name="custom_url_scheme">com.algbr.lifeos</string>
 </resources>

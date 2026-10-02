@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Σ Life OS Android / iOS shells (Capacitor).",
+  "description": "NEXT Android / iOS shells (Capacitor).",
   "scripts": {
     "build:web": "npm run build --prefix ../apps/web",
     "prepare:web": "node scripts/prepare-web.mjs",

@@ -567,7 +567,7 @@ export function Account() {
       <Data />
       <Card title={t('account.about')}>
         <p class="small muted">
-          Σ Life OS {APP_VERSION} ·{' '}
+          NEXT by ALGBr · Powered by Σ · {APP_VERSION} ·{' '}
           <a href="legal/privacy.html" target="_blank" rel="noopener">
             {t('legal.privacy')}
           </a>{' '}

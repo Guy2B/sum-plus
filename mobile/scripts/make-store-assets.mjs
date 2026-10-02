@@ -41,7 +41,7 @@ for (const [lang, [title, sub]] of Object.entries(taglines)) {
   <rect width="1024" height="500" fill="${INK}"/>
   <rect x="64" y="150" width="200" height="200" rx="46" fill="${PAPER}"/>
   <path d="${SIGMA}" fill="${INK}" transform="translate(64 150) scale(0.390625)"/>
-  <text x="310" y="215" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="600" fill="${ACCENT}">Σ Life OS</text>
+  <text x="310" y="215" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="600" fill="${ACCENT}">NEXT</text>
   <text x="310" y="275" font-family="Georgia, 'Times New Roman', serif" font-size="44" fill="${PAPER}">${esc(title)}</text>
   <text x="310" y="330" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#cfccc4">${esc(sub)}</text>
 </svg>`;

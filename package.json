@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Σ Life OS — explainable personal decision layer (web PWA, Firebase backend, Capacitor mobile).",
+  "description": "NEXT — explainable personal decision layer (web PWA, Firebase backend, Capacitor mobile).",
   "license": "UNLICENSED",
   "workspaces": [
     "apps/web",

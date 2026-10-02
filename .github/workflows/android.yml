@@ -42,7 +42,7 @@ jobs:
           npm run build -w apps/web
         env:
           VITE_BASE: /
-          VITE_PUBLIC_URL: https://lifeos.algbr.eu
+          VITE_PUBLIC_URL: https://next.algbr.eu
 
       - name: Capacitor sync
         working-directory: mobile

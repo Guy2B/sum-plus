@@ -2,7 +2,7 @@ import Foundation
 import Capacitor
 import HealthKit
 
-/// Σ Life OS — Apple Health bridge.
+/// NEXT — Apple Health bridge.
 ///
 /// Reads daily *summaries* only (sleep, steps, active minutes, resting heart
 /// rate) after the user authorises HealthKit and has given separate consent

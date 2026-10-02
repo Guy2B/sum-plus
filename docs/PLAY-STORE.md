@@ -1,4 +1,4 @@
-# Publier Σ Life OS sur Google Play
+# Publier NEXT sur Google Play
 
 Tout ce qu'il faut pour la première publication : étapes dans Play Console, textes de la fiche (FR, EN, DE, ES), images, et réponses aux formulaires de Google. Les images sont dans `mobile/store/` ; le fichier à envoyer (AAB signé) est produit par GitHub Actions → **Android** → dernière exécution ✅ → artefact **sigma-android-aab**.
 
@@ -7,7 +7,7 @@ Tout ce qu'il faut pour la première publication : étapes dans Play Console, te
 ## 1. Créer l'application (Play Console)
 
 1. **Créer une application**
-   - Nom : `Σ Life OS`
+   - Nom : `NEXT by ALGBr`
    - Langue par défaut : Français (France)
    - Application (pas jeu) · Gratuite
    - Cocher les déclarations (règles du programme, lois américaines sur l'exportation).
@@ -30,7 +30,7 @@ Tout ce qu'il faut pour la première publication : étapes dans Play Console, te
 
 | Champ | Limite | Fichier / texte |
 |---|---|---|
-| Nom | 30 | `Σ Life OS` |
+| Nom | 30 | `NEXT by ALGBr` |
 | Description courte | 80 | ci-dessous |
 | Description complète | 4000 | ci-dessous |
 | Icône | 512×512 PNG | `mobile/store/icon-512.png` |
@@ -51,7 +51,7 @@ Ajouter les traductions : **Traduire → Gérer les traductions → Ajouter : an
 **Description complète**
 > Vous avez 37 choses à gérer. Σ vous montre les 3 qui comptent aujourd'hui — et pourquoi.
 >
-> Σ Life OS n'est pas une liste de plus à organiser. C'est un moteur de décision personnel : il relie vos tâches, votre agenda, vos mails et votre énergie, puis choisit ce qui mérite votre attention maintenant, ce qu'il faut surveiller et le créneau à protéger.
+> NEXT n'est pas une liste de plus à organiser. C'est un moteur de décision personnel : il relie vos tâches, votre agenda, vos mails et votre énergie, puis choisit ce qui mérite votre attention maintenant, ce qu'il faut surveiller et le créneau à protéger.
 >
 > POURQUOI MAINTENANT ? POURQUOI PAS AUTRE CHOSE ?
 > Chaque recommandation est expliquée : échéance, promesse faite à quelqu'un, effort, temps libre réel, ce qu'elle débloque. Et Σ dit aussi ce qu'il a écarté, et pourquoi.
@@ -84,7 +84,7 @@ Ajouter les traductions : **Traduire → Gérer les traductions → Ajouter : an
 **Full description**
 > You have 37 things to handle. Σ shows you the 3 that matter today — and why.
 >
-> Σ Life OS is not another list to organise. It is a personal decision engine: it connects your tasks, calendar, mail and energy, then picks what deserves your attention now, what to keep an eye on and which time slot to protect.
+> NEXT is not another list to organise. It is a personal decision engine: it connects your tasks, calendar, mail and energy, then picks what deserves your attention now, what to keep an eye on and which time slot to protect.
 >
 > WHY NOW? WHY NOT SOMETHING ELSE?
 > Every recommendation is explained: deadline, a promise made to someone, effort, real free time, what it unblocks. Σ also tells you what it set aside, and why.
@@ -117,7 +117,7 @@ Ajouter les traductions : **Traduire → Gérer les traductions → Ajouter : an
 **Vollständige Beschreibung**
 > Sie haben 37 Dinge zu erledigen. Σ zeigt Ihnen die 3, die heute zählen – und warum.
 >
-> Σ Life OS ist keine weitere Liste zum Sortieren. Es ist eine persönliche Entscheidungs-Engine: Sie verbindet Aufgaben, Kalender, Mails und Energie und wählt, was jetzt Ihre Aufmerksamkeit verdient, was Sie im Blick behalten sollten und welches Zeitfenster geschützt wird.
+> NEXT ist keine weitere Liste zum Sortieren. Es ist eine persönliche Entscheidungs-Engine: Sie verbindet Aufgaben, Kalender, Mails und Energie und wählt, was jetzt Ihre Aufmerksamkeit verdient, was Sie im Blick behalten sollten und welches Zeitfenster geschützt wird.
 >
 > WARUM JETZT? WARUM NICHT ETWAS ANDERES?
 > Jede Empfehlung wird erklärt: Frist, eine Zusage an jemanden, Aufwand, echte freie Zeit, was sie freigibt. Σ sagt auch, was es zurückgestellt hat – und warum.
@@ -150,7 +150,7 @@ Ajouter les traductions : **Traduire → Gérer les traductions → Ajouter : an
 **Descripción completa**
 > Tienes 37 cosas que gestionar. Σ te muestra las 3 que importan hoy, y por qué.
 >
-> Σ Life OS no es otra lista que organizar. Es un motor de decisión personal: conecta tus tareas, tu agenda, tu correo y tu energía, y elige lo que merece tu atención ahora, lo que conviene vigilar y la franja que hay que proteger.
+> NEXT no es otra lista que organizar. Es un motor de decisión personal: conecta tus tareas, tu agenda, tu correo y tu energía, y elige lo que merece tu atención ahora, lo que conviene vigilar y la franja que hay que proteger.
 >
 > ¿POR QUÉ AHORA? ¿POR QUÉ NO OTRA COSA?
 > Cada recomendación está explicada: plazo, una promesa hecha a alguien, esfuerzo, tiempo libre real, lo que desbloquea. Σ también te dice qué apartó, y por qué.

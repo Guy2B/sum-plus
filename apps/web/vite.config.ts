@@ -55,8 +55,8 @@ export default defineConfig({
       registerType: 'prompt',
       injectRegister: false,
       manifest: {
-        name: 'Σ Life OS',
-        short_name: 'Σ Life OS',
+        name: 'NEXT by ALGBr',
+        short_name: 'NEXT by ALGBr',
         description: 'Explainable daily decisions from your tasks, calendar, mail and life signals.',
         lang: 'fr',
         start_url: 'app.html',
