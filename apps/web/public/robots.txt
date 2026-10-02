@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /app.html
+Disallow: /__/
+Disallow: /api/
+Sitemap: https://next.algbr.eu/sitemap.xml
