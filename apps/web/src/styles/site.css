@@ -1553,3 +1553,8 @@ section.proof-strip {
   margin-left: 0.25em;
   white-space: nowrap;
 }
+
+/* nΣxt logo — black frame, small n·x·t, big Σ as the E */
+.nsxt { display: inline-flex; align-items: baseline; padding: 6px 10px 5px; border-radius: 9px; background: #111214; color: #f6f3ee; font-weight: 700; font-size: 1rem; letter-spacing: 0.02em; line-height: 1; white-space: nowrap; vertical-align: middle; }
+.nsxt b { font-weight: 800; font-size: 1.45em; line-height: 0.8; margin: 0 0.04em; }
+.brand-lg .nsxt { font-size: 1.4rem; padding: 9px 14px 8px; border-radius: 12px; }

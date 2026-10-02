@@ -304,11 +304,8 @@ export function Shell({ children, banner }: { children: ComponentChildren; banne
       </a>
       <aside class={`sidebar ${drawerOpen.value ? 'open' : ''}`} aria-label={t('nav.label')}>
         <div class="brand">
-          <span class="brand-mark" aria-hidden="true">
-            Σ
-          </span>
           <div>
-            <strong>NEXT</strong> <small class="byline">by ALGBr</small>
+            <span class="nsxt" role="img" aria-label="NEXT">n<b>Σ</b>xt</span> <small class="byline">by ALGBr</small>
             <small class="muted">{ed.name}</small>
           </div>
         </div>

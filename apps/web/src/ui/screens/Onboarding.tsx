@@ -168,10 +168,7 @@ export function Onboarding() {
     <div class="onboarding">
       <div class="onboarding-card">
         <div class="brand brand-lg">
-          <span class="brand-mark" aria-hidden="true">
-            Σ
-          </span>
-          <strong>NEXT</strong> <small class="byline">by ALGBr</small>
+          <span class="nsxt" role="img" aria-label="NEXT">n<b>Σ</b>xt</span> <small class="byline">by ALGBr</small>
         </div>
         <ol class="steps" aria-label={t('onboarding.progress')}>
           {step >= 0 &&
