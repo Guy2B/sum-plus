@@ -771,7 +771,7 @@ export const en: Record<MessageKey, string> = {
   'native.signInEmail':
     'In the app, sign in with Google or with your email. Signing in to Σ with Microsoft is done on the web; Outlook and the Microsoft calendar can be connected in Sources.',
   'native.sourcesWeb':
-    'In the app, social accounts (LinkedIn, X, TikTok) are connected from the web, lifeos.guybeaho.com. Gmail, Outlook and calendars connect here.',
+    'In the app, social accounts (LinkedIn, X, TikTok) are connected from the web, lifeos.algbr.eu. Gmail, Outlook and calendars connect here.',
   'error.no-google-account':
     'No Google account on this phone. Add one in Settings → Accounts, or sign in with your email.',
   'sources.now': "just now",
