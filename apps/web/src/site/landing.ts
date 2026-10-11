@@ -26,6 +26,48 @@ const FR: Dict = {
 
 const T: Record<Exclude<Lang, 'fr'>, Dict> = {
   en: {
+    'nav.for': 'For whom',
+    'nav.product': 'How it works',
+    'for.eyebrow': 'Who is it for?',
+    'for.title': 'For people with more to do than time.',
+    'for.lead':
+      'Σ does not replace your calendar or your mail. It reads them and tells you, every morning, where to start.',
+    'for.before': 'Before',
+    'for.after': 'With Σ',
+    'for.1t': 'Overloaded employee',
+    'for.1a': 'Meetings, mail, urgent requests: everything feels like a priority.',
+    'for.1b': 'The promise that cannot wait comes first, with a protected slot to keep it.',
+    'for.2t': 'Freelancer',
+    'for.2a': 'Clients, quotes, accounting, prospecting: it never stops.',
+    'for.2b':
+      'The promised quote and what brings money in first. Accounting waits until Friday, without delay.',
+    'for.3t': 'Student before exams',
+    'for.3a': 'Lectures, revision, side job, life: the schedule explodes.',
+    'for.3b': 'Your revision split up until exam day, and what to study today.',
+    'for.4t': 'Parent',
+    'for.4a': 'Kids’ appointments, work, home: the mental load overflows.',
+    'for.4b': 'Family and work calendars combined: what matters before 6 pm, the rest can wait.',
+    'flow.eyebrow': 'How it works',
+    'flow.title': 'From 37 things to 3 decisions, in three steps.',
+    'flow.1t': 'Your signals come in',
+    'flow.1d': 'Calendar, mail, notes and tasks. One click per source, nothing to retype.',
+    'flow.2t': 'Σ sorts for you',
+    'flow.2d': 'Deadlines, promises, free time, energy: what can wait is set aside.',
+    'flow.3t': 'You act',
+    'flow.3d': 'Three decisions, each with its why. You start, Σ follows.',
+    'flow.cal': 'Calendar',
+    'flow.mail': 'Mail',
+    'flow.notes': 'Notes',
+    'flow.tasks': 'Tasks',
+    'flow.now': 'Now',
+    'flow.watch': 'Keep an eye on',
+    'flow.protect': 'Protect',
+    'flow.why1': 'Promise · due tomorrow · 25 min',
+    'flow.c2': 'Reply to Sophie (contract)',
+    'flow.why2': 'Waiting for 3 days',
+    'flow.c3': '2:00–3:30 pm deep work',
+    'flow.why3': 'Your best energy slot',
+    'flow.replay': 'Replay the animation ↻',
     'cta.beta': 'Join the beta — Pro included',
     'founder.eyebrow': 'Open beta · Founder offer',
     'founder.body':
@@ -36,7 +78,6 @@ const T: Record<Exclude<Lang, 'fr'>, Dict> = {
     'cta.mine': 'Start with my data',
     'cta.demoNote': 'A sample week, nothing to type, nothing to share.',
     skip: 'Skip to content',
-    'nav.product': 'Product',
     'nav.why': 'Why Σ',
     'nav.privacy': 'Local-first',
     'nav.pricing': 'Pricing',
@@ -229,6 +270,48 @@ const T: Record<Exclude<Lang, 'fr'>, Dict> = {
     'footer.support': 'Support',
   },
   de: {
+    'nav.for': 'Für wen',
+    'nav.product': 'So funktioniert’s',
+    'for.eyebrow': 'Für wen?',
+    'for.title': 'Für alle, die mehr zu tun haben als Zeit.',
+    'for.lead':
+      'Σ ersetzt weder Kalender noch Postfach. Es liest sie und sagt Ihnen jeden Morgen, womit Sie anfangen.',
+    'for.before': 'Vorher',
+    'for.after': 'Mit Σ',
+    'for.1t': 'Überlastete Angestellte',
+    'for.1a': 'Meetings, Mails, dringende Anfragen: Alles wirkt vorrangig.',
+    'for.1b': 'Das Versprechen, das nicht warten kann, kommt zuerst, mit geschütztem Zeitfenster.',
+    'for.2t': 'Selbstständige',
+    'for.2a': 'Kunden, Angebote, Buchhaltung, Akquise: Es hört nie auf.',
+    'for.2b':
+      'Erst das versprochene Angebot und was Geld bringt. Die Buchhaltung wartet bis Freitag, ohne Verzug.',
+    'for.3t': 'Studierende vor Prüfungen',
+    'for.3a': 'Vorlesungen, Lernen, Nebenjob, Privates: Der Plan explodiert.',
+    'for.3b': 'Ihr Lernstoff bis zum Prüfungstag aufgeteilt, und was heute dran ist.',
+    'for.4t': 'Eltern',
+    'for.4a': 'Kindertermine, Job, Haushalt: Die mentale Last läuft über.',
+    'for.4b': 'Familien- und Arbeitskalender zusammen: was vor 18 Uhr zählt, der Rest kann warten.',
+    'flow.eyebrow': 'So funktioniert’s',
+    'flow.title': 'Von 37 Dingen zu 3 Entscheidungen, in drei Schritten.',
+    'flow.1t': 'Ihre Signale kommen an',
+    'flow.1d': 'Kalender, Mails, Notizen und Aufgaben. Ein Klick pro Quelle, nichts abtippen.',
+    'flow.2t': 'Σ sortiert für Sie',
+    'flow.2d': 'Fristen, Zusagen, freie Zeit, Energie: Was warten kann, wird zurückgestellt.',
+    'flow.3t': 'Sie handeln',
+    'flow.3d': 'Drei Entscheidungen, jede mit Begründung. Sie fangen an, Σ zieht mit.',
+    'flow.cal': 'Kalender',
+    'flow.mail': 'Mails',
+    'flow.notes': 'Notizen',
+    'flow.tasks': 'Aufgaben',
+    'flow.now': 'Jetzt',
+    'flow.watch': 'Im Blick behalten',
+    'flow.protect': 'Schützen',
+    'flow.why1': 'Zusage · fällig morgen · 25 Min.',
+    'flow.c2': 'Sophie antworten (Vertrag)',
+    'flow.why2': 'Wartet seit 3 Tagen',
+    'flow.c3': '14:00–15:30 konzentriert arbeiten',
+    'flow.why3': 'Ihr bestes Energiefenster',
+    'flow.replay': 'Animation erneut abspielen ↻',
     'cta.beta': 'Der Beta beitreten — Pro inklusive',
     'founder.eyebrow': 'Offene Beta · Gründerangebot',
     'founder.body':
@@ -239,7 +322,6 @@ const T: Record<Exclude<Lang, 'fr'>, Dict> = {
     'cta.mine': 'Mit meinen Daten starten',
     'cta.demoNote': 'Eine Beispielwoche, nichts eintippen, nichts teilen.',
     skip: 'Zum Inhalt springen',
-    'nav.product': 'Produkt',
     'nav.why': 'Warum Σ',
     'nav.privacy': 'Lokal zuerst',
     'nav.pricing': 'Preise',
@@ -435,6 +517,47 @@ const T: Record<Exclude<Lang, 'fr'>, Dict> = {
     'footer.support': 'Support',
   },
   es: {
+    'nav.for': 'Para quién',
+    'nav.product': 'Cómo funciona',
+    'for.eyebrow': '¿Para quién?',
+    'for.title': 'Para quienes tienen más que hacer que tiempo.',
+    'for.lead': 'Σ no sustituye tu agenda ni tu correo. Los lee y te dice, cada mañana, por dónde empezar.',
+    'for.before': 'Antes',
+    'for.after': 'Con Σ',
+    'for.1t': 'Empleado desbordado',
+    'for.1a': 'Reuniones, correos, peticiones urgentes: todo parece prioritario.',
+    'for.1b': 'La promesa que no puede esperar va primero, con un hueco protegido para cumplirla.',
+    'for.2t': 'Autónomo',
+    'for.2a': 'Clientes, presupuestos, contabilidad, prospección: nunca para.',
+    'for.2b':
+      'Primero el presupuesto prometido y lo que trae dinero. La contabilidad espera al viernes, sin retraso.',
+    'for.3t': 'Estudiante en exámenes',
+    'for.3a': 'Clases, repaso, trabajo, vida personal: la agenda explota.',
+    'for.3b': 'Tu repaso repartido hasta el día del examen, y lo que toca hoy.',
+    'for.4t': 'Padre o madre',
+    'for.4a': 'Citas de los niños, trabajo, casa: la carga mental se desborda.',
+    'for.4b': 'Agenda familiar y laboral juntas: lo que importa antes de las 18 h, el resto puede esperar.',
+    'flow.eyebrow': 'Cómo funciona',
+    'flow.title': 'De 37 cosas a 3 decisiones, en tres pasos.',
+    'flow.1t': 'Llegan tus señales',
+    'flow.1d': 'Agenda, correo, notas y tareas. Un clic por fuente, nada que copiar.',
+    'flow.2t': 'Σ ordena por ti',
+    'flow.2d': 'Plazos, promesas, tiempo libre, energía: lo que puede esperar se aparta.',
+    'flow.3t': 'Tú actúas',
+    'flow.3d': 'Tres decisiones, cada una con su porqué. Empiezas tú, Σ te sigue.',
+    'flow.cal': 'Agenda',
+    'flow.mail': 'Correo',
+    'flow.notes': 'Notas',
+    'flow.tasks': 'Tareas',
+    'flow.now': 'Ahora',
+    'flow.watch': 'Vigilar',
+    'flow.protect': 'Proteger',
+    'flow.why1': 'Promesa · vence mañana · 25 min',
+    'flow.c2': 'Responder a Sophie (contrato)',
+    'flow.why2': 'Esperando desde hace 3 días',
+    'flow.c3': '14:00–15:30 trabajo profundo',
+    'flow.why3': 'Tu mejor franja de energía',
+    'flow.replay': 'Ver de nuevo la animación ↻',
     'cta.beta': 'Unirse a la beta — Pro incluido',
     'founder.eyebrow': 'Beta abierta · Oferta Fundador',
     'founder.body':
@@ -445,7 +568,6 @@ const T: Record<Exclude<Lang, 'fr'>, Dict> = {
     'cta.mine': 'Empezar con mis datos',
     'cta.demoNote': 'Una semana de ejemplo, nada que escribir, nada que compartir.',
     skip: 'Ir al contenido',
-    'nav.product': 'Producto',
     'nav.why': 'Por qué Σ',
     'nav.privacy': 'Local primero',
     'nav.pricing': 'Precios',
@@ -812,6 +934,47 @@ if ('IntersectionObserver' in window) {
   );
   reveal.forEach((el) => io.observe(el));
 } else reveal.forEach((el) => el.classList.add('visible'));
+
+// "How it works": three stages (signals → Σ sorts → three decisions). Plays once when
+// scrolled into view, then each step can be replayed by hand. No autoplay with reduced motion.
+const flow = $('.flow');
+if (flow) {
+  const steps = $$<HTMLButtonElement>('.flow-steps [data-go]');
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const show = (n: number) => {
+    flow.dataset.stage = String(n);
+    steps.forEach((b) => b.setAttribute('aria-selected', String(b.dataset.go === String(n))));
+  };
+  const play = () => {
+    clearTimeout(timer);
+    show(1);
+    timer = setTimeout(() => {
+      show(2);
+      timer = setTimeout(() => show(3), 2600);
+    }, 2400);
+  };
+  steps.forEach((b) =>
+    b.addEventListener('click', () => {
+      clearTimeout(timer);
+      show(Number(b.dataset.go));
+    }),
+  );
+  $('.flow-replay')?.addEventListener('click', play);
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (still) show(3);
+  else if ('IntersectionObserver' in window) {
+    const watch = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          play();
+          watch.disconnect();
+        }
+      },
+      { threshold: 0.35 },
+    );
+    watch.observe(flow);
+  } else show(3);
+}
 
 // Cookie-less counter: one anonymous "view" per page load and one per app button
 // click. Nothing is stored on the device and no identifier is sent.

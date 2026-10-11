@@ -303,12 +303,15 @@ export function Shell({ children, banner }: { children: ComponentChildren; banne
         {t('a11y.skip')}
       </a>
       <aside class={`sidebar ${drawerOpen.value ? 'open' : ''}`} aria-label={t('nav.label')}>
-        <div class="brand">
+        <a class="brand" href="./" aria-label={t('nav.site')} title={t('nav.site')}>
           <div>
-            <span class="nsxt" role="img" aria-label="NEXT">n<b>Σ</b>xt</span> <small class="byline">by ALGBr</small>
+            <span class="nsxt" aria-hidden="true">
+              n<b>Σ</b>xt
+            </span>{' '}
+            <small class="byline">by ALGBr</small>
             <small class="muted">{ed.name}</small>
           </div>
-        </div>
+        </a>
         <div class="sidebar-actions">
           <button type="button" class="sidebar-action" onClick={newCapture}>
             <Icon name="edit" size={18} />

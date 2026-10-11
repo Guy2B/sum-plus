@@ -21,10 +21,12 @@
     <a class="skip-link" href="#main" data-i18n="skip">Aller au contenu</a>
     <header class="site-header">
       <a class="brand" href="./" aria-label="NEXT by ALGBr">
-        <span class="nsxt" role="img" aria-label="NEXT">n<b>Σ</b>xt</span> <small class="byline">by ALGBr</small>
+        <span class="nsxt" role="img" aria-label="NEXT">n<b>Σ</b>xt</span>
+        <small class="byline">by ALGBr</small>
       </a>
       <nav class="desktop-nav" aria-label="Navigation">
-        <a href="#demo" data-i18n="nav.product">Produit</a>
+        <a href="#for" data-i18n="nav.for">Pour qui</a>
+        <a href="#flow" data-i18n="nav.product">Comment ça marche</a>
         <a href="#how" data-i18n="nav.why">Pourquoi Σ</a>
         <a href="#privacy" data-i18n="nav.privacy">Local-first</a>
         <a href="#pricing" data-i18n="nav.pricing">Tarifs</a>
@@ -67,7 +69,7 @@
           </div>
           <p class="cta-note">
             <span data-i18n="cta.demoNote">Une semaine d’exemple, rien à saisir, rien à partager.</span>
-            <a href="#how" data-i18n="cta.how">Voir comment ça marche ↓</a>
+            <a href="#flow" data-i18n="cta.how">Voir comment ça marche ↓</a>
           </p>
           <ul class="trust-row">
             <li><b aria-hidden="true">✓</b> <span data-i18n="trust.1">Sans compte obligatoire</span></li>
@@ -254,6 +256,156 @@
         <p class="sigma-proof">
           Σ <span class="proof-sub" data-i18n="proof.sigmaD">→ décide ce qui peut attendre</span>
         </p>
+      </section>
+
+      <section class="section-shell for-section" id="for">
+        <div class="section-heading reveal">
+          <p class="eyebrow" data-i18n="for.eyebrow">Pour qui ?</p>
+          <h2 data-i18n="for.title">Pour celles et ceux qui ont plus à faire que de temps.</h2>
+          <p data-i18n="for.lead">
+            Σ ne remplace pas votre agenda ni votre messagerie. Il les lit et vous dit, chaque matin, par quoi
+            commencer.
+          </p>
+        </div>
+        <div class="for-grid reveal">
+          <article class="for-card">
+            <span class="for-icon" aria-hidden="true">🧑‍💼</span>
+            <h3 data-i18n="for.1t">Salarié débordé</h3>
+            <p class="for-before">
+              <b data-i18n="for.before">Avant</b>
+              <span data-i18n="for.1a">Réunions, mails, demandes urgentes : tout semble prioritaire.</span>
+            </p>
+            <p class="for-after">
+              <b data-i18n="for.after">Avec Σ</b>
+              <span data-i18n="for.1b"
+                >La promesse qui ne peut pas attendre passe en premier, avec un créneau protégé pour la
+                tenir.</span
+              >
+            </p>
+          </article>
+          <article class="for-card">
+            <span class="for-icon" aria-hidden="true">💼</span>
+            <h3 data-i18n="for.2t">Indépendant</h3>
+            <p class="for-before">
+              <b data-i18n="for.before">Avant</b>
+              <span data-i18n="for.2a">Clients, devis, compta, prospection : rien ne s’arrête jamais.</span>
+            </p>
+            <p class="for-after">
+              <b data-i18n="for.after">Avec Σ</b>
+              <span data-i18n="for.2b"
+                >Le devis promis et ce qui fait rentrer l’argent d’abord. La compta attend vendredi, sans
+                retard.</span
+              >
+            </p>
+          </article>
+          <article class="for-card">
+            <span class="for-icon" aria-hidden="true">🎓</span>
+            <h3 data-i18n="for.3t">Étudiant en examens</h3>
+            <p class="for-before">
+              <b data-i18n="for.before">Avant</b>
+              <span data-i18n="for.3a">Cours, révisions, job, vie perso : le planning explose.</span>
+            </p>
+            <p class="for-after">
+              <b data-i18n="for.after">Avec Σ</b>
+              <span data-i18n="for.3b"
+                >Vos révisions découpées jusqu’au jour J, et ce qu’il faut réviser aujourd’hui.</span
+              >
+            </p>
+          </article>
+          <article class="for-card">
+            <span class="for-icon" aria-hidden="true">👨‍👩‍👧</span>
+            <h3 data-i18n="for.4t">Parent</h3>
+            <p class="for-before">
+              <b data-i18n="for.before">Avant</b>
+              <span data-i18n="for.4a"
+                >Rendez-vous des enfants, travail, maison : la charge mentale déborde.</span
+              >
+            </p>
+            <p class="for-after">
+              <b data-i18n="for.after">Avec Σ</b>
+              <span data-i18n="for.4b"
+                >Agenda familial et pro croisés : ce qui compte avant 18 h, le reste peut attendre.</span
+              >
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section-shell flow-section" id="flow" aria-labelledby="flow-title">
+        <div class="section-heading reveal">
+          <p class="eyebrow" data-i18n="flow.eyebrow">Comment ça marche</p>
+          <h2 id="flow-title" data-i18n="flow.title">De 37 choses à 3 décisions, en trois temps.</h2>
+        </div>
+        <div class="flow reveal" data-stage="1">
+          <ol class="flow-steps" role="tablist" aria-label="Comment ça marche">
+            <li>
+              <button type="button" role="tab" data-go="1" aria-selected="true">
+                <span>1</span
+                ><span
+                  ><strong data-i18n="flow.1t">Vos signaux arrivent</strong
+                  ><small data-i18n="flow.1d"
+                    >Agenda, mails, notes et tâches. Un clic par source, rien à recopier.</small
+                  ></span
+                >
+              </button>
+            </li>
+            <li>
+              <button type="button" role="tab" data-go="2" aria-selected="false">
+                <span>2</span
+                ><span
+                  ><strong data-i18n="flow.2t">Σ trie pour vous</strong
+                  ><small data-i18n="flow.2d"
+                    >Échéances, promesses, temps libre, énergie : ce qui peut attendre est mis de côté.</small
+                  ></span
+                >
+              </button>
+            </li>
+            <li>
+              <button type="button" role="tab" data-go="3" aria-selected="false">
+                <span>3</span
+                ><span
+                  ><strong data-i18n="flow.3t">Vous agissez</strong
+                  ><small data-i18n="flow.3d"
+                    >Trois décisions, chacune avec son pourquoi. Vous commencez, Σ suit.</small
+                  ></span
+                >
+              </button>
+            </li>
+          </ol>
+          <div class="flow-stage" aria-hidden="true">
+            <div class="flow-sources">
+              <span class="chip-src s1">📅 <span data-i18n="flow.cal">Agenda</span></span>
+              <span class="chip-src s2">✉️ <span data-i18n="flow.mail">Mails</span></span>
+              <span class="chip-src s3">📝 <span data-i18n="flow.notes">Notes</span></span>
+              <span class="chip-src s4">✓ <span data-i18n="flow.tasks">Tâches</span></span>
+            </div>
+            <div class="flow-pile">
+              <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i> <b class="keep k1"></b
+              ><b class="keep k2"></b><b class="keep k3"></b>
+              <span class="flow-count"><span>37</span> → <strong>3</strong></span>
+            </div>
+            <div class="flow-result">
+              <div class="flow-card c1">
+                <em data-i18n="flow.now">Maintenant</em
+                ><strong data-i18n="demo.c1">Envoyer le devis promis à Müller</strong
+                ><small data-i18n="flow.why1">Promesse · échéance demain · 25 min</small>
+              </div>
+              <div class="flow-card c2">
+                <em data-i18n="flow.watch">À surveiller</em
+                ><strong data-i18n="flow.c2">Répondre à Sophie (contrat)</strong
+                ><small data-i18n="flow.why2">Attend depuis 3 jours</small>
+              </div>
+              <div class="flow-card c3">
+                <em data-i18n="flow.protect">À protéger</em
+                ><strong data-i18n="flow.c3">14:00–15:30 travail de fond</strong
+                ><small data-i18n="flow.why3">Votre meilleur créneau d’énergie</small>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="text-button flow-replay" data-i18n="flow.replay">
+            Revoir l’animation ↻
+          </button>
+        </div>
       </section>
 
       <section class="section-shell why-section" id="how">
@@ -667,7 +819,8 @@
     <footer class="site-footer">
       <div>
         <a class="brand" href="./"
-          ><span class="nsxt" role="img" aria-label="NEXT">n<b>Σ</b>xt</span> <small class="byline">by ALGBr</small></a
+          ><span class="nsxt" role="img" aria-label="NEXT">n<b>Σ</b>xt</span>
+          <small class="byline">by ALGBr</small></a
         >
         <p data-i18n="footer.tagline">Une couche de décision calme au-dessus de votre vie numérique.</p>
       </div>
@@ -680,7 +833,7 @@
       <p class="footer-meta">© <span id="year"></span> NEXT by ALGBr · Powered by Σ</p>
       <a
         class="by-algbr"
-        href="https://algbr-3b4ee.web.app/"
+        href="https://algbr.eu/"
         target="_blank"
         rel="noopener"
         aria-label="by Al.G.B.r. Digital Studio"

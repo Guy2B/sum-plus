@@ -18,27 +18,15 @@ import {
   syncOutlookCalendar,
 } from '../../services/connectors/microsoft';
 import {
-  IMAP_PRESETS,
-  connectImap,
   disconnectImap,
   disconnectSocial,
   startSocialAuth,
   syncSocial,
-  type ImapPreset,
 } from '../../services/connectors/remote';
+import { ImapDialog } from '../imap-dialog';
+import { SignalSetup } from '../signal-setup';
 import { t, fmtRelative } from '../../i18n';
-import {
-  Badge,
-  Button,
-  Card,
-  Field,
-  IconButton,
-  Modal,
-  PageHeader,
-  attempt,
-  confirmDialog,
-  toast,
-} from '../components';
+import { Badge, Button, Card, IconButton, PageHeader, attempt, confirmDialog, toast } from '../components';
 import { navigate } from '../router';
 import { syncMailAccount } from './Mail';
 
@@ -59,104 +47,6 @@ async function purgeSocial(a: SocialAccount) {
   for (const s of snapshot.value.socialItems)
     if (!s.deletedAt && s.accountId === a.id) await remove('socialItems', s.id);
   await remove('socialAccounts', a.id);
-}
-
-function ImapDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [preset, setPreset] = useState<ImapPreset>('yahoo');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [host, setHost] = useState('');
-  const [busy, setBusy] = useState(false);
-  const submit = async (e: Event) => {
-    e.preventDefault();
-    setBusy(true);
-    const account = await attempt(
-      () =>
-        connectImap({
-          preset,
-          email: email.trim(),
-          password,
-          host: preset === 'custom' ? host.trim() : undefined,
-        }),
-      t('sources.connected'),
-    );
-    setPassword('');
-    setBusy(false);
-    if (account) {
-      onClose();
-      void attempt(() => syncMailAccount(account));
-    }
-  };
-  const help = IMAP_PRESETS[preset].help;
-  return (
-    <Modal open={open} onClose={onClose} title={t('sources.imapTitle')}>
-      <form class="form" onSubmit={submit} autoComplete="off">
-        <Field label={t('sources.imapProvider')}>
-          {(id) => (
-            <select
-              id={id}
-              value={preset}
-              onChange={(e) => setPreset((e.currentTarget as HTMLSelectElement).value as ImapPreset)}
-            >
-              {(Object.keys(IMAP_PRESETS) as ImapPreset[]).map((p) => (
-                <option key={p} value={p}>
-                  {t(`provider.imap.${p}`)}
-                </option>
-              ))}
-            </select>
-          )}
-        </Field>
-        <Field label={t('sources.email')}>
-          {(id) => (
-            <input
-              id={id}
-              type="email"
-              required
-              value={email}
-              onInput={(e) => setEmail((e.currentTarget as HTMLInputElement).value)}
-            />
-          )}
-        </Field>
-        {preset === 'custom' && (
-          <Field label={t('sources.imapHost')}>
-            {(id) => (
-              <input
-                id={id}
-                required
-                placeholder="imap.example.com"
-                value={host}
-                onInput={(e) => setHost((e.currentTarget as HTMLInputElement).value)}
-              />
-            )}
-          </Field>
-        )}
-        <Field label={t('sources.appPassword')} hint={t('sources.appPasswordHint')}>
-          {(id) => (
-            <input
-              id={id}
-              type="password"
-              required
-              autoComplete="new-password"
-              value={password}
-              onInput={(e) => setPassword((e.currentTarget as HTMLInputElement).value)}
-            />
-          )}
-        </Field>
-        {help && (
-          <a class="link small" href={help} target="_blank" rel="noopener noreferrer">
-            {t('sources.appPasswordHelp')}
-          </a>
-        )}
-        <p class="small muted">{t('sources.imapSecurity')}</p>
-        <div class="modal-actions">
-          <Button onClick={onClose}>{t('common.cancel')}</Button>
-          <Button type="submit" variant="primary" loading={busy}>
-            {t('sources.connect')}
-          </Button>
-        </div>
-      </form>
-    </Modal>
-  );
 }
 
 function Contacts() {
@@ -349,6 +239,11 @@ export function Sources() {
       <PageHeader title={t('nav.sources')} subtitle={t('sources.subtitle')} />
       {isNative() && <p class="notice small">{t('native.sourcesWeb')}</p>}
 
+      <Card title={t('signals.assistantTitle')} id="setup">
+        <p class="small muted">{t('signals.assistantBody')}</p>
+        <SignalSetup />
+      </Card>
+
       <Card title={t('sources.connected')}>
         {accounts.length || socials.length ? (
           <ul class="plain-list">
@@ -448,198 +343,203 @@ export function Sources() {
         )}
       </Card>
 
-      <div class="grid grid-2">
-        <Card title={t('sources.mailTitle')}>
-          <ul class="source-list">
-            <li>
-              <span>
-                <strong>Gmail</strong>
-                <small class="muted">{t('sources.gmailScope')}</small>
-              </span>
-              <StatusBadge s={gmailS} />
-              <Button
-                size="sm"
-                loading={busy === 'gmail'}
-                disabled={gmailS === 'notConfigured'}
-                onClick={act(
-                  gmailS,
-                  () =>
-                    void run(
-                      'gmail',
-                      async () => syncMailAccount(await connectGmail()),
-                      t('sources.connected'),
-                    ),
-                )}
-              >
-                {t('sources.connect')}
-              </Button>
-            </li>
-            <li>
-              <span>
-                <strong>Outlook / Microsoft 365</strong>
-                <small class="muted">{t('sources.outlookScope')}</small>
-              </span>
-              <StatusBadge s={outlookS} />
-              <Button
-                size="sm"
-                loading={busy === 'outlook'}
-                disabled={outlookS === 'notConfigured'}
-                onClick={act(
-                  outlookS,
-                  () =>
-                    void run(
-                      'outlook',
-                      async () => syncMailAccount(await connectOutlook()),
-                      t('sources.connected'),
-                    ),
-                )}
-              >
-                {t('sources.connect')}
-              </Button>
-            </li>
-            <li>
-              <span>
-                <strong>Yahoo · GMX · iCloud · IMAP</strong>
-                <small class="muted">{t('sources.imapScope')}</small>
-              </span>
-              <StatusBadge s={imapS} />
-              <Button
-                size="sm"
-                disabled={imapS === 'notConfigured'}
-                onClick={act(imapS, () => setImapOpen(true))}
-              >
-                {t('sources.connect')}
-              </Button>
-            </li>
-          </ul>
-        </Card>
+      <details class="all-connectors">
+        <summary>{t('signals.allConnectors')}</summary>
+        <div class="grid grid-2">
+          <Card title={t('sources.mailTitle')}>
+            <ul class="source-list">
+              <li>
+                <span>
+                  <strong>Gmail</strong>
+                  <small class="muted">{t('sources.gmailScope')}</small>
+                </span>
+                <StatusBadge s={gmailS} />
+                <Button
+                  size="sm"
+                  loading={busy === 'gmail'}
+                  disabled={gmailS === 'notConfigured'}
+                  onClick={act(
+                    gmailS,
+                    () =>
+                      void run(
+                        'gmail',
+                        async () => syncMailAccount(await connectGmail()),
+                        t('sources.connected'),
+                      ),
+                  )}
+                >
+                  {t('sources.connect')}
+                </Button>
+              </li>
+              <li>
+                <span>
+                  <strong>Outlook / Microsoft 365</strong>
+                  <small class="muted">{t('sources.outlookScope')}</small>
+                </span>
+                <StatusBadge s={outlookS} />
+                <Button
+                  size="sm"
+                  loading={busy === 'outlook'}
+                  disabled={outlookS === 'notConfigured'}
+                  onClick={act(
+                    outlookS,
+                    () =>
+                      void run(
+                        'outlook',
+                        async () => syncMailAccount(await connectOutlook()),
+                        t('sources.connected'),
+                      ),
+                  )}
+                >
+                  {t('sources.connect')}
+                </Button>
+              </li>
+              <li>
+                <span>
+                  <strong>Yahoo · GMX · iCloud · IMAP</strong>
+                  <small class="muted">{t('sources.imapScope')}</small>
+                </span>
+                <StatusBadge s={imapS} />
+                <Button
+                  size="sm"
+                  disabled={imapS === 'notConfigured'}
+                  onClick={act(imapS, () => setImapOpen(true))}
+                >
+                  {t('sources.connect')}
+                </Button>
+              </li>
+            </ul>
+          </Card>
 
-        <Card title={t('sources.calendarTitle')}>
-          <ul class="source-list">
-            <li>
-              <span>
-                <strong>Google Agenda</strong>
-                <small class="muted">{t('sources.readOnly')}</small>
-              </span>
-              <StatusBadge
-                s={!googleAvailable() ? 'notConfigured' : can('calendarSync', ent) ? 'ready' : 'needsPro'}
-              />
-              <Button
-                size="sm"
-                loading={busy === 'gcal'}
-                disabled={!googleAvailable()}
-                onClick={act(
-                  !can('calendarSync', ent) ? 'needsPro' : 'ready',
-                  () => void run('gcal', syncGoogleCalendar, t('sources.connected')),
-                )}
-              >
-                {t('sources.sync')}
-              </Button>
-            </li>
-            <li>
-              <span>
-                <strong>Outlook Calendar</strong>
-                <small class="muted">{t('sources.readOnly')}</small>
-              </span>
-              <StatusBadge
-                s={!microsoftAvailable() ? 'notConfigured' : can('calendarSync', ent) ? 'ready' : 'needsPro'}
-              />
-              <Button
-                size="sm"
-                loading={busy === 'mcal'}
-                disabled={!microsoftAvailable()}
-                onClick={act(
-                  !can('calendarSync', ent) ? 'needsPro' : 'ready',
-                  () => void run('mcal', () => syncOutlookCalendar(), t('sources.connected')),
-                )}
-              >
-                {t('sources.sync')}
-              </Button>
-            </li>
-            <li>
-              <span>
-                <strong>iCalendar (.ics)</strong>
-                <small class="muted">{t('sources.icsScope')}</small>
-              </span>
-              <StatusBadge s="ready" />
-              <Button size="sm" onClick={() => navigate('calendar')}>
-                {t('sources.open')}
-              </Button>
-            </li>
-          </ul>
-        </Card>
+          <Card title={t('sources.calendarTitle')}>
+            <ul class="source-list">
+              <li>
+                <span>
+                  <strong>Google Agenda</strong>
+                  <small class="muted">{t('sources.readOnly')}</small>
+                </span>
+                <StatusBadge
+                  s={!googleAvailable() ? 'notConfigured' : can('calendarSync', ent) ? 'ready' : 'needsPro'}
+                />
+                <Button
+                  size="sm"
+                  loading={busy === 'gcal'}
+                  disabled={!googleAvailable()}
+                  onClick={act(
+                    !can('calendarSync', ent) ? 'needsPro' : 'ready',
+                    () => void run('gcal', syncGoogleCalendar, t('sources.connected')),
+                  )}
+                >
+                  {t('sources.sync')}
+                </Button>
+              </li>
+              <li>
+                <span>
+                  <strong>Outlook Calendar</strong>
+                  <small class="muted">{t('sources.readOnly')}</small>
+                </span>
+                <StatusBadge
+                  s={
+                    !microsoftAvailable() ? 'notConfigured' : can('calendarSync', ent) ? 'ready' : 'needsPro'
+                  }
+                />
+                <Button
+                  size="sm"
+                  loading={busy === 'mcal'}
+                  disabled={!microsoftAvailable()}
+                  onClick={act(
+                    !can('calendarSync', ent) ? 'needsPro' : 'ready',
+                    () => void run('mcal', () => syncOutlookCalendar(), t('sources.connected')),
+                  )}
+                >
+                  {t('sources.sync')}
+                </Button>
+              </li>
+              <li>
+                <span>
+                  <strong>iCalendar (.ics)</strong>
+                  <small class="muted">{t('sources.icsScope')}</small>
+                </span>
+                <StatusBadge s="ready" />
+                <Button size="sm" onClick={() => navigate('calendar')}>
+                  {t('sources.open')}
+                </Button>
+              </li>
+            </ul>
+          </Card>
 
-        <Card title={t('sources.socialTitle')}>
-          <ul class="source-list">
-            <li>
-              <span>
-                <strong>YouTube</strong>
-                <small class="muted">{t('sources.youtubeScope')}</small>
-              </span>
-              <StatusBadge
-                s={!googleAvailable() ? 'notConfigured' : can('social', ent) ? 'ready' : 'needsPro'}
-              />
-              <Button
-                size="sm"
-                loading={busy === 'yt'}
-                disabled={!googleAvailable()}
-                onClick={act(
-                  can('social', ent) ? 'ready' : 'needsPro',
-                  () => void run('yt', syncYouTube, t('sources.connected')),
-                )}
-              >
-                {t('sources.connect')}
-              </Button>
-            </li>
-            {(['linkedin', 'x', 'tiktok', 'meta'] as const).map((p) => {
-              const s = socialStatus(p);
-              return (
-                <li key={p}>
-                  <span>
-                    <strong>{t(`provider.${p}`)}</strong>
-                    <small class="muted">{t(`sources.scope.${p}`)}</small>
-                  </span>
-                  <StatusBadge s={s} />
-                  <Button
-                    size="sm"
-                    disabled={s === 'notConfigured' || s === 'approval'}
-                    onClick={act(
-                      s,
-                      () => void run(p, () => startSocialAuth(p as 'linkedin' | 'x' | 'tiktok' | 'meta')),
-                    )}
-                  >
-                    {t('sources.connect')}
-                  </Button>
-                </li>
-              );
-            })}
-          </ul>
-          <p class="small muted">{t('social.honesty')}</p>
-        </Card>
+          <Card title={t('sources.socialTitle')}>
+            <ul class="source-list">
+              <li>
+                <span>
+                  <strong>YouTube</strong>
+                  <small class="muted">{t('sources.youtubeScope')}</small>
+                </span>
+                <StatusBadge
+                  s={!googleAvailable() ? 'notConfigured' : can('social', ent) ? 'ready' : 'needsPro'}
+                />
+                <Button
+                  size="sm"
+                  loading={busy === 'yt'}
+                  disabled={!googleAvailable()}
+                  onClick={act(
+                    can('social', ent) ? 'ready' : 'needsPro',
+                    () => void run('yt', syncYouTube, t('sources.connected')),
+                  )}
+                >
+                  {t('sources.connect')}
+                </Button>
+              </li>
+              {(['linkedin', 'x', 'tiktok', 'meta'] as const).map((p) => {
+                const s = socialStatus(p);
+                return (
+                  <li key={p}>
+                    <span>
+                      <strong>{t(`provider.${p}`)}</strong>
+                      <small class="muted">{t(`sources.scope.${p}`)}</small>
+                    </span>
+                    <StatusBadge s={s} />
+                    <Button
+                      size="sm"
+                      disabled={s === 'notConfigured' || s === 'approval'}
+                      onClick={act(
+                        s,
+                        () => void run(p, () => startSocialAuth(p as 'linkedin' | 'x' | 'tiktok' | 'meta')),
+                      )}
+                    >
+                      {t('sources.connect')}
+                    </Button>
+                  </li>
+                );
+              })}
+            </ul>
+            <p class="small muted">{t('social.honesty')}</p>
+          </Card>
 
-        <Card title={t('sources.otherTitle')}>
-          <ul class="source-list">
-            <li>
-              <span>
-                <strong>{t('sources.health')}</strong>
-                <small class="muted">{t('sources.healthScope')}</small>
-              </span>
-              <Button size="sm" onClick={() => navigate('health')}>
-                {t('sources.open')}
-              </Button>
-            </li>
-            <li>
-              <span>
-                <strong>{t('sources.backup')}</strong>
-                <small class="muted">{t('sources.backupScope')}</small>
-              </span>
-              <Button size="sm" onClick={() => navigate('account', 'data')}>
-                {t('sources.open')}
-              </Button>
-            </li>
-          </ul>
-        </Card>
-      </div>
+          <Card title={t('sources.otherTitle')}>
+            <ul class="source-list">
+              <li>
+                <span>
+                  <strong>{t('sources.health')}</strong>
+                  <small class="muted">{t('sources.healthScope')}</small>
+                </span>
+                <Button size="sm" onClick={() => navigate('health')}>
+                  {t('sources.open')}
+                </Button>
+              </li>
+              <li>
+                <span>
+                  <strong>{t('sources.backup')}</strong>
+                  <small class="muted">{t('sources.backupScope')}</small>
+                </span>
+                <Button size="sm" onClick={() => navigate('account', 'data')}>
+                  {t('sources.open')}
+                </Button>
+              </li>
+            </ul>
+          </Card>
+        </div>
+      </details>
 
       <Contacts />
       <p class="small muted">{t('sources.principles')}</p>

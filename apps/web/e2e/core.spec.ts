@@ -132,7 +132,7 @@ test.describe('core journey', () => {
     await expect(page.getByRole('heading', { name: 'Account', level: 1 })).toBeVisible();
     await page.getByRole('radio', { name: /Creator/ }).click();
     await page.goto('/app.html#today');
-    await expect(page.locator('.brand small')).toContainText('Creator');
+    await expect(page.locator('.brand small.muted')).toContainText('Creator');
     await expect(page.locator('#top3 .decision').first()).toBeVisible();
   });
 

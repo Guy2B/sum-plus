@@ -184,7 +184,7 @@ export interface MailAccount extends Doc {
   provider: MailProvider;
   email: string;
   displayName?: string;
-  imapPreset?: 'yahoo' | 'gmx' | 'icloud' | 'custom';
+  imapPreset?: 'yahoo' | 'gmx' | 'webde' | 'tonline' | 'icloud' | 'custom';
   status: 'connected' | 'needs-auth' | 'error' | 'disconnected';
   lastSyncAt?: ISODateTime | null;
   error?: string | null;
@@ -377,6 +377,10 @@ export interface Settings {
     founderDays?: number;
     /** Calendars connected for automatic sync. */
     calendars?: ('google' | 'microsoft')[];
+    /** First day a phone note was shared or imported (guided setup: notes connected). */
+    notesLinked?: ISODate;
+    /** The Today checklist of signals to connect was hidden. */
+    signalsHidden?: boolean;
     /** "My day has changed": today's constraints, reset automatically the next day. */
     day?: {
       date: ISODate;

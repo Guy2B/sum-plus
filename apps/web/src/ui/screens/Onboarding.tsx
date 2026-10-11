@@ -9,9 +9,9 @@ import { detectMission, parseCapture } from '../../domain/capture';
 import { createMany, settings, updateSettings } from '../../data/store';
 import { seedDemo } from '../../data/seed';
 import { t, fmtDate } from '../../i18n';
-import { Button, Field, attempt, toast } from '../components';
+import { Button, Field, attempt } from '../components';
 import { cloudConfigured } from '../../config';
-import { googleAvailable, syncGoogleCalendar } from '../../services/connectors/google';
+import { SignalSetup } from '../signal-setup';
 import { navigate } from '../router';
 import { track } from '../../services/telemetry';
 
@@ -64,7 +64,6 @@ export function Onboarding() {
   const [profile, setProfile] = useState('employee');
   const [peak, setPeak] = useState(s.context.energyPeak);
   const [busy, setBusy] = useState(false);
-  const [calendar, setCalendar] = useState<number | null>(null);
   const items = understand(mind.split('\n'));
 
   const saveProfile = () => {
@@ -154,25 +153,18 @@ export function Onboarding() {
     })();
   }, []);
 
-  const connectCalendar = async () => {
-    setBusy(true);
-    await attempt(async () => {
-      const r = await syncGoogleCalendar();
-      setCalendar(r.added + r.updated);
-      toast(t('onboarding.calendarConnected', { count: r.added + r.updated }), 'good');
-    });
-    setBusy(false);
-  };
-
   return (
     <div class="onboarding">
       <div class="onboarding-card">
         <div class="brand brand-lg">
-          <span class="nsxt" role="img" aria-label="NEXT">n<b>Σ</b>xt</span> <small class="byline">by ALGBr</small>
+          <span class="nsxt" role="img" aria-label="NEXT">
+            n<b>Σ</b>xt
+          </span>{' '}
+          <small class="byline">by ALGBr</small>
         </div>
         <ol class="steps" aria-label={t('onboarding.progress')}>
           {step >= 0 &&
-            [0, 1, 2].map((i) => (
+            [0, 1, 2, 3].map((i) => (
               <li
                 key={i}
                 class={i === step ? 'current' : i < step ? 'done' : ''}
@@ -332,6 +324,23 @@ export function Onboarding() {
 
         {step === 2 && (
           <div>
+            <h1>{t('onboarding.signalsTitle')}</h1>
+            <p class="muted">{t('onboarding.signalsBody')}</p>
+            <SignalSetup compact />
+            <p class="small muted">{t('onboarding.signalsLater')}</p>
+            <div class="modal-actions">
+              <Button variant="ghost" onClick={() => setStep(1)}>
+                {t('common.back')}
+              </Button>
+              <Button variant="primary" onClick={() => setStep(3)}>
+                {t('common.continue')}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div>
             <h1>{t('onboarding.planTitle')}</h1>
             {items.length ? (
               <>
@@ -354,23 +363,9 @@ export function Onboarding() {
             ) : (
               <p class="muted">{t('onboarding.planEmpty')}</p>
             )}
-            {googleAvailable() && (
-              <div class="notice">
-                <span>
-                  {calendar === null
-                    ? t('onboarding.calendarHint')
-                    : t('onboarding.calendarConnected', { count: calendar })}
-                </span>
-                {calendar === null && (
-                  <Button size="sm" icon="calendar" loading={busy} onClick={() => void connectCalendar()}>
-                    {t('onboarding.connectCalendar')}
-                  </Button>
-                )}
-              </div>
-            )}
             <p class="small muted">{t('onboarding.privacy')}</p>
             <div class="modal-actions">
-              <Button variant="ghost" onClick={() => setStep(1)}>
+              <Button variant="ghost" onClick={() => setStep(2)}>
                 {t('common.back')}
               </Button>
               <Button onClick={() => void finish(true)} loading={busy}>

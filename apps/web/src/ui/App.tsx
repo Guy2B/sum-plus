@@ -6,6 +6,7 @@ import { Shell } from './shell';
 import { route, type RouteId } from './router';
 import { ConfirmHost, ToastHost, Spinner, Button } from './components';
 import { Onboarding } from './screens/Onboarding';
+import { SharedNoteReceiver } from './notes-import';
 import { Today } from './screens/Today';
 import { Attention } from './screens/Attention';
 import { Plan } from './screens/Plan';
@@ -102,6 +103,7 @@ export function App() {
       <Shell banner={<Banners />}>
         <Screen key={route.value.id} />
       </Shell>
+      <SharedNoteReceiver />
       <ConfirmHost />
       <ToastHost />
     </>

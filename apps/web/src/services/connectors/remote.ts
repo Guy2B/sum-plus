@@ -9,13 +9,51 @@ import type { MailAccount, SocialProvider } from '../../domain/types';
 import { create, snapshot, update } from '../../data/store';
 import { guessNeedsReply, ingestMail, ingestSocial } from './ingest';
 
+/**
+ * `server`: the preset the Cloud Function knows. Web.de and T-Online are sent as
+ * "custom" with their host, so adding a mailbox provider needs no server deploy.
+ * `appPassword`: the provider requires a separate password for mail apps.
+ */
 export const IMAP_PRESETS = {
-  yahoo: { host: 'imap.mail.yahoo.com', port: 993, help: 'https://help.yahoo.com/kb/SLN15241.html' },
-  gmx: { host: 'imap.gmx.net', port: 993, help: 'https://support.gmx.com/pop-imap/toggle.html' },
-  icloud: { host: 'imap.mail.me.com', port: 993, help: 'https://support.apple.com/102654' },
-  custom: { host: '', port: 993, help: '' },
+  gmx: {
+    host: 'imap.gmx.net',
+    port: 993,
+    server: 'gmx',
+    appPassword: false,
+    help: 'https://hilfe.gmx.net/pop-imap/einschalten.html',
+  },
+  webde: {
+    host: 'imap.web.de',
+    port: 993,
+    server: 'custom',
+    appPassword: false,
+    help: 'https://hilfe.web.de/pop-imap/einschalten.html',
+  },
+  tonline: {
+    host: 'secureimap.t-online.de',
+    port: 993,
+    server: 'custom',
+    appPassword: true,
+    help: 'https://www.telekom.de/hilfe/festnetz-internet-tv/e-mail/e-mail-adresse-passwoerter-und-sicherheit/passwort-fuer-e-mail-programme-einrichten',
+  },
+  yahoo: {
+    host: 'imap.mail.yahoo.com',
+    port: 993,
+    server: 'yahoo',
+    appPassword: true,
+    help: 'https://help.yahoo.com/kb/SLN15241.html',
+  },
+  icloud: {
+    host: 'imap.mail.me.com',
+    port: 993,
+    server: 'icloud',
+    appPassword: true,
+    help: 'https://support.apple.com/102654',
+  },
+  custom: { host: '', port: 993, server: 'custom', appPassword: false, help: '' },
 } as const;
 export type ImapPreset = keyof typeof IMAP_PRESETS;
+type ServerPreset = 'yahoo' | 'gmx' | 'icloud' | 'custom';
 
 interface ImapConnectReq {
   preset: ImapPreset;
@@ -23,6 +61,18 @@ interface ImapConnectReq {
   password: string;
   host?: string;
   port?: number;
+}
+interface ImapServerReq extends Omit<ImapConnectReq, 'preset'> {
+  preset: ServerPreset;
+}
+
+/** What the Cloud Function receives: known presets as is, the others as "custom" + host. */
+export function imapServerRequest(req: ImapConnectReq): ImapServerReq {
+  const p = IMAP_PRESETS[req.preset];
+  if (p.server !== 'custom') return { ...req, preset: p.server };
+  if (req.preset === 'custom') return { ...req, preset: 'custom' };
+  // Shown in groups ("abcd efgh ..."), pasted with spaces: the server only strips them for named presets.
+  return { ...req, preset: 'custom', host: p.host, port: p.port, password: req.password.replace(/\s+/g, '') };
 }
 interface RemoteMail {
   externalId: string;
@@ -35,7 +85,7 @@ interface RemoteMail {
 }
 
 export async function connectImap(req: ImapConnectReq): Promise<MailAccount> {
-  const res = await call<ImapConnectReq, { accountId: string }>('imapConnect', req);
+  const res = await call<ImapServerReq, { accountId: string }>('imapConnect', imapServerRequest(req));
   const existing = snapshot.value.mailAccounts.find(
     (a) => !a.deletedAt && a.provider === 'imap' && a.email.toLowerCase() === req.email.toLowerCase(),
   );

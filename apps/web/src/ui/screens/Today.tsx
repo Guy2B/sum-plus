@@ -9,6 +9,7 @@ import { getEdition } from '../../domain/editions';
 import { eventsOn, isTodayTask } from '../../domain/planning';
 import { habitDueOn } from '../../domain/wellbeing';
 import { isoDay } from '../../domain/dates';
+import { SignalChecklist } from '../signal-setup';
 import { domainEnabled } from '../../domain/signals';
 import { dayOverride, freeMinutesNow, pickToday, setAside as groupSetAside } from '../../domain/today';
 import { overloadAvoided, scheduleDay } from '../../domain/scheduler';
@@ -158,6 +159,8 @@ export function Today() {
           </Button>
         </div>
       )}
+
+      <SignalChecklist />
 
       <section id="top3" class="today-cards" aria-label={t('today.cardsLabel')}>
         {shown.length ? (

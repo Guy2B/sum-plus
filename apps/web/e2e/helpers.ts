@@ -28,6 +28,8 @@ export async function onboard(
     .nth(opts.profileIndex ?? 1)
     .click();
   await page.getByRole('button', { name: 'Continuer' }).click();
+  await expect(page.getByRole('heading', { name: 'Branchez ce que Σ doit lire' })).toBeVisible();
+  await page.getByRole('button', { name: 'Continuer', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Votre premier plan est prêt' })).toBeVisible();
   await page.getByRole('button', { name: opts.demo ? 'Essayer avec des exemples' : 'Voir mon plan' }).click();
   await expect(page).toHaveURL(/#today/);

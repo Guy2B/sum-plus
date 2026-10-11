@@ -3099,6 +3099,192 @@ main {
 }
 
 /* nΣxt logo — black frame, small n·x·t, big Σ as the E */
-.nsxt { display: inline-flex; align-items: baseline; padding: 6px 10px 5px; border-radius: 9px; background: #111214; color: #f6f3ee; font-weight: 700; font-size: 1rem; letter-spacing: 0.02em; line-height: 1; white-space: nowrap; vertical-align: middle; }
-.nsxt b { font-weight: 800; font-size: 1.45em; line-height: 0.8; margin: 0 0.04em; }
-.brand-lg .nsxt { font-size: 1.4rem; padding: 9px 14px 8px; border-radius: 12px; }
+.nsxt {
+  display: inline-flex;
+  align-items: baseline;
+  padding: 6px 10px 5px;
+  border-radius: 9px;
+  background: #111214;
+  color: #f6f3ee;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.nsxt b {
+  font-weight: 800;
+  font-size: 1.45em;
+  line-height: 0.8;
+  margin: 0 0.04em;
+}
+.brand-lg .nsxt {
+  font-size: 1.4rem;
+  padding: 9px 14px 8px;
+  border-radius: 12px;
+}
+
+/* ---------- Guided signal setup (onboarding, Sources, Today checklist) ---------- */
+.signal-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.signal-step {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.signal-step.open {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow);
+}
+.signal-step.done .signal-num {
+  background: var(--good-soft);
+  color: var(--good);
+}
+.signal-head {
+  all: unset;
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  cursor: pointer;
+}
+.signal-head:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+  border-radius: var(--radius);
+}
+.signal-num {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  background: var(--surface-2);
+  color: var(--text);
+}
+.signal-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.signal-title small {
+  font-size: 0.85rem;
+}
+.signal-body {
+  padding: 0 16px 16px 58px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.signal-promise {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text-2);
+}
+.signal-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.signal-help {
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border-strong);
+}
+.signal-help p {
+  margin: 0 0 6px;
+}
+.signal-help ol,
+.signal-howto {
+  margin: 0 0 8px;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.signal-setup.compact .signal-body {
+  padding-left: 16px;
+}
+.notes-import {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.notes-import textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+.file-btn {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+.file-btn input[type='file'] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.file-btn:focus-within {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.note-lines li {
+  padding: 4px 0;
+}
+.signal-checklist .card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+.signal-mini {
+  list-style: none;
+  margin: 8px 0 12px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+}
+.signal-mini li.done {
+  color: var(--good);
+}
+.all-connectors > summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 8px 0;
+  color: var(--text-2);
+}
+.all-connectors[open] > summary {
+  margin-bottom: 12px;
+}
+@media (max-width: 560px) {
+  .signal-body {
+    padding-left: 16px;
+  }
+}
+
+/* The sidebar logo is a link (back to the presentation page): keep "by ALGBr" above 4.5:1 contrast. */
+.sidebar .brand .byline {
+  opacity: 0.85;
+}
+.sidebar a.brand:hover .nsxt {
+  opacity: 0.85;
+}

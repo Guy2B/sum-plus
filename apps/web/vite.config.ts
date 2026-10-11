@@ -62,6 +62,12 @@ export default defineConfig({
         start_url: 'app.html',
         scope: './',
         display: 'standalone',
+        // Android: 'Share → NEXT' from any notes app (see ui/notes-import.tsx).
+        share_target: {
+          action: 'app.html',
+          method: 'GET',
+          params: { title: 'share_title', text: 'share_text', url: 'share_url' },
+        },
         background_color: '#fbfaf8',
         theme_color: '#1d1c1a',
         icons: [
