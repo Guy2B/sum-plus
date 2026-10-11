@@ -1468,6 +1468,26 @@ section:not(.hero) {
 .flow-replay {
   margin-top: 6px;
   font-size: 0.85rem;
+  /* Three soft blinks, then rest: one cycle every 10 s. */
+  animation: replay-hint 10s ease-in-out infinite;
+}
+.flow-replay:hover,
+.flow-replay:focus-visible {
+  animation: none;
+}
+@keyframes replay-hint {
+  0%,
+  8%,
+  16%,
+  24%,
+  100% {
+    opacity: 1;
+  }
+  4%,
+  12%,
+  20% {
+    opacity: 0.25;
+  }
 }
 
 @media (max-width: 960px) {
