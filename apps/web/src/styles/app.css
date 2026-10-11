@@ -3288,3 +3288,24 @@ main {
 .sidebar a.brand:hover .nsxt {
   opacity: 0.85;
 }
+
+.signal-optional {
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  vertical-align: middle;
+}
+.signal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+.signal-checklist .signal-actions {
+  justify-content: flex-start;
+}

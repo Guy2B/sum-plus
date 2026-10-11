@@ -1825,9 +1825,6 @@ export const de: Record<MessageKey, string> = {
   'signals.footer':
     'Ihre Daten bleiben auf Ihrem Gerät. Jederzeit trennbar, importierte Daten werden dann gelöscht.',
   'signals.calendar.title': 'Ihr Kalender',
-  'signals.calendar.why': 'Damit Σ Ihre echten freien Zeiten findet.',
-  'signals.calendar.reads': 'Titel, Uhrzeit und Ort Ihrer Termine der nächsten 60 Tage.',
-  'signals.calendar.never': 'Termine anlegen, ändern oder löschen.',
   'signals.calendar.other': 'Apple oder andere',
   'signals.calendar.ics1':
     'Exportieren Sie in Ihrer Kalender-App (Apple Kalender auf dem Mac, Thunderbird…) den Kalender als .ics-Datei.',
@@ -1837,9 +1834,6 @@ export const de: Record<MessageKey, string> = {
   'signals.calendar.tip':
     'iPhone-Tipp: Wenn Ihr iCloud-Kalender schon mit Google oder Outlook synchronisiert, verbinden Sie einfach dieses Konto.',
   'signals.mail.title': 'Ihre E-Mails',
-  'signals.mail.why': 'Damit Σ Antworten erkennt, die nicht warten können.',
-  'signals.mail.reads': 'Absender, Betreff und Anfang neuer E-Mails.',
-  'signals.mail.never': 'E-Mails senden, löschen oder verschieben.',
   'signals.mail.others': 'Anderes Postfach:',
   'signals.mail.needsAccount':
     'Für GMX, WEB.DE, T-Online, Yahoo oder iCloud legen Sie zuerst ein kostenloses NEXT-Konto an: Ihr Passwort wird dort verschlüsselt, nie auf dem Handy gespeichert.',
@@ -1855,10 +1849,10 @@ export const de: Record<MessageKey, string> = {
   'signals.notes.share3': 'Haken Sie die Zeilen an, die Aufgaben werden sollen. Fertig.',
   'signals.notes.honest':
     'Samsung Notes, Google Notizen und Apple Notizen erlauben keine automatische Synchronisierung: Sie wählen, was Sie senden. Auf dem iPhone die Notiz kopieren und oben einfügen.',
-  'signals.checklistTitle': 'Verbundene Signale: {done} von {total}',
-  'signals.checklistBody': 'Je mehr Σ sieht, desto besser die Entscheidungen.',
-  'signals.continue': 'Einrichtung fortsetzen',
-  'signals.hide': 'Ausblenden',
+  'signals.checklistTitle': 'Verbinden Sie Kalender und E-Mails',
+  'signals.checklistBody':
+    'Ein Klick auf Google oder Microsoft genügt. Σ entscheidet besser mit Ihren echten Terminen.',
+  'signals.continue': 'Verbinden',
   'imap.howto.enable1':
     'Aktivieren Sie den Zugriff „POP3/IMAP“ in den Einstellungen Ihres {provider}-Postfachs.',
   'imap.howto.enable2': 'Kommen Sie zurück und nutzen Sie Ihr normales Passwort.',
@@ -1883,4 +1877,23 @@ export const de: Record<MessageKey, string> = {
   'notes.pasteLabel': 'Notiz einfügen',
   'notes.pasteGo': 'Ansehen, was Σ übernimmt',
   'notes.emptyFiles': 'Kein lesbarer Text in diesen Dateien.',
+  'signals.optional': 'optional',
+  'signals.main.title': 'Kalender und E-Mails',
+  'signals.main.why': 'Ein Klick verbindet Ihr Google- oder Microsoft-Konto.',
+  'signals.main.reads': 'Ihre Termine der nächsten 60 Tage, Absender und Betreff neuer E-Mails.',
+  'signals.main.never': 'etwas senden, ändern oder löschen.',
+  'signals.main.google': 'Google verbinden',
+  'signals.main.microsoft': 'Microsoft / Outlook verbinden',
+  'signals.main.oneClick':
+    'Eine einzige Freigabe: Kalender und E-Mails des Kontos werden gemeinsam verbunden.',
+  'signals.more.title': 'Anderes Postfach oder Kalender',
+  'signals.more.why': 'GMX, WEB.DE, T-Online, Yahoo, iCloud, Apple…',
+  'signals.calendar.otherLabel': 'Anderer Kalender:',
+  'signals.connectedList': 'Verbunden: {list}',
+  'signals.nothingGranted':
+    'Nichts wurde freigegeben. Erneut versuchen und im Google-Fenster Kalender und E-Mails anhaken.',
+  'signals.addMore': 'Weitere Signale hinzufügen',
+  'signals.finish': 'Einrichtung abschließen',
+  'signals.finished': 'Einrichtung abgeschlossen. Signale können Sie hier jederzeit hinzufügen.',
+  'signals.notNow': 'Nicht jetzt',
 };

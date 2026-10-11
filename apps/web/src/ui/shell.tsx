@@ -19,7 +19,7 @@ import { domainEnabled } from '../domain/signals';
 export const drawerOpen = signal(false);
 export const paletteOpen = signal(false);
 /** Library (all tools) collapsed by default: the decision engine comes first. */
-const libraryOpen = signal(false);
+const libraryOpen = signal<boolean | null>(null);
 
 export function navLabel(r: RouteDef): string {
   const ed = getEdition(settings.value.edition, settings.value.locale);
@@ -78,7 +78,8 @@ function NavList({ onPick }: { onPick?: () => void }) {
           </ul>
         );
         if (g === 'library') {
-          const open = libraryOpen.value || items.some((r) => r.id === current);
+          // null = automatic (open when the current page is inside); a click decides explicitly.
+          const open = libraryOpen.value ?? items.some((r) => r.id === current);
           return (
             <div class="nav-group nav-library" key={g}>
               <button

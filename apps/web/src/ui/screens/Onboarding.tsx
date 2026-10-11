@@ -326,7 +326,7 @@ export function Onboarding() {
           <div>
             <h1>{t('onboarding.signalsTitle')}</h1>
             <p class="muted">{t('onboarding.signalsBody')}</p>
-            <SignalSetup compact />
+            <SignalSetup compact onFinish={() => setStep(3)} />
             <p class="small muted">{t('onboarding.signalsLater')}</p>
             <div class="modal-actions">
               <Button variant="ghost" onClick={() => setStep(1)}>

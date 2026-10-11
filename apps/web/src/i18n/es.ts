@@ -1810,9 +1810,6 @@ export const es: Record<MessageKey, string> = {
   'signals.footer':
     'Tus datos se quedan en tu dispositivo. Puedes desconectar cuando quieras; los datos importados se borran.',
   'signals.calendar.title': 'Tu agenda',
-  'signals.calendar.why': 'Para encontrar tus huecos libres reales.',
-  'signals.calendar.reads': 'título, hora y lugar de tus citas de los próximos 60 días.',
-  'signals.calendar.never': 'crear, cambiar o borrar una cita.',
   'signals.calendar.other': 'Apple u otro',
   'signals.calendar.ics1':
     'En tu app de calendario (Calendario de Apple en Mac, Thunderbird…), exporta el calendario como archivo .ics.',
@@ -1822,9 +1819,6 @@ export const es: Record<MessageKey, string> = {
   'signals.calendar.tip':
     'Consejo iPhone: si tu calendario de iCloud ya se sincroniza con Google u Outlook, conecta esa cuenta.',
   'signals.mail.title': 'Tu correo',
-  'signals.mail.why': 'Para detectar las respuestas que no pueden esperar.',
-  'signals.mail.reads': 'remitente, asunto y primeras líneas de los correos recientes.',
-  'signals.mail.never': 'enviar, borrar o mover un correo.',
   'signals.mail.others': 'Otro buzón:',
   'signals.mail.needsAccount':
     'Para GMX, WEB.DE, T-Online, Yahoo o iCloud, crea primero una cuenta NEXT gratuita: tu contraseña se cifra allí, nunca se guarda en el teléfono.',
@@ -1840,10 +1834,9 @@ export const es: Record<MessageKey, string> = {
   'signals.notes.share3': 'Marca las líneas que quieres convertir en tareas. Listo.',
   'signals.notes.honest':
     'Samsung Notes, Google Keep y Apple Notas no permiten sincronización automática: tú eliges qué envías. En iPhone, copia la nota y pégala arriba.',
-  'signals.checklistTitle': 'Señales conectadas: {done} de {total}',
-  'signals.checklistBody': 'Cuanto más ve Σ, mejores son sus decisiones.',
-  'signals.continue': 'Continuar la conexión',
-  'signals.hide': 'Ocultar',
+  'signals.checklistTitle': 'Conecta tu agenda y tu correo',
+  'signals.checklistBody': 'Basta un clic en Google o Microsoft. Σ decide mejor cuando ve tus citas reales.',
+  'signals.continue': 'Conectar',
   'imap.howto.enable1': 'Activa el acceso «POP3/IMAP» en los ajustes de tu buzón {provider}.',
   'imap.howto.enable2': 'Vuelve aquí y usa tu contraseña habitual.',
   'imap.howto.appPassword1': '{provider} exige una contraseña especial para apps.',
@@ -1867,4 +1860,22 @@ export const es: Record<MessageKey, string> = {
   'notes.pasteLabel': 'Pegar una nota',
   'notes.pasteGo': 'Ver qué conserva Σ',
   'notes.emptyFiles': 'No hay texto legible en esos archivos.',
+  'signals.optional': 'opcional',
+  'signals.main.title': 'Agenda y correo',
+  'signals.main.why': 'Un clic conecta tu cuenta de Google o Microsoft.',
+  'signals.main.reads': 'tus citas de los próximos 60 días, remitente y asunto de los correos recientes.',
+  'signals.main.never': 'enviar, cambiar o borrar nada.',
+  'signals.main.google': 'Conectar Google',
+  'signals.main.microsoft': 'Conectar Microsoft / Outlook',
+  'signals.main.oneClick': 'Un solo permiso: la agenda y el correo de la cuenta se conectan juntos.',
+  'signals.more.title': 'Otro buzón o agenda',
+  'signals.more.why': 'GMX, WEB.DE, T-Online, Yahoo, iCloud, Apple…',
+  'signals.calendar.otherLabel': 'Otra agenda:',
+  'signals.connectedList': 'Conectado: {list}',
+  'signals.nothingGranted':
+    'No se autorizó nada. Inténtalo de nuevo y marca agenda y correo en la ventana de Google.',
+  'signals.addMore': 'Añadir otras señales',
+  'signals.finish': 'Terminar la configuración',
+  'signals.finished': 'Configuración terminada. Puedes añadir señales aquí cuando quieras.',
+  'signals.notNow': 'Ahora no',
 };

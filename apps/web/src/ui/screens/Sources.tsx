@@ -27,7 +27,7 @@ import { ImapDialog } from '../imap-dialog';
 import { SignalSetup } from '../signal-setup';
 import { t, fmtRelative } from '../../i18n';
 import { Badge, Button, Card, IconButton, PageHeader, attempt, confirmDialog, toast } from '../components';
-import { navigate } from '../router';
+import { navigate, route } from '../router';
 import { syncMailAccount } from './Mail';
 
 type Status = 'ready' | 'notConfigured' | 'needsPro' | 'needsSignIn' | 'approval';
@@ -343,7 +343,7 @@ export function Sources() {
         )}
       </Card>
 
-      <details class="all-connectors">
+      <details class="all-connectors" id="all" open={route.value.param === 'all'}>
         <summary>{t('signals.allConnectors')}</summary>
         <div class="grid grid-2">
           <Card title={t('sources.mailTitle')}>

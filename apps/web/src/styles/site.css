@@ -1313,7 +1313,7 @@ section:not(.hero) {
 .flow-steps button:focus-visible {
   outline: 2px solid var(--accent);
 }
-.flow-steps button[aria-selected='true'] {
+.flow-steps button[aria-pressed='true'] {
   background: var(--surface-2);
   color: var(--text);
 }

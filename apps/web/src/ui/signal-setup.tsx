@@ -1,76 +1,94 @@
 /**
- * Guided signal setup: three plain-language cards (calendar, mail, notes), one
- * button per provider, what NEXT reads and never does. Used in the first-run
- * onboarding, at the top of Sources, and as a checklist on Today until done.
+ * Guided signal setup. One click on Google or Microsoft connects everything
+ * that account offers (calendar + mail); other mailboxes, Apple calendars and
+ * phone notes are optional extras. "Finish setup" ends it for good. Used in the
+ * first-run onboarding, at the top of Sources, and as a reminder on Today.
  */
 import { useState } from 'preact/hooks';
 import { authUser, settings, snapshot, updateSettings } from '../data/store';
-import { connectedCalendars } from '../services/autosync';
-import { connectGmail, googleAvailable, syncGoogleCalendar } from '../services/connectors/google';
+import { connectedCalendars, rememberCalendar } from '../services/autosync';
+import {
+  connectGmail,
+  googleAvailable,
+  googleToken,
+  syncGoogleCalendar,
+} from '../services/connectors/google';
 import { connectOutlook, microsoftAvailable, syncOutlookCalendar } from '../services/connectors/microsoft';
 import type { ImapPreset } from '../services/connectors/remote';
 import { connectorServerAvailable } from '../config';
 import { t } from '../i18n';
-import { Button, attempt, toast } from './components';
+import { Button, toast } from './components';
 import { navigate } from './router';
 import { syncMailAccount } from './screens/Mail';
 import { ImapDialog } from './imap-dialog';
 import { NotesImport, shareSupported } from './notes-import';
 
-export type SignalKey = 'calendar' | 'mail' | 'notes';
-export const SIGNALS: SignalKey[] = ['calendar', 'mail', 'notes'];
+export interface SignalStatus {
+  calendar: boolean;
+  mail: boolean;
+  notes: boolean;
+  /** A calendar or a mailbox is connected: the essentials are there. */
+  main: boolean;
+}
 
-export function signalStatus(): Record<SignalKey, boolean> {
+export function signalStatus(): SignalStatus {
   const snap = snapshot.value;
-  return {
-    calendar:
-      connectedCalendars().length > 0 ||
-      snap.events.some((e) => !e.deletedAt && e.source?.provider === 'ics'),
-    mail: snap.mailAccounts.some((a) => !a.deletedAt),
-    notes: Boolean(settings.value.usage.notesLinked),
-  };
+  const calendar =
+    connectedCalendars().length > 0 || snap.events.some((e) => !e.deletedAt && e.source?.provider === 'ics');
+  const mail = snap.mailAccounts.some((a) => !a.deletedAt);
+  return { calendar, mail, notes: Boolean(settings.value.usage.notesLinked), main: calendar || mail };
 }
 
-export function signalProgress(): { done: number; total: number } {
-  const s = signalStatus();
-  return { done: SIGNALS.filter((k) => s[k]).length, total: SIGNALS.length };
-}
+/** The reminder disappears once the person finished setup or connected a main account. */
+export const setupPending = () => !settings.value.usage.signalsHidden && !signalStatus().main;
+
+export const finishSetup = () =>
+  updateSettings((cur) => ({ ...cur, usage: { ...cur.usage, signalsHidden: true } }));
 
 const MAILBOXES: ImapPreset[] = ['gmx', 'webde', 'tonline', 'yahoo', 'icloud', 'custom'];
 
-function Step({
-  n,
-  k,
-  done,
-  open,
-  onToggle,
-  children,
-}: {
-  n: number;
-  k: SignalKey;
-  done: boolean;
-  open: boolean;
-  onToggle: () => void;
-  children: preact.ComponentChildren;
-}) {
-  return (
-    <li class={`signal-step ${done ? 'done' : ''} ${open ? 'open' : ''}`}>
-      <button type="button" class="signal-head" aria-expanded={open} onClick={onToggle}>
-        <span class="signal-num" aria-hidden="true">
-          {done ? '✓' : n}
-        </span>
-        <span class="signal-title">
-          <strong>{t(`signals.${k}.title`)}</strong>
-          <small class="muted">{done ? t('signals.connected') : t(`signals.${k}.why`)}</small>
-        </span>
-      </button>
-      {open && <div class="signal-body">{children}</div>}
-    </li>
-  );
+/** One Google consent for calendar + Gmail; whatever the person granted is connected. */
+async function connectGoogle(): Promise<string[]> {
+  // A single popup asking for both. If one scope is unticked, the token still covers the other.
+  await googleToken(['calendar', 'gmail']).catch(() => undefined);
+  const done: string[] = [];
+  try {
+    await syncGoogleCalendar();
+    await rememberCalendar('google');
+    done.push(t('signals.calendar.title'));
+  } catch {
+    /* calendar not granted: mail may still work */
+  }
+  try {
+    await syncMailAccount(await connectGmail());
+    done.push('Gmail');
+  } catch {
+    /* mail not granted */
+  }
+  return done;
 }
 
-/** Reads / never-does line, always visible before the person clicks. */
-function ReadsNever({ k }: { k: SignalKey }) {
+/** Microsoft asks for mail, calendar and contacts in one sign-in. */
+async function connectMicrosoft(): Promise<string[]> {
+  const done: string[] = [];
+  const account = await connectOutlook();
+  try {
+    await syncOutlookCalendar();
+    await rememberCalendar('microsoft');
+    done.push(t('signals.calendar.title'));
+  } catch {
+    /* calendar unavailable on this account */
+  }
+  try {
+    await syncMailAccount(account);
+    done.push('Outlook');
+  } catch {
+    /* mailbox unavailable */
+  }
+  return done;
+}
+
+function ReadsNever({ k }: { k: 'main' | 'notes' }) {
   return (
     <p class="signal-promise small">
       <span>
@@ -83,24 +101,77 @@ function ReadsNever({ k }: { k: SignalKey }) {
   );
 }
 
-export function SignalSetup({ compact = false }: { compact?: boolean }) {
+function Step({
+  n,
+  title,
+  sub,
+  done,
+  optional,
+  open,
+  onToggle,
+  children,
+}: {
+  n: number;
+  title: string;
+  sub: string;
+  done: boolean;
+  optional?: boolean;
+  open: boolean;
+  onToggle: () => void;
+  children: preact.ComponentChildren;
+}) {
+  return (
+    <li class={`signal-step ${done ? 'done' : ''} ${open ? 'open' : ''}`}>
+      <button type="button" class="signal-head" aria-expanded={open} onClick={onToggle}>
+        <span class="signal-num" aria-hidden="true">
+          {done ? '✓' : n}
+        </span>
+        <span class="signal-title">
+          <strong>
+            {title} {optional && <span class="signal-optional">{t('signals.optional')}</span>}
+          </strong>
+          <small class="muted">{sub}</small>
+        </span>
+      </button>
+      {open && <div class="signal-body">{children}</div>}
+    </li>
+  );
+}
+
+type Card = 'main' | 'more' | 'notes';
+
+export function SignalSetup({ compact = false, onFinish }: { compact?: boolean; onFinish?: () => void }) {
   const status = signalStatus();
-  const firstOpen = SIGNALS.find((k) => !status[k]) ?? null;
-  const [open, setOpen] = useState<SignalKey | null>(firstOpen);
+  const [open, setOpen] = useState<Card | null>(status.main ? null : 'main');
   const [busy, setBusy] = useState('');
   const [imap, setImap] = useState<ImapPreset | null>(null);
   const [icsHelp, setIcsHelp] = useState(false);
   const signedIn = Boolean(authUser.value);
 
-  const run = async (key: string, fn: () => Promise<unknown>) => {
+  const connect = async (key: string, fn: () => Promise<string[]>) => {
     setBusy(key);
-    await attempt(fn);
+    try {
+      const done = await fn();
+      if (done.length) {
+        toast(t('signals.connectedList', { list: done.join(' + ') }), 'good');
+        setOpen(null);
+      } else toast(t('signals.nothingGranted'), 'bad');
+    } catch {
+      toast(t('signals.nothingGranted'), 'bad');
+    }
     setBusy('');
   };
-  const toggle = (k: SignalKey) => setOpen(open === k ? null : k);
-  const next = (k: SignalKey) => {
-    const after = SIGNALS.slice(SIGNALS.indexOf(k) + 1).find((x) => !signalStatus()[x]);
-    setOpen(after ?? null);
+  const toggle = (k: Card) => setOpen(open === k ? null : k);
+  const mainSub = status.main
+    ? `${[status.calendar && t('signals.calendar.title'), status.mail && t('signals.mail.title')]
+        .filter(Boolean)
+        .join(' · ')} ✓`
+    : t('signals.main.why');
+
+  const finish = async () => {
+    await finishSetup();
+    if (onFinish) onFinish();
+    else toast(t('signals.finished'), 'good');
   };
 
   return (
@@ -108,42 +179,59 @@ export function SignalSetup({ compact = false }: { compact?: boolean }) {
       <ol class="signal-steps">
         <Step
           n={1}
-          k="calendar"
-          done={status.calendar}
-          open={open === 'calendar'}
-          onToggle={() => toggle('calendar')}
+          title={t('signals.main.title')}
+          sub={mainSub}
+          done={status.main}
+          open={open === 'main'}
+          onToggle={() => toggle('main')}
         >
-          <ReadsNever k="calendar" />
+          <ReadsNever k="main" />
           <div class="signal-choices">
             <Button
-              icon="calendar"
-              loading={busy === 'gcal'}
+              variant="primary"
+              loading={busy === 'google'}
               disabled={!googleAvailable()}
-              onClick={() =>
-                void run('gcal', async () => {
-                  const r = await syncGoogleCalendar();
-                  toast(t('onboarding.calendarConnected', { count: r.added + r.updated }), 'good');
-                  next('calendar');
-                })
-              }
+              onClick={() => void connect('google', connectGoogle)}
             >
-              Google
+              {t('signals.main.google')}
             </Button>
             <Button
-              icon="calendar"
-              loading={busy === 'mcal'}
+              loading={busy === 'microsoft'}
               disabled={!microsoftAvailable()}
-              onClick={() =>
-                void run('mcal', async () => {
-                  const r = await syncOutlookCalendar();
-                  toast(t('onboarding.calendarConnected', { count: r.added + r.updated }), 'good');
-                  next('calendar');
-                })
-              }
+              onClick={() => void connect('microsoft', connectMicrosoft)}
             >
-              Outlook
+              {t('signals.main.microsoft')}
             </Button>
-            <Button icon="calendar" onClick={() => setIcsHelp(!icsHelp)} aria-expanded={icsHelp}>
+          </div>
+          <p class="small muted">{t('signals.main.oneClick')}</p>
+        </Step>
+
+        <Step
+          n={2}
+          title={t('signals.more.title')}
+          sub={t('signals.more.why')}
+          done={false}
+          optional
+          open={open === 'more'}
+          onToggle={() => toggle('more')}
+        >
+          <p class="small label">{t('signals.mail.others')}</p>
+          <div class="signal-choices">
+            {MAILBOXES.map((p) => (
+              <Button
+                key={p}
+                size="sm"
+                disabled={!connectorServerAvailable()}
+                onClick={() => (signedIn ? setImap(p) : navigate('account'))}
+              >
+                {t(`provider.imap.${p}`)}
+              </Button>
+            ))}
+          </div>
+          {!signedIn && <p class="small muted">{t('signals.mail.needsAccount')}</p>}
+          <p class="small label">{t('signals.calendar.otherLabel')}</p>
+          <div class="signal-choices">
+            <Button size="sm" onClick={() => setIcsHelp(!icsHelp)} aria-expanded={icsHelp}>
               {t('signals.calendar.other')}
             </Button>
           </div>
@@ -157,61 +245,20 @@ export function SignalSetup({ compact = false }: { compact?: boolean }) {
               <Button size="sm" onClick={() => navigate('calendar')}>
                 {t('signals.calendar.icsOpen')}
               </Button>
+              <p class="small muted">{t('signals.calendar.tip')}</p>
             </div>
           )}
-          <p class="small muted">{t('signals.calendar.tip')}</p>
         </Step>
 
-        <Step n={2} k="mail" done={status.mail} open={open === 'mail'} onToggle={() => toggle('mail')}>
-          <ReadsNever k="mail" />
-          <div class="signal-choices">
-            <Button
-              icon="mail"
-              loading={busy === 'gmail'}
-              disabled={!googleAvailable()}
-              onClick={() =>
-                void run('gmail', async () => {
-                  await syncMailAccount(await connectGmail());
-                  toast(t('sources.connected'), 'good');
-                  next('mail');
-                })
-              }
-            >
-              Gmail
-            </Button>
-            <Button
-              icon="mail"
-              loading={busy === 'outlook'}
-              disabled={!microsoftAvailable()}
-              onClick={() =>
-                void run('outlook', async () => {
-                  await syncMailAccount(await connectOutlook());
-                  toast(t('sources.connected'), 'good');
-                  next('mail');
-                })
-              }
-            >
-              Outlook · Hotmail
-            </Button>
-          </div>
-          <p class="small label">{t('signals.mail.others')}</p>
-          <div class="signal-choices">
-            {MAILBOXES.map((p) => (
-              <Button
-                key={p}
-                size="sm"
-                variant="ghost"
-                disabled={!connectorServerAvailable()}
-                onClick={() => (signedIn ? setImap(p) : navigate('account'))}
-              >
-                {t(`provider.imap.${p}`)}
-              </Button>
-            ))}
-          </div>
-          {!signedIn && <p class="small muted">{t('signals.mail.needsAccount')}</p>}
-        </Step>
-
-        <Step n={3} k="notes" done={status.notes} open={open === 'notes'} onToggle={() => toggle('notes')}>
+        <Step
+          n={3}
+          title={t('signals.notes.title')}
+          sub={status.notes ? t('signals.connected') : t('signals.notes.why')}
+          done={status.notes}
+          optional
+          open={open === 'notes'}
+          onToggle={() => toggle('notes')}
+        >
           <ReadsNever k="notes" />
           <div class="signal-help">
             <p>
@@ -223,52 +270,42 @@ export function SignalSetup({ compact = false }: { compact?: boolean }) {
               <li>{t('signals.notes.share3')}</li>
             </ol>
           </div>
-          <NotesImport onDone={() => next('notes')} />
+          <NotesImport onDone={() => setOpen(null)} />
           <p class="small muted">{t('signals.notes.honest')}</p>
         </Step>
       </ol>
+
+      {!onFinish && (
+        <div class="signal-actions">
+          <Button variant="ghost" onClick={() => navigate('sources', 'all')}>
+            {t('signals.addMore')}
+          </Button>
+          <Button variant={status.main ? 'primary' : 'secondary'} onClick={() => void finish()}>
+            {t('signals.finish')}
+          </Button>
+        </div>
+      )}
       {!compact && <p class="small muted">{t('signals.footer')}</p>}
-      <ImapDialog
-        open={imap !== null}
-        initial={imap ?? 'gmx'}
-        onClose={() => setImap(null)}
-        onConnected={() => next('mail')}
-      />
+      <ImapDialog open={imap !== null} initial={imap ?? 'gmx'} onClose={() => setImap(null)} />
     </div>
   );
 }
 
-/** Today: compact checklist until every signal is connected or the person hides it. */
+/** Today: a short reminder until a calendar or mailbox is connected, or setup is finished. */
 export function SignalChecklist() {
-  const s = settings.value;
-  const { done, total } = signalProgress();
-  if (done >= total || s.usage.signalsHidden) return null;
-  const status = signalStatus();
+  if (!setupPending()) return null;
   return (
     <section class="card signal-checklist" aria-labelledby="signal-checklist-title">
-      <div class="card-head">
-        <h2 id="signal-checklist-title">{t('signals.checklistTitle', { done, total })}</h2>
-        <button
-          type="button"
-          class="link small muted"
-          onClick={() =>
-            void updateSettings((cur) => ({ ...cur, usage: { ...cur.usage, signalsHidden: true } }))
-          }
-        >
-          {t('signals.hide')}
-        </button>
-      </div>
+      <h2 id="signal-checklist-title">{t('signals.checklistTitle')}</h2>
       <p class="small muted">{t('signals.checklistBody')}</p>
-      <ul class="signal-mini">
-        {SIGNALS.map((k) => (
-          <li key={k} class={status[k] ? 'done' : ''}>
-            <span aria-hidden="true">{status[k] ? '✓' : '○'}</span> {t(`signals.${k}.title`)}
-          </li>
-        ))}
-      </ul>
-      <Button size="sm" variant="primary" onClick={() => navigate('sources')}>
-        {t('signals.continue')}
-      </Button>
+      <div class="signal-actions">
+        <Button size="sm" variant="primary" onClick={() => navigate('sources')}>
+          {t('signals.continue')}
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => void finishSetup()}>
+          {t('signals.notNow')}
+        </Button>
+      </div>
     </section>
   );
 }

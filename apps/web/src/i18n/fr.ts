@@ -1833,9 +1833,6 @@ export const fr = {
   'signals.footer':
     'Vos données restent sur votre appareil. Déconnexion possible à tout moment, les données importées sont alors effacées.',
   'signals.calendar.title': 'Votre agenda',
-  'signals.calendar.why': 'Pour trouver vos vrais créneaux libres.',
-  'signals.calendar.reads': 'titre, heure et lieu de vos rendez-vous des 60 prochains jours.',
-  'signals.calendar.never': 'créer, modifier ou supprimer un rendez-vous.',
   'signals.calendar.other': 'Apple ou autre',
   'signals.calendar.ics1':
     'Dans votre agenda (Apple Calendrier sur Mac, Thunderbird…), exportez le calendrier au format .ics.',
@@ -1845,9 +1842,6 @@ export const fr = {
   'signals.calendar.tip':
     'Astuce iPhone : si votre agenda iCloud est déjà synchronisé avec Google ou Outlook, connectez simplement ce compte.',
   'signals.mail.title': 'Vos mails',
-  'signals.mail.why': 'Pour repérer les réponses qui ne peuvent pas attendre.',
-  'signals.mail.reads': 'expéditeur, objet et début des mails récents.',
-  'signals.mail.never': 'envoyer, supprimer ou déplacer un mail.',
   'signals.mail.others': 'Autre messagerie :',
   'signals.mail.needsAccount':
     'Pour GMX, WEB.DE, T-Online, Yahoo ou iCloud, créez d’abord un compte NEXT gratuit : votre mot de passe y est chiffré, jamais gardé sur ce téléphone.',
@@ -1863,10 +1857,10 @@ export const fr = {
   'signals.notes.share3': 'Cochez les lignes à transformer en tâches. C’est tout.',
   'signals.notes.honest':
     'Samsung Notes, Google Keep et Apple Notes ne permettent pas de synchronisation automatique : vous choisissez ce que vous envoyez. Sur iPhone, copiez la note et collez-la ci-dessus.',
-  'signals.checklistTitle': 'Signaux connectés : {done} sur {total}',
-  'signals.checklistBody': 'Plus Σ en voit, plus ses décisions sont justes.',
-  'signals.continue': 'Continuer la connexion',
-  'signals.hide': 'Masquer',
+  'signals.checklistTitle': 'Connectez votre agenda et vos mails',
+  'signals.checklistBody':
+    'Un clic sur Google ou Microsoft suffit. Σ décide mieux quand il voit vos vrais rendez-vous.',
+  'signals.continue': 'Connecter',
   'imap.howto.enable1': 'Activez l’accès « POP3/IMAP » dans les réglages de votre boîte {provider}.',
   'imap.howto.enable2': 'Revenez ici et utilisez votre mot de passe habituel.',
   'imap.howto.appPassword1': '{provider} demande un mot de passe spécial pour les applis.',
@@ -1890,6 +1884,24 @@ export const fr = {
   'notes.pasteLabel': 'Coller une note',
   'notes.pasteGo': 'Voir ce que Σ en retient',
   'notes.emptyFiles': 'Aucun texte lisible dans ces fichiers.',
+  'signals.optional': 'facultatif',
+  'signals.main.title': 'Agenda et mails',
+  'signals.main.why': 'Un clic connecte votre compte Google ou Microsoft.',
+  'signals.main.reads': 'vos rendez-vous des 60 prochains jours, l’expéditeur et l’objet des mails récents.',
+  'signals.main.never': 'envoyer, modifier ou supprimer quoi que ce soit.',
+  'signals.main.google': 'Connecter Google',
+  'signals.main.microsoft': 'Connecter Microsoft / Outlook',
+  'signals.main.oneClick': 'Une seule autorisation : agenda et mails du compte sont connectés ensemble.',
+  'signals.more.title': 'Autre messagerie ou agenda',
+  'signals.more.why': 'GMX, WEB.DE, T-Online, Yahoo, iCloud, Apple…',
+  'signals.calendar.otherLabel': 'Autre agenda :',
+  'signals.connectedList': 'Connecté : {list}',
+  'signals.nothingGranted':
+    'Rien n’a été autorisé. Réessayez et cochez agenda et mails dans la fenêtre Google.',
+  'signals.addMore': 'Ajouter d’autres signaux',
+  'signals.finish': 'Terminer la configuration',
+  'signals.finished': 'Configuration terminée. Vous pourrez ajouter des signaux ici à tout moment.',
+  'signals.notNow': 'Pas maintenant',
 } as const;
 
 export type MessageKey = keyof typeof fr;

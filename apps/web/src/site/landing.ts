@@ -943,7 +943,7 @@ if (flow) {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const show = (n: number) => {
     flow.dataset.stage = String(n);
-    steps.forEach((b) => b.setAttribute('aria-selected', String(b.dataset.go === String(n))));
+    steps.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.go === String(n))));
   };
   const play = () => {
     clearTimeout(timer);
