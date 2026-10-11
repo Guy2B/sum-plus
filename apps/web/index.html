@@ -26,7 +26,7 @@
       </a>
       <nav class="desktop-nav" aria-label="Navigation">
         <a href="#for" data-i18n="nav.for">Pour qui</a>
-        <a href="#flow" data-i18n="nav.product">Comment ça marche</a>
+        <a href="#demo" data-i18n="nav.product">Comment ça marche</a>
         <a href="#how" data-i18n="nav.why">Pourquoi Σ</a>
         <a href="#privacy" data-i18n="nav.privacy">Local-first</a>
         <a href="#pricing" data-i18n="nav.pricing">Tarifs</a>
@@ -69,7 +69,7 @@
           </div>
           <p class="cta-note">
             <span data-i18n="cta.demoNote">Une semaine d’exemple, rien à saisir, rien à partager.</span>
-            <a href="#flow" data-i18n="cta.how">Voir comment ça marche ↓</a>
+            <a href="#how" data-i18n="cta.how">Voir comment ça marche ↓</a>
           </p>
           <ul class="trust-row">
             <li><b aria-hidden="true">✓</b> <span data-i18n="trust.1">Sans compte obligatoire</span></li>
@@ -80,167 +80,223 @@
           </ul>
         </div>
 
-        <div class="hero-product reveal" id="demo">
-          <div class="product-window" role="region" aria-labelledby="demo-title">
-            <div class="window-top">
-              <div class="window-brand">
-                <span class="mini-sigma" aria-hidden="true">Σ</span>
-                <span data-i18n="demo.today">Aujourd’hui</span>
+        <div class="hero-product reveal flow" id="demo" data-stage="3">
+          <div class="flow-screen">
+            <div class="flow-overlay" aria-hidden="true">
+              <div class="flow-sources">
+                <span class="chip-src s1">📅 <span data-i18n="flow.cal">Agenda</span></span>
+                <span class="chip-src s2">✉️ <span data-i18n="flow.mail">Mails</span></span>
+                <span class="chip-src s3">📝 <span data-i18n="flow.notes">Notes</span></span>
+                <span class="chip-src s4">✓ <span data-i18n="flow.tasks">Tâches</span></span>
               </div>
-              <div class="window-date" id="demo-date">Mercredi 30 septembre</div>
+              <div class="flow-pile">
+                <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i> <b class="keep k1"></b
+                ><b class="keep k2"></b><b class="keep k3"></b>
+                <span class="flow-count"><span>37</span> → <strong>3</strong></span>
+              </div>
             </div>
-            <div class="product-intro">
-              <div>
-                <p class="overline" data-i18n="demo.hello">Bonjour, Alex</p>
-                <h2 id="demo-title" data-i18n="demo.title">Voici ce qui mérite votre attention.</h2>
+            <div class="product-window" role="region" aria-labelledby="demo-title">
+              <div class="window-top">
+                <div class="window-brand">
+                  <span class="mini-sigma" aria-hidden="true">Σ</span>
+                  <span data-i18n="demo.today">Aujourd’hui</span>
+                </div>
+                <div class="window-date" id="demo-date">Mercredi 30 septembre</div>
               </div>
-              <button
-                class="text-button"
-                id="dayChangedButton"
-                type="button"
-                aria-expanded="false"
-                aria-controls="dayChangePanel"
-                data-i18n="demo.dayChanged"
-              >
-                Ma journée a changé
+              <div class="product-intro">
+                <div>
+                  <p class="overline" data-i18n="demo.hello">Bonjour, Alex</p>
+                  <h2 id="demo-title" data-i18n="demo.title">Voici ce qui mérite votre attention.</h2>
+                </div>
+                <button
+                  class="text-button"
+                  id="dayChangedButton"
+                  type="button"
+                  aria-expanded="false"
+                  aria-controls="dayChangePanel"
+                  data-i18n="demo.dayChanged"
+                >
+                  Ma journée a changé
+                </button>
+              </div>
+
+              <div class="day-change-panel" id="dayChangePanel" hidden>
+                <div>
+                  <p class="panel-label" id="energy-label" data-i18n="demo.energy">Énergie</p>
+                  <div class="segmented" role="group" aria-labelledby="energy-label">
+                    <button type="button" aria-pressed="false" data-i18n="demo.low">Faible</button>
+                    <button class="active" type="button" aria-pressed="true" data-i18n="demo.normal">
+                      Normale
+                    </button>
+                    <button type="button" aria-pressed="false" data-i18n="demo.high">Forte</button>
+                  </div>
+                </div>
+                <div>
+                  <p class="panel-label" id="time-label" data-i18n="demo.timeLeft">Temps restant</p>
+                  <div class="segmented" role="group" aria-labelledby="time-label">
+                    <button type="button" aria-pressed="false">30 min</button>
+                    <button type="button" aria-pressed="false">1 h</button>
+                    <button class="active" type="button" aria-pressed="true">2 h</button>
+                    <button type="button" aria-pressed="false">4 h</button>
+                  </div>
+                </div>
+                <button class="mini-btn primary" id="recalculateButton" type="button" data-i18n="demo.recalc">
+                  Recalculer ma journée
+                </button>
+              </div>
+
+              <div class="decision-list">
+                <article class="decision-card accent">
+                  <p class="role">
+                    <span aria-hidden="true">☀</span> <span data-i18n="role.now">Faire maintenant</span>
+                  </p>
+                  <div class="decision-content">
+                    <h3 data-i18n="demo.c1">Envoyer le devis promis à Müller</h3>
+                    <p data-i18n-html="demo.c1d"><b>25 min</b> · échéance demain · débloque 2 actions</p>
+                  </div>
+                  <div class="decision-actions">
+                    <button class="mini-btn primary" type="button" data-i18n="demo.start">Commencer</button>
+                    <button class="mini-btn" type="button" data-i18n="demo.done">Terminé</button>
+                    <button
+                      class="why-link"
+                      type="button"
+                      data-why-toggle
+                      aria-expanded="false"
+                      aria-controls="why-1"
+                      data-i18n="demo.why"
+                    >
+                      Pourquoi ?
+                    </button>
+                  </div>
+                  <div class="why-drawer" id="why-1" hidden>
+                    <div>
+                      <span aria-hidden="true">🤝</span><small data-i18n="why.promise">Promesse</small
+                      ><strong>Müller</strong>
+                    </div>
+                    <div>
+                      <span aria-hidden="true">⏰</span><small data-i18n="why.due">Échéance</small
+                      ><strong data-i18n="why.dueV">Demain 17:00</strong>
+                    </div>
+                    <div>
+                      <span aria-hidden="true">🔓</span><small data-i18n="why.unblocks">Débloque</small
+                      ><strong data-i18n="why.unblocksV">2 actions</strong>
+                    </div>
+                    <div>
+                      <span aria-hidden="true">⏱</span><small data-i18n="why.effort">Effort</small
+                      ><strong>25 min</strong>
+                    </div>
+                    <div>
+                      <span aria-hidden="true">📅</span><small data-i18n="why.free">Disponibilité</small
+                      ><strong data-i18n="why.freeV">42 min libres</strong>
+                    </div>
+                    <div>
+                      <span aria-hidden="true">🎯</span><small data-i18n="why.goal">Objectif</small
+                      ><strong data-i18n="why.goalV">Signer Müller</strong>
+                    </div>
+                    <div class="why-not">
+                      <small data-i18n="why.notQ">Pourquoi pas « Refaire la homepage » ?</small>
+                      <p data-i18n="why.notA">
+                        Pas d’échéance · 90 min nécessaires · peut attendre vendredi.
+                      </p>
+                    </div>
+                  </div>
+                </article>
+
+                <article class="decision-card">
+                  <p class="role">
+                    <span aria-hidden="true">◉</span> <span data-i18n="role.watch">À surveiller</span>
+                  </p>
+                  <div class="decision-content">
+                    <h3 data-i18n="demo.c2">Réponse de Léa attendue depuis 3 jours</h3>
+                    <p data-i18n-html="demo.c2d"><b>Pas d’action maintenant</b> · revoir cet après-midi</p>
+                  </div>
+                </article>
+
+                <article class="decision-card">
+                  <p class="role">
+                    <span aria-hidden="true">◷</span>
+                    <span data-i18n="role.protect">Protéger ce créneau</span>
+                  </p>
+                  <div class="decision-content">
+                    <h3 data-i18n="demo.c3">Préparer la réunion de jeudi</h3>
+                    <p data-i18n-html="demo.c3d"><b>14:10–15:00</b> · 50 min libres</p>
+                  </div>
+                  <div class="decision-actions">
+                    <button class="mini-btn" type="button" data-i18n="demo.schedule">Planifier</button>
+                  </div>
+                </article>
+              </div>
+
+              <details class="set-aside-demo">
+                <summary>
+                  <b data-i18n="demo.aside">Σ a écarté 18 autres éléments</b>
+                  <span data-i18n="demo.avoided"> · 2 h 10 de surcharge évitée</span>
+                </summary>
+                <div class="aside-grid">
+                  <span data-i18n-html="demo.a1"><b>7</b> peuvent attendre</span>
+                  <span data-i18n-html="demo.a2"><b>4</b> dépassent votre capacité</span>
+                  <span data-i18n-html="demo.a3"><b>3</b> moins d’impact</span>
+                  <span data-i18n-html="demo.a4"><b>2</b> doublons regroupés</span>
+                </div>
+                <p class="aside-note" data-i18n="demo.avoidedHow">
+                  Surcharge évitée : le travail dû sous 3 jours qui ne tient plus dans votre journée, après
+                  vos réunions.
+                </p>
+              </details>
+            </div>
+            <div class="float-note float-note-one" aria-hidden="true">
+              <span class="float-icon">−18</span>
+              <div>
+                <strong data-i18n="float.1">Moins à gérer</strong
+                ><small data-i18n="float.1d">Σ filtre avant de vous montrer.</small>
+              </div>
+            </div>
+            <div class="float-note float-note-two" aria-hidden="true">
+              <span class="float-icon">↗</span>
+              <div>
+                <strong data-i18n="float.2">S’adapte à vous</strong
+                ><small data-i18n="float.2d">Temps réel, retours, habitudes.</small>
+              </div>
+            </div>
+          </div>
+          <ol class="flow-steps hero-steps" aria-label="Comment ça marche">
+            <li>
+              <button type="button" data-go="1" aria-pressed="false">
+                <span>1</span
+                ><span
+                  ><strong data-i18n="flow.1t">Vos signaux arrivent</strong
+                  ><small data-i18n="flow.1d"
+                    >Agenda, mails, notes et tâches. Un clic par source, rien à recopier.</small
+                  ></span
+                >
               </button>
-            </div>
-
-            <div class="day-change-panel" id="dayChangePanel" hidden>
-              <div>
-                <p class="panel-label" id="energy-label" data-i18n="demo.energy">Énergie</p>
-                <div class="segmented" role="group" aria-labelledby="energy-label">
-                  <button type="button" aria-pressed="false" data-i18n="demo.low">Faible</button>
-                  <button class="active" type="button" aria-pressed="true" data-i18n="demo.normal">
-                    Normale
-                  </button>
-                  <button type="button" aria-pressed="false" data-i18n="demo.high">Forte</button>
-                </div>
-              </div>
-              <div>
-                <p class="panel-label" id="time-label" data-i18n="demo.timeLeft">Temps restant</p>
-                <div class="segmented" role="group" aria-labelledby="time-label">
-                  <button type="button" aria-pressed="false">30 min</button>
-                  <button type="button" aria-pressed="false">1 h</button>
-                  <button class="active" type="button" aria-pressed="true">2 h</button>
-                  <button type="button" aria-pressed="false">4 h</button>
-                </div>
-              </div>
-              <button class="mini-btn primary" id="recalculateButton" type="button" data-i18n="demo.recalc">
-                Recalculer ma journée
+            </li>
+            <li>
+              <button type="button" data-go="2" aria-pressed="false">
+                <span>2</span
+                ><span
+                  ><strong data-i18n="flow.2t">Σ trie pour vous</strong
+                  ><small data-i18n="flow.2d"
+                    >Échéances, promesses, temps libre, énergie : ce qui peut attendre est mis de côté.</small
+                  ></span
+                >
               </button>
-            </div>
-
-            <div class="decision-list">
-              <article class="decision-card accent">
-                <p class="role">
-                  <span aria-hidden="true">☀</span> <span data-i18n="role.now">Faire maintenant</span>
-                </p>
-                <div class="decision-content">
-                  <h3 data-i18n="demo.c1">Envoyer le devis promis à Müller</h3>
-                  <p data-i18n-html="demo.c1d"><b>25 min</b> · échéance demain · débloque 2 actions</p>
-                </div>
-                <div class="decision-actions">
-                  <button class="mini-btn primary" type="button" data-i18n="demo.start">Commencer</button>
-                  <button class="mini-btn" type="button" data-i18n="demo.done">Terminé</button>
-                  <button
-                    class="why-link"
-                    type="button"
-                    data-why-toggle
-                    aria-expanded="false"
-                    aria-controls="why-1"
-                    data-i18n="demo.why"
-                  >
-                    Pourquoi ?
-                  </button>
-                </div>
-                <div class="why-drawer" id="why-1" hidden>
-                  <div>
-                    <span aria-hidden="true">🤝</span><small data-i18n="why.promise">Promesse</small
-                    ><strong>Müller</strong>
-                  </div>
-                  <div>
-                    <span aria-hidden="true">⏰</span><small data-i18n="why.due">Échéance</small
-                    ><strong data-i18n="why.dueV">Demain 17:00</strong>
-                  </div>
-                  <div>
-                    <span aria-hidden="true">🔓</span><small data-i18n="why.unblocks">Débloque</small
-                    ><strong data-i18n="why.unblocksV">2 actions</strong>
-                  </div>
-                  <div>
-                    <span aria-hidden="true">⏱</span><small data-i18n="why.effort">Effort</small
-                    ><strong>25 min</strong>
-                  </div>
-                  <div>
-                    <span aria-hidden="true">📅</span><small data-i18n="why.free">Disponibilité</small
-                    ><strong data-i18n="why.freeV">42 min libres</strong>
-                  </div>
-                  <div>
-                    <span aria-hidden="true">🎯</span><small data-i18n="why.goal">Objectif</small
-                    ><strong data-i18n="why.goalV">Signer Müller</strong>
-                  </div>
-                  <div class="why-not">
-                    <small data-i18n="why.notQ">Pourquoi pas « Refaire la homepage » ?</small>
-                    <p data-i18n="why.notA">Pas d’échéance · 90 min nécessaires · peut attendre vendredi.</p>
-                  </div>
-                </div>
-              </article>
-
-              <article class="decision-card">
-                <p class="role">
-                  <span aria-hidden="true">◉</span> <span data-i18n="role.watch">À surveiller</span>
-                </p>
-                <div class="decision-content">
-                  <h3 data-i18n="demo.c2">Réponse de Léa attendue depuis 3 jours</h3>
-                  <p data-i18n-html="demo.c2d"><b>Pas d’action maintenant</b> · revoir cet après-midi</p>
-                </div>
-              </article>
-
-              <article class="decision-card">
-                <p class="role">
-                  <span aria-hidden="true">◷</span> <span data-i18n="role.protect">Protéger ce créneau</span>
-                </p>
-                <div class="decision-content">
-                  <h3 data-i18n="demo.c3">Préparer la réunion de jeudi</h3>
-                  <p data-i18n-html="demo.c3d"><b>14:10–15:00</b> · 50 min libres</p>
-                </div>
-                <div class="decision-actions">
-                  <button class="mini-btn" type="button" data-i18n="demo.schedule">Planifier</button>
-                </div>
-              </article>
-            </div>
-
-            <details class="set-aside-demo">
-              <summary>
-                <b data-i18n="demo.aside">Σ a écarté 18 autres éléments</b>
-                <span data-i18n="demo.avoided"> · 2 h 10 de surcharge évitée</span>
-              </summary>
-              <div class="aside-grid">
-                <span data-i18n-html="demo.a1"><b>7</b> peuvent attendre</span>
-                <span data-i18n-html="demo.a2"><b>4</b> dépassent votre capacité</span>
-                <span data-i18n-html="demo.a3"><b>3</b> moins d’impact</span>
-                <span data-i18n-html="demo.a4"><b>2</b> doublons regroupés</span>
-              </div>
-              <p class="aside-note" data-i18n="demo.avoidedHow">
-                Surcharge évitée : le travail dû sous 3 jours qui ne tient plus dans votre journée, après vos
-                réunions.
-              </p>
-            </details>
-          </div>
-          <div class="float-note float-note-one" aria-hidden="true">
-            <span class="float-icon">−18</span>
-            <div>
-              <strong data-i18n="float.1">Moins à gérer</strong
-              ><small data-i18n="float.1d">Σ filtre avant de vous montrer.</small>
-            </div>
-          </div>
-          <div class="float-note float-note-two" aria-hidden="true">
-            <span class="float-icon">↗</span>
-            <div>
-              <strong data-i18n="float.2">S’adapte à vous</strong
-              ><small data-i18n="float.2d">Temps réel, retours, habitudes.</small>
-            </div>
-          </div>
+            </li>
+            <li>
+              <button type="button" data-go="3" aria-pressed="true">
+                <span>3</span
+                ><span
+                  ><strong data-i18n="flow.3t">Vous agissez</strong
+                  ><small data-i18n="flow.3d"
+                    >Trois décisions, chacune avec son pourquoi. Vous commencez, Σ suit.</small
+                  ></span
+                >
+              </button>
+            </li>
+          </ol>
+          <button type="button" class="text-button flow-replay" data-i18n="flow.replay">
+            Revoir l’animation ↻
+          </button>
         </div>
       </section>
 
@@ -328,83 +384,6 @@
               >
             </p>
           </article>
-        </div>
-      </section>
-
-      <section class="section-shell flow-section" id="flow" aria-labelledby="flow-title">
-        <div class="section-heading reveal">
-          <p class="eyebrow" data-i18n="flow.eyebrow">Comment ça marche</p>
-          <h2 id="flow-title" data-i18n="flow.title">De 37 choses à 3 décisions, en trois temps.</h2>
-        </div>
-        <div class="flow reveal" data-stage="1">
-          <ol class="flow-steps" aria-label="Comment ça marche">
-            <li>
-              <button type="button" data-go="1" aria-pressed="true">
-                <span>1</span
-                ><span
-                  ><strong data-i18n="flow.1t">Vos signaux arrivent</strong
-                  ><small data-i18n="flow.1d"
-                    >Agenda, mails, notes et tâches. Un clic par source, rien à recopier.</small
-                  ></span
-                >
-              </button>
-            </li>
-            <li>
-              <button type="button" data-go="2" aria-pressed="false">
-                <span>2</span
-                ><span
-                  ><strong data-i18n="flow.2t">Σ trie pour vous</strong
-                  ><small data-i18n="flow.2d"
-                    >Échéances, promesses, temps libre, énergie : ce qui peut attendre est mis de côté.</small
-                  ></span
-                >
-              </button>
-            </li>
-            <li>
-              <button type="button" data-go="3" aria-pressed="false">
-                <span>3</span
-                ><span
-                  ><strong data-i18n="flow.3t">Vous agissez</strong
-                  ><small data-i18n="flow.3d"
-                    >Trois décisions, chacune avec son pourquoi. Vous commencez, Σ suit.</small
-                  ></span
-                >
-              </button>
-            </li>
-          </ol>
-          <div class="flow-stage" aria-hidden="true">
-            <div class="flow-sources">
-              <span class="chip-src s1">📅 <span data-i18n="flow.cal">Agenda</span></span>
-              <span class="chip-src s2">✉️ <span data-i18n="flow.mail">Mails</span></span>
-              <span class="chip-src s3">📝 <span data-i18n="flow.notes">Notes</span></span>
-              <span class="chip-src s4">✓ <span data-i18n="flow.tasks">Tâches</span></span>
-            </div>
-            <div class="flow-pile">
-              <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i> <b class="keep k1"></b
-              ><b class="keep k2"></b><b class="keep k3"></b>
-              <span class="flow-count"><span>37</span> → <strong>3</strong></span>
-            </div>
-            <div class="flow-result">
-              <div class="flow-card c1">
-                <em data-i18n="flow.now">Maintenant</em
-                ><strong data-i18n="demo.c1">Envoyer le devis promis à Müller</strong
-                ><small data-i18n="flow.why1">Promesse · échéance demain · 25 min</small>
-              </div>
-              <div class="flow-card c2">
-                <em data-i18n="flow.watch">À surveiller</em
-                ><strong data-i18n="flow.c2">Répondre à Sophie (contrat)</strong
-                ><small data-i18n="flow.why2">Attend depuis 3 jours</small>
-              </div>
-              <div class="flow-card c3">
-                <em data-i18n="flow.protect">À protéger</em
-                ><strong data-i18n="flow.c3">14:00–15:30 travail de fond</strong
-                ><small data-i18n="flow.why3">Votre meilleur créneau d’énergie</small>
-              </div>
-            </div>
-          </div>
-          <button type="button" class="text-button flow-replay" data-i18n="flow.replay">
-            Revoir l’animation ↻
-          </button>
         </div>
       </section>
 

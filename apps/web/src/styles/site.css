@@ -136,8 +136,8 @@ body.site {
   margin-inline: auto;
 }
 .hero {
-  min-height: calc(100vh - 86px);
-  padding: clamp(70px, 9vw, 132px) 0 70px;
+  min-height: auto;
+  padding: clamp(36px, 5vw, 72px) 0 56px;
   display: grid;
   grid-template-columns: minmax(0, 0.92fr) minmax(500px, 1.08fr);
   align-items: center;
@@ -442,13 +442,16 @@ body.site {
   backdrop-filter: blur(12px);
   box-shadow: 0 12px 40px rgb(20 18 14 / 10%);
 }
+/* Positioned on the product window (.flow-screen), not on the whole hero column. */
 .float-note-one {
-  left: -18px;
-  bottom: 82px;
+  left: -36px;
+  bottom: 64px;
+  z-index: 3;
 }
 .float-note-two {
-  right: -28px;
-  top: 105px;
+  right: -46px;
+  top: 87px;
+  z-index: 3;
 }
 .float-icon {
   width: 32px;
@@ -1110,10 +1113,10 @@ section:not(.hero) {
     margin: auto;
   }
   .float-note-two {
-    right: -4px;
+    right: -22px;
   }
   .float-note-one {
-    left: -4px;
+    left: -22px;
   }
   .explain-layout,
   .adaptive-card,
@@ -1281,71 +1284,33 @@ section:not(.hero) {
   color: var(--accent-deep);
 }
 
-/* ---------- How it works (animated) ---------- */
-.flow {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  gap: 28px;
-  align-items: center;
-}
-.flow-steps {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.flow-steps button {
-  all: unset;
-  box-sizing: border-box;
-  width: 100%;
-  display: flex;
-  gap: 16px;
-  padding: 16px 18px;
-  border-radius: 14px;
-  color: var(--muted);
-  cursor: pointer;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
-}
-.flow-steps button:focus-visible {
-  outline: 2px solid var(--accent);
-}
-.flow-steps button[aria-pressed='true'] {
-  background: var(--surface-2);
-  color: var(--text);
-}
-.flow-steps button > span:first-child {
-  font-family: var(--mono);
-  color: var(--accent);
-  font-size: 0.8rem;
-  padding-top: 3px;
-}
-.flow-steps strong {
-  display: block;
-  margin-bottom: 4px;
-}
-.flow-steps small {
-  font-size: 0.85rem;
-  line-height: 1.45;
-}
-.flow-replay {
-  grid-column: 1;
-  justify-self: start;
-}
-.flow-stage {
+/* ---------- Hero: animated "how it works" over the product window ----------
+   Stage 1: signals arrive · 2: Σ sorts 37 → 3 · 3: the real Today screen (interactive). */
+.flow-screen {
   position: relative;
-  min-height: 370px;
+}
+.flow-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: 24px;
   border: 1px solid var(--border);
-  border-radius: 22px;
   background: var(--surface);
-  overflow: hidden;
+  box-shadow: 0 35px 90px rgb(31 28 22 / 12%);
+  transition: opacity 0.6s ease;
+}
+.flow[data-stage='3'] .flow-overlay {
+  opacity: 0;
+  pointer-events: none;
+}
+.flow .float-note {
+  transition: opacity 0.5s ease 0.4s;
+}
+.flow:not([data-stage='3']) .float-note {
+  opacity: 0;
 }
 .flow-sources,
-.flow-pile,
-.flow-result {
+.flow-pile {
   position: absolute;
   inset: 0;
   display: flex;
@@ -1355,7 +1320,6 @@ section:not(.hero) {
     opacity 0.5s ease,
     transform 0.6s ease;
 }
-/* Stage 1: the four sources fly in */
 .flow-sources {
   flex-wrap: wrap;
   gap: 12px;
@@ -1363,11 +1327,12 @@ section:not(.hero) {
   align-content: center;
 }
 .chip-src {
-  padding: 10px 16px;
+  padding: 12px 18px;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--surface-2);
   font-weight: 600;
+  font-size: 1.05rem;
   opacity: 0;
   transform: translateY(18px);
   transition:
@@ -1391,23 +1356,18 @@ section:not(.hero) {
   opacity: 0;
   transform: scale(0.9);
 }
-/* Stage 2: a pile of items, all but three fade away */
 .flow-pile {
   flex-direction: column;
-  gap: 6px;
+  gap: 7px;
   opacity: 0;
 }
 .flow-pile i,
 .flow-pile b {
   display: block;
-  width: min(300px, 70%);
-  height: 12px;
-  border-radius: 6px;
+  width: min(320px, 70%);
+  height: 13px;
+  border-radius: 7px;
   background: var(--border);
-  transition:
-    opacity 0.4s ease,
-    transform 0.5s ease,
-    background 0.3s ease;
 }
 .flow-pile b {
   background: var(--accent);
@@ -1423,17 +1383,18 @@ section:not(.hero) {
   order: 9;
 }
 .flow-pile i:nth-child(odd) {
-  width: min(240px, 58%);
+  width: min(250px, 58%);
 }
 .flow-count {
   order: 20;
-  margin-top: 10px;
+  margin-top: 12px;
   font-family: var(--mono);
   color: var(--muted);
+  font-size: 1.1rem;
 }
 .flow-count strong {
   color: var(--accent);
-  font-size: 1.2em;
+  font-size: 1.3em;
 }
 .flow[data-stage='2'] .flow-pile {
   opacity: 1;
@@ -1458,74 +1419,68 @@ section:not(.hero) {
     transform: translateX(-24px);
   }
 }
-/* Stage 3: the three decision cards */
-.flow-result {
-  flex-direction: column;
-  gap: 10px;
-  padding: 22px;
-  opacity: 0;
+.hero-steps {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
 }
-.flow-card {
+.hero-steps button {
+  all: unset;
+  box-sizing: border-box;
   width: 100%;
-  max-width: 380px;
+  height: 100%;
   display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 12px 16px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  opacity: 0;
-  transform: translateY(14px);
-  transition:
-    opacity 0.45s ease,
-    transform 0.45s ease;
-}
-.flow-card em {
-  font-style: normal;
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--accent-deep);
-}
-.flow-card small {
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
   color: var(--muted);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
-.flow-card.c1 {
-  border-color: var(--accent);
-  box-shadow: var(--shadow-md);
+.hero-steps button:focus-visible {
+  outline: 2px solid var(--accent);
 }
-.flow[data-stage='3'] .flow-result {
-  opacity: 1;
+.hero-steps button[aria-pressed='true'] {
+  background: var(--surface-2);
+  color: var(--text);
 }
-.flow[data-stage='3'] .flow-card {
-  opacity: 1;
-  transform: none;
+.hero-steps button > span:first-child {
+  font-family: var(--mono);
+  color: var(--accent);
+  font-size: 0.78rem;
+  padding-top: 2px;
 }
-.flow[data-stage='3'] .c2 {
-  transition-delay: 0.2s;
+.hero-steps strong {
+  display: block;
+  font-size: 0.86rem;
+  margin-bottom: 2px;
 }
-.flow[data-stage='3'] .c3 {
-  transition-delay: 0.4s;
+.hero-steps small {
+  display: block;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+.flow-replay {
+  margin-top: 6px;
+  font-size: 0.85rem;
 }
 
 @media (max-width: 960px) {
   .for-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .flow {
+  .hero-steps {
     grid-template-columns: 1fr;
-  }
-  .flow-replay {
-    grid-column: auto;
   }
 }
 @media (max-width: 560px) {
   .for-grid {
     grid-template-columns: 1fr;
-  }
-  .flow-stage {
-    min-height: 360px;
   }
 }
 
@@ -1755,8 +1710,8 @@ table.compare-table {
 }
 .float-note-two {
   top: auto;
-  bottom: -12px;
-  right: -24px;
+  bottom: -30px;
+  right: -42px;
 }
 @media (max-width: 700px) {
   .hero h1,

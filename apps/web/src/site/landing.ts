@@ -47,8 +47,6 @@ const T: Record<Exclude<Lang, 'fr'>, Dict> = {
     'for.4t': 'Parent',
     'for.4a': 'Kids’ appointments, work, home: the mental load overflows.',
     'for.4b': 'Family and work calendars combined: what matters before 6 pm, the rest can wait.',
-    'flow.eyebrow': 'How it works',
-    'flow.title': 'From 37 things to 3 decisions, in three steps.',
     'flow.1t': 'Your signals come in',
     'flow.1d': 'Calendar, mail, notes and tasks. One click per source, nothing to retype.',
     'flow.2t': 'Σ sorts for you',
@@ -59,14 +57,6 @@ const T: Record<Exclude<Lang, 'fr'>, Dict> = {
     'flow.mail': 'Mail',
     'flow.notes': 'Notes',
     'flow.tasks': 'Tasks',
-    'flow.now': 'Now',
-    'flow.watch': 'Keep an eye on',
-    'flow.protect': 'Protect',
-    'flow.why1': 'Promise · due tomorrow · 25 min',
-    'flow.c2': 'Reply to Sophie (contract)',
-    'flow.why2': 'Waiting for 3 days',
-    'flow.c3': '2:00–3:30 pm deep work',
-    'flow.why3': 'Your best energy slot',
     'flow.replay': 'Replay the animation ↻',
     'cta.beta': 'Join the beta — Pro included',
     'founder.eyebrow': 'Open beta · Founder offer',
@@ -291,8 +281,6 @@ const T: Record<Exclude<Lang, 'fr'>, Dict> = {
     'for.4t': 'Eltern',
     'for.4a': 'Kindertermine, Job, Haushalt: Die mentale Last läuft über.',
     'for.4b': 'Familien- und Arbeitskalender zusammen: was vor 18 Uhr zählt, der Rest kann warten.',
-    'flow.eyebrow': 'So funktioniert’s',
-    'flow.title': 'Von 37 Dingen zu 3 Entscheidungen, in drei Schritten.',
     'flow.1t': 'Ihre Signale kommen an',
     'flow.1d': 'Kalender, Mails, Notizen und Aufgaben. Ein Klick pro Quelle, nichts abtippen.',
     'flow.2t': 'Σ sortiert für Sie',
@@ -303,14 +291,6 @@ const T: Record<Exclude<Lang, 'fr'>, Dict> = {
     'flow.mail': 'Mails',
     'flow.notes': 'Notizen',
     'flow.tasks': 'Aufgaben',
-    'flow.now': 'Jetzt',
-    'flow.watch': 'Im Blick behalten',
-    'flow.protect': 'Schützen',
-    'flow.why1': 'Zusage · fällig morgen · 25 Min.',
-    'flow.c2': 'Sophie antworten (Vertrag)',
-    'flow.why2': 'Wartet seit 3 Tagen',
-    'flow.c3': '14:00–15:30 konzentriert arbeiten',
-    'flow.why3': 'Ihr bestes Energiefenster',
     'flow.replay': 'Animation erneut abspielen ↻',
     'cta.beta': 'Der Beta beitreten — Pro inklusive',
     'founder.eyebrow': 'Offene Beta · Gründerangebot',
@@ -537,8 +517,6 @@ const T: Record<Exclude<Lang, 'fr'>, Dict> = {
     'for.4t': 'Padre o madre',
     'for.4a': 'Citas de los niños, trabajo, casa: la carga mental se desborda.',
     'for.4b': 'Agenda familiar y laboral juntas: lo que importa antes de las 18 h, el resto puede esperar.',
-    'flow.eyebrow': 'Cómo funciona',
-    'flow.title': 'De 37 cosas a 3 decisiones, en tres pasos.',
     'flow.1t': 'Llegan tus señales',
     'flow.1d': 'Agenda, correo, notas y tareas. Un clic por fuente, nada que copiar.',
     'flow.2t': 'Σ ordena por ti',
@@ -549,14 +527,6 @@ const T: Record<Exclude<Lang, 'fr'>, Dict> = {
     'flow.mail': 'Correo',
     'flow.notes': 'Notas',
     'flow.tasks': 'Tareas',
-    'flow.now': 'Ahora',
-    'flow.watch': 'Vigilar',
-    'flow.protect': 'Proteger',
-    'flow.why1': 'Promesa · vence mañana · 25 min',
-    'flow.c2': 'Responder a Sophie (contrato)',
-    'flow.why2': 'Esperando desde hace 3 días',
-    'flow.c3': '14:00–15:30 trabajo profundo',
-    'flow.why3': 'Tu mejor franja de energía',
     'flow.replay': 'Ver de nuevo la animación ↻',
     'cta.beta': 'Unirse a la beta — Pro incluido',
     'founder.eyebrow': 'Beta abierta · Oferta Fundador',
@@ -960,18 +930,17 @@ if (flow) {
     }),
   );
   $('.flow-replay')?.addEventListener('click', play);
+  // It sits in the hero: play as soon as the page opens (it is on screen), once.
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (still) show(3);
+  else if (flow.getBoundingClientRect().top < innerHeight) setTimeout(play, 400);
   else if ('IntersectionObserver' in window) {
-    const watch = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          play();
-          watch.disconnect();
-        }
-      },
-      { threshold: 0.35 },
-    );
+    const watch = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        play();
+        watch.disconnect();
+      }
+    });
     watch.observe(flow);
   } else show(3);
 }
