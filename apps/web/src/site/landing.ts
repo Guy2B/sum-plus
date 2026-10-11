@@ -915,12 +915,27 @@ if (flow) {
     flow.dataset.stage = String(n);
     steps.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.go === String(n))));
   };
+  // "Replay" hint: never while the animation runs; 5 s after it ends, then every 10 s.
+  const replay = $('.flow-replay');
+  let hint: ReturnType<typeof setTimeout> | undefined;
+  const stopHint = () => {
+    clearTimeout(hint);
+    replay?.classList.remove('hint');
+  };
+  const startHint = () => {
+    stopHint();
+    hint = setTimeout(() => replay?.classList.add('hint'), 5000);
+  };
   const play = () => {
     clearTimeout(timer);
+    stopHint();
     show(1);
     timer = setTimeout(() => {
       show(2);
-      timer = setTimeout(() => show(3), 2600);
+      timer = setTimeout(() => {
+        show(3);
+        startHint();
+      }, 2600);
     }, 2400);
   };
   steps.forEach((b) =>
@@ -929,7 +944,7 @@ if (flow) {
       show(Number(b.dataset.go));
     }),
   );
-  $('.flow-replay')?.addEventListener('click', play);
+  replay?.addEventListener('click', play);
   // It sits in the hero: play as soon as the page opens (it is on screen), once.
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (still) show(3);

@@ -1468,7 +1468,9 @@ section:not(.hero) {
 .flow-replay {
   margin-top: 6px;
   font-size: 0.85rem;
-  /* Three soft blinks, then rest: one cycle every 10 s. */
+}
+/* Added by landing.ts 5 s after the animation ends: three soft blinks, then rest; one cycle every 10 s. */
+.flow-replay.hint {
   animation: replay-hint 10s ease-in-out infinite;
 }
 .flow-replay:hover,
