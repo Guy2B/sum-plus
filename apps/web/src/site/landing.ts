@@ -935,8 +935,8 @@ if (flow) {
       timer = setTimeout(() => {
         show(3);
         startHint();
-      }, 2600);
-    }, 2400);
+      }, 3000);
+    }, 3000);
   };
   steps.forEach((b) =>
     b.addEventListener('click', () => {
@@ -948,7 +948,7 @@ if (flow) {
   // It sits in the hero: play as soon as the page opens (it is on screen), once.
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (still) show(3);
-  else if (flow.getBoundingClientRect().top < innerHeight * 0.6) setTimeout(play, 400);
+  else if (flow.getBoundingClientRect().top < innerHeight * 0.6) setTimeout(play, 300);
   else if ('IntersectionObserver' in window) {
     const watch = new IntersectionObserver(
       (entries) => {
