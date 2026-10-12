@@ -1506,6 +1506,80 @@ section:not(.hero) {
   }
 }
 
+/* Stage title over the animation: what the visitor is looking at. */
+.flow-caption {
+  position: absolute;
+  top: 18px;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  margin: 0;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text);
+}
+.flow-caption > span {
+  display: none;
+}
+.flow[data-stage='1'] .flow-caption [data-s='1'],
+.flow[data-stage='2'] .flow-caption [data-s='2'] {
+  display: inline;
+}
+
+/* Phones: the animation comes right under the headline, before the buttons, in a compact form. */
+@media (max-width: 700px) {
+  .hero {
+    padding-top: 26px;
+    gap: 18px;
+  }
+  .hero-copy {
+    display: contents;
+  }
+  .hero .eyebrow-pill {
+    display: none;
+  }
+  .hero h1 {
+    order: 1;
+    margin-bottom: 0;
+  }
+  .hero-product {
+    order: 2;
+    padding: 0;
+  }
+  .hero-actions {
+    order: 3;
+  }
+  .hero-lead {
+    order: 4;
+  }
+  .cta-note {
+    order: 5;
+  }
+  .trust-row {
+    order: 6;
+  }
+  .hero-product .float-note,
+  .hero-product .decision-card:nth-child(3),
+  .hero-product .set-aside-demo,
+  .hero-product .product-intro .overline {
+    display: none;
+  }
+  .hero-product .flow-screen {
+    min-height: 360px;
+  }
+  .hero-steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 10px;
+  }
+  .hero-steps small {
+    display: none;
+  }
+  .hero-steps button {
+    padding: 8px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

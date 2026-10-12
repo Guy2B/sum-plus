@@ -1878,4 +1878,9 @@ export const es: Record<MessageKey, string> = {
   'signals.finish': 'Terminar la configuración',
   'signals.finished': 'Configuración terminada. Puedes añadir señales aquí cuando quieras.',
   'signals.notNow': 'Ahora no',
+  'signals.reopen': 'Reabrir el asistente de conexión',
+  'first.reading': 'Σ está leyendo tus señales…',
+  'first.read': 'Σ ha leído {mails} correos, {events} citas de la semana y {tasks} tareas.',
+  'first.below': 'Aquí están las 3 que importan hoy, justo debajo. Cada una con su «¿Por qué?».',
+  'first.ok': 'Entendido',
 };

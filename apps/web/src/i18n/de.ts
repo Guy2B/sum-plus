@@ -1896,4 +1896,9 @@ export const de: Record<MessageKey, string> = {
   'signals.finish': 'Einrichtung abschließen',
   'signals.finished': 'Einrichtung abgeschlossen. Signale können Sie hier jederzeit hinzufügen.',
   'signals.notNow': 'Nicht jetzt',
+  'signals.reopen': 'Verbindungsassistent wieder öffnen',
+  'first.reading': 'Σ liest Ihre Signale…',
+  'first.read': 'Σ hat {mails} E-Mails, {events} Termine dieser Woche und {tasks} Aufgaben gelesen.',
+  'first.below': 'Hier die 3, die heute zählen, gleich darunter. Jede mit ihrem „Warum?“.',
+  'first.ok': 'Verstanden',
 };

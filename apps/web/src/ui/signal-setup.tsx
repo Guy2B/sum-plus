@@ -6,7 +6,7 @@
  */
 import { useState } from 'preact/hooks';
 import { authUser, settings, snapshot, updateSettings } from '../data/store';
-import { connectedCalendars, rememberCalendar } from '../services/autosync';
+import { connectedCalendars, rememberCalendar, runAutoSync } from '../services/autosync';
 import {
   connectGmail,
   googleAvailable,
@@ -44,6 +44,17 @@ export const setupPending = () => !settings.value.usage.signalsHidden && !signal
 
 export const finishSetup = () =>
   updateSettings((cur) => ({ ...cur, usage: { ...cur.usage, signalsHidden: true } }));
+
+/** "Finish setup": the assistant goes away, Σ reads what is connected and Today shows the result. */
+async function finishAndShow() {
+  const connected = signalStatus().main;
+  await updateSettings((cur) => ({
+    ...cur,
+    usage: { ...cur.usage, signalsHidden: true, firstResultPending: connected },
+  }));
+  navigate('today');
+  if (connected) void runAutoSync(true);
+}
 
 const MAILBOXES: ImapPreset[] = ['gmx', 'webde', 'tonline', 'yahoo', 'icloud', 'custom'];
 
@@ -169,9 +180,10 @@ export function SignalSetup({ compact = false, onFinish }: { compact?: boolean; 
     : t('signals.main.why');
 
   const finish = async () => {
-    await finishSetup();
-    if (onFinish) onFinish();
-    else toast(t('signals.finished'), 'good');
+    if (onFinish) {
+      await finishSetup();
+      onFinish();
+    } else await finishAndShow();
   };
 
   return (

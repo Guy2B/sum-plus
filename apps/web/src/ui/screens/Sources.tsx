@@ -1,6 +1,16 @@
 import { useEffect, useState } from 'preact/hooks';
 import type { MailAccount, RelationshipType, SocialAccount, SocialProvider } from '../../domain/types';
-import { authUser, create, entitlement, snapshot, update, clock, remove } from '../../data/store';
+import {
+  authUser,
+  create,
+  entitlement,
+  settings,
+  snapshot,
+  update,
+  updateSettings,
+  clock,
+  remove,
+} from '../../data/store';
 import { can, withinLimit } from '../../domain/entitlements';
 import { config, connectorServerAvailable, isNative } from '../../config';
 import {
@@ -239,10 +249,24 @@ export function Sources() {
       <PageHeader title={t('nav.sources')} subtitle={t('sources.subtitle')} />
       {isNative() && <p class="notice small">{t('native.sourcesWeb')}</p>}
 
-      <Card title={t('signals.assistantTitle')} id="setup">
-        <p class="small muted">{t('signals.assistantBody')}</p>
-        <SignalSetup />
-      </Card>
+      {settings.value.usage.signalsHidden ? (
+        <p class="small">
+          <button
+            type="button"
+            class="link"
+            onClick={() =>
+              void updateSettings((cur) => ({ ...cur, usage: { ...cur.usage, signalsHidden: false } }))
+            }
+          >
+            {t('signals.reopen')}
+          </button>
+        </p>
+      ) : (
+        <Card title={t('signals.assistantTitle')} id="setup">
+          <p class="small muted">{t('signals.assistantBody')}</p>
+          <SignalSetup />
+        </Card>
+      )}
 
       <Card title={t('sources.connected')}>
         {accounts.length || socials.length ? (

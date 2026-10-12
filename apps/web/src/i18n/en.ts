@@ -1862,4 +1862,9 @@ export const en: Record<MessageKey, string> = {
   'signals.finish': 'Finish setup',
   'signals.finished': 'Setup finished. You can add signals here any time.',
   'signals.notNow': 'Not now',
+  'signals.reopen': 'Reopen the connection assistant',
+  'first.reading': 'Σ is reading your signals…',
+  'first.read': 'Σ read {mails} emails, {events} appointments this week and {tasks} tasks.',
+  'first.below': 'Here are the 3 that matter today, right below. Each has its “Why?”.',
+  'first.ok': 'Got it',
 };

@@ -1902,6 +1902,11 @@ export const fr = {
   'signals.finish': 'Terminer la configuration',
   'signals.finished': 'Configuration terminée. Vous pourrez ajouter des signaux ici à tout moment.',
   'signals.notNow': 'Pas maintenant',
+  'signals.reopen': 'Rouvrir l’assistant de connexion',
+  'first.reading': 'Σ lit vos signaux…',
+  'first.read': 'Σ a lu {mails} mails, {events} rendez-vous de la semaine et {tasks} tâches.',
+  'first.below': 'Voici les 3 qui comptent aujourd’hui, juste en dessous. Chacune a son « Pourquoi ? ».',
+  'first.ok': 'Compris',
 } as const;
 
 export type MessageKey = keyof typeof fr;

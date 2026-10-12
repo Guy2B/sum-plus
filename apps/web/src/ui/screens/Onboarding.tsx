@@ -11,7 +11,7 @@ import { seedDemo } from '../../data/seed';
 import { t, fmtDate } from '../../i18n';
 import { Button, Field, attempt } from '../components';
 import { cloudConfigured } from '../../config';
-import { SignalSetup } from '../signal-setup';
+import { SignalSetup, signalStatus } from '../signal-setup';
 import { navigate } from '../router';
 import { track } from '../../services/telemetry';
 
@@ -114,7 +114,12 @@ export function Onboarding() {
           })),
         );
       if (withDemo) await seedDemo(settings.value.edition, settings.value.locale);
-      await updateSettings({ onboardingComplete: true });
+      const connected = signalStatus().main;
+      await updateSettings((cur) => ({
+        ...cur,
+        onboardingComplete: true,
+        usage: { ...cur.usage, firstResultPending: connected || cur.usage.firstResultPending },
+      }));
       void track('onboarding_complete');
       navigate('today');
     });

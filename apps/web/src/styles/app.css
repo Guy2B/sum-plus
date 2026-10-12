@@ -3309,3 +3309,44 @@ main {
 .signal-checklist .signal-actions {
   justify-content: flex-start;
 }
+
+/* Mobile top bar: the NEXT logo stays visible on every screen. */
+.topbar-brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  text-decoration: none;
+  color: var(--text);
+}
+.topbar-brand .nsxt {
+  font-size: 0.85rem;
+}
+.topbar-brand .byline {
+  opacity: 0.85;
+}
+.topbar .topbar-title {
+  font-size: 0.9rem;
+  color: var(--text-2);
+}
+
+/* First result after setup */
+.first-result {
+  text-align: center;
+  border-color: var(--accent);
+}
+.first-result-line {
+  margin: 0;
+  font-weight: 600;
+}
+.first-result-big {
+  margin: 6px 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.first-result-big span {
+  color: var(--muted);
+}
+.first-result-big strong {
+  color: var(--accent);
+}

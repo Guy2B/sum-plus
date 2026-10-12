@@ -358,6 +358,12 @@ export function Shell({ children, banner }: { children: ComponentChildren; banne
           >
             <Icon name="menu" />
           </button>
+          <a class="topbar-brand" href="./" aria-label={t('nav.site')}>
+            <span class="nsxt" aria-hidden="true">
+              n<b>Σ</b>xt
+            </span>{' '}
+            <small class="byline">by ALGBr</small>
+          </a>
           <span class="topbar-title">{current ? navLabel(current) : 'Σ'}</span>
           <button
             type="button"

@@ -948,14 +948,17 @@ if (flow) {
   // It sits in the hero: play as soon as the page opens (it is on screen), once.
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (still) show(3);
-  else if (flow.getBoundingClientRect().top < innerHeight) setTimeout(play, 400);
+  else if (flow.getBoundingClientRect().top < innerHeight * 0.6) setTimeout(play, 400);
   else if ('IntersectionObserver' in window) {
-    const watch = new IntersectionObserver((entries) => {
-      if (entries.some((e) => e.isIntersecting)) {
-        play();
-        watch.disconnect();
-      }
-    });
+    const watch = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          play();
+          watch.disconnect();
+        }
+      },
+      { threshold: 0.4 },
+    );
     watch.observe(flow);
   } else show(3);
 }

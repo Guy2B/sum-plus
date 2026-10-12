@@ -381,6 +381,8 @@ export interface Settings {
     notesLinked?: ISODate;
     /** The Today checklist of signals to connect was hidden. */
     signalsHidden?: boolean;
+    /** Today shows once what Σ read from the signals just connected (after finishing setup). */
+    firstResultPending?: boolean;
     /** "My day has changed": today's constraints, reset automatically the next day. */
     day?: {
       date: ISODate;
