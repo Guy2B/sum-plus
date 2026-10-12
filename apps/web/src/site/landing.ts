@@ -947,20 +947,26 @@ if (flow) {
   replay?.addEventListener('click', play);
   // It sits in the hero: play as soon as the page opens (it is on screen), once.
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (still) show(3);
-  else if (flow.getBoundingClientRect().top < innerHeight * 0.6) setTimeout(play, 300);
-  else if ('IntersectionObserver' in window) {
-    const watch = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          play();
-          watch.disconnect();
-        }
-      },
-      { threshold: 0.4 },
-    );
-    watch.observe(flow);
-  } else show(3);
+  if (still || !('IntersectionObserver' in window)) show(3);
+  else {
+    // Start covered (step 1) so the final screen never flashes before the animation.
+    flow.classList.add('no-fade');
+    show(1);
+    requestAnimationFrame(() => requestAnimationFrame(() => flow.classList.remove('no-fade')));
+    if (flow.getBoundingClientRect().top < innerHeight * 0.6) setTimeout(play, 300);
+    else {
+      const watch = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((e) => e.isIntersecting)) {
+            play();
+            watch.disconnect();
+          }
+        },
+        { threshold: 0.4 },
+      );
+      watch.observe(flow);
+    }
+  }
 }
 
 // Cookie-less counter: one anonymous "view" per page load and one per app button
