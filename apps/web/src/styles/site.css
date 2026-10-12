@@ -1532,6 +1532,13 @@ section:not(.hero) {
   .hero {
     padding-top: 26px;
     gap: 18px;
+    /* Children of .hero-copy become grid items here: never let one widen the page. */
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .hero > *,
+  .hero-copy > * {
+    min-width: 0;
+    max-width: 100%;
   }
   .hero-copy {
     display: contents;
