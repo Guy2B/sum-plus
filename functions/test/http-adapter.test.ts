@@ -29,7 +29,10 @@ const handler = createHandler({
     },
   },
   requests: {
-    'oauth/callback': ((req: { query: Record<string, string> }, res: { redirect(c: number, u: string): void }) => {
+    'oauth/callback': ((
+      req: { query: Record<string, string> },
+      res: { redirect(c: number, u: string): void },
+    ) => {
       res.redirect(302, `https://app.example/#${req.query.state}`);
     }) as never,
   },
@@ -65,7 +68,9 @@ describe('http adapter', () => {
   });
 
   it('rejects invalid tokens and maps HttpsError / unknown errors', async () => {
-    expect((await handler(event({ headers: { origin: ORIGIN, authorization: 'Bearer bad' } }))).statusCode).toBe(401);
+    expect(
+      (await handler(event({ headers: { origin: ORIGIN, authorization: 'Bearer bad' } }))).statusCode,
+    ).toBe(401);
     const denied = await handler(event({ path: '/api/fails' }));
     expect(denied.statusCode).toBe(403);
     expect(JSON.parse(denied.body).error.status).toBe('PERMISSION_DENIED');
@@ -77,7 +82,12 @@ describe('http adapter', () => {
 
   it('runs onRequest handlers (OAuth callback redirect)', async () => {
     const r = await handler(
-      event({ httpMethod: 'GET', path: '/api/oauth/callback', queryStringParameters: { state: 'abc' }, body: null }),
+      event({
+        httpMethod: 'GET',
+        path: '/api/oauth/callback',
+        queryStringParameters: { state: 'abc' },
+        body: null,
+      }),
     );
     expect(r.statusCode).toBe(302);
     expect(r.headers.location).toBe('https://app.example/#abc');

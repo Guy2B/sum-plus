@@ -11,7 +11,6 @@ vi.mock('../src/lib/runtime', () => ({
   requireAdmin: () => 'admin',
 }));
 
-
 const row = (e: string, extra: Record<string, unknown> = {}) => ({
   e,
   day: '2026-09-30',
@@ -33,7 +32,18 @@ describe('analytics aggregation', () => {
     expect(d.byLang.de).toEqual({ onboarding_complete: 1 });
     expect(d.bySrc.direct).toMatchObject({ app_open: 1 });
     expect(d.ai).toEqual({ local: 1, core: 1 });
-    expect(d.engine).toMatchObject({ n: 1, p: 6, a: 4, ob5: 1, ob20: 1, ebSum: 40, eaSum: 20, ebN: 1, lateP: 6, lateA: 4 });
+    expect(d.engine).toMatchObject({
+      n: 1,
+      p: 6,
+      a: 4,
+      ob5: 1,
+      ob20: 1,
+      ebSum: 40,
+      eaSum: 20,
+      ebN: 1,
+      lateP: 6,
+      lateA: 4,
+    });
   });
 
   it('splits the Pro funnel by trigger and counts price answers', () => {
@@ -66,7 +76,13 @@ describe('analytics aggregation', () => {
     const text = digestText(
       [
         {
-          events: { onboarding_started: 10, onboarding_complete: 8, first_plan: 8, first_decision: 2, app_open: 30 },
+          events: {
+            onboarding_started: 10,
+            onboarding_complete: 8,
+            first_plan: 8,
+            first_decision: 2,
+            app_open: 30,
+          },
           engine: { p: 20, a: 12 },
           visits: { landing: 100, cta_demo: 7, cta_mine: 3 },
         },

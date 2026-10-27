@@ -27,7 +27,11 @@ beforeAll(async () => {
   });
   openEnv = await initializeTestEnvironment({
     projectId: 'demo-sigma-open',
-    firestore: { rules: RULES.replace('return false; // OPEN_ACCESS', 'return true; // OPEN_ACCESS'), host: '127.0.0.1', port: 8080 },
+    firestore: {
+      rules: RULES.replace('return false; // OPEN_ACCESS', 'return true; // OPEN_ACCESS'),
+      host: '127.0.0.1',
+      port: 8080,
+    },
   });
 });
 
@@ -132,8 +136,12 @@ describe('launch mode (open access)', () => {
   it('lets any signed-in user sync their own data without an entitlement', async () => {
     const alice = openEnv.authenticatedContext('alice').firestore();
     await assertSucceeds(setDoc(doc(alice, 'users/alice/tasks/t1'), record('t1')));
-    await assertFails(setDoc(doc(openEnv.authenticatedContext('bob').firestore(), 'users/alice/tasks/t2'), record('t2')));
-    await assertFails(setDoc(doc(openEnv.unauthenticatedContext().firestore(), 'users/alice/tasks/t3'), record('t3')));
+    await assertFails(
+      setDoc(doc(openEnv.authenticatedContext('bob').firestore(), 'users/alice/tasks/t2'), record('t2')),
+    );
+    await assertFails(
+      setDoc(doc(openEnv.unauthenticatedContext().firestore(), 'users/alice/tasks/t3'), record('t3')),
+    );
     await assertFails(setDoc(doc(alice, 'entitlements/alice'), { plan: 'pro', status: 'active' }));
   });
 });

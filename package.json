@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "NEXT — explainable personal decision layer (web PWA, Firebase backend, Capacitor mobile).",
+  "description": "NEXT \u2014 explainable personal decision layer (web PWA, Firebase backend, Capacitor mobile).",
   "license": "UNLICENSED",
   "workspaces": [
     "apps/web",
@@ -45,6 +45,7 @@
     "protobufjs@7.6.6": true
   },
   "overrides": {
-    "sharp": "0.35.5"
+    "sharp": "0.35.5",
+    "@grpc/grpc-js": "1.14.5"
   }
 }

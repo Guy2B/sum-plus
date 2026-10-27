@@ -6,3 +6,4 @@ package-lock.json
 mobile/android
 mobile/ios
 playwright-report
+apps/web/public/__

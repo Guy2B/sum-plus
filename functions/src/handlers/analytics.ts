@@ -82,7 +82,8 @@ export function buildCohorts(installs: TelemetryRow[], opens: TelemetryRow[]) {
   const out: Record<string, Record<string, number>> = {};
   for (const r of installs) inc((out[r.cohort] ??= { installs: 0 }), 'installs');
   for (const r of opens)
-    if ((RETENTION_AGES as readonly number[]).includes(r.age)) inc((out[r.cohort] ??= { installs: 0 }), `d${r.age}`);
+    if ((RETENTION_AGES as readonly number[]).includes(r.age))
+      inc((out[r.cohort] ??= { installs: 0 }), `d${r.age}`);
   return out;
 }
 
@@ -106,7 +107,20 @@ export async function aggregateDays(now = new Date(), back = 3): Promise<number>
       db.collection('analytics_daily').doc(day),
       { day, ...buildDaily(list), updatedAt: FieldValue.serverTimestamp() },
       // Replace the computed maps entirely, but never touch visits/visitsLang.
-      { mergeFields: ['day', 'events', 'byLang', 'bySrc', 'ai', 'pf', 'engine', 'byFrom', 'price', 'updatedAt'] },
+      {
+        mergeFields: [
+          'day',
+          'events',
+          'byLang',
+          'bySrc',
+          'ai',
+          'pf',
+          'engine',
+          'byFrom',
+          'price',
+          'updatedAt',
+        ],
+      },
     );
   await batch.commit();
   return byDay.size;
@@ -115,11 +129,18 @@ export async function aggregateDays(now = new Date(), back = 3): Promise<number>
 /** Install-week retention over the last 120 days. */
 export async function aggregateCohorts(now = new Date()): Promise<number> {
   const since = isoDay(new Date(now.getTime() - 120 * DAY));
-  const [installs, opens] = await Promise.all([rowsSince(since, 'onboarding_complete'), rowsSince(since, 'app_open')]);
+  const [installs, opens] = await Promise.all([
+    rowsSince(since, 'onboarding_complete'),
+    rowsSince(since, 'app_open'),
+  ]);
   const cohorts = buildCohorts(installs, opens);
   const batch = db.batch();
   for (const [cohort, c] of Object.entries(cohorts))
-    batch.set(db.collection('analytics_cohorts').doc(cohort), { cohort, ...c, updatedAt: FieldValue.serverTimestamp() });
+    batch.set(db.collection('analytics_cohorts').doc(cohort), {
+      cohort,
+      ...c,
+      updatedAt: FieldValue.serverTimestamp(),
+    });
   await batch.commit();
   return Object.keys(cohorts).length;
 }
@@ -153,7 +174,11 @@ const pct = (n: number, d: number) => (d > 0 ? `${Math.round((n / d) * 100)} %` 
 
 /** The morning text: four numbers and the biggest leak of the last 7 days (pure, tested). */
 export function digestText(
-  daily: { events?: Record<string, number>; engine?: Record<string, number>; visits?: Record<string, number> }[],
+  daily: {
+    events?: Record<string, number>;
+    engine?: Record<string, number>;
+    visits?: Record<string, number>;
+  }[],
   cohorts: Record<string, number>[],
 ): string {
   const e: Record<string, number> = {};
@@ -170,7 +195,13 @@ export function digestText(
     installs += num(c.installs);
     back += num(c.d7);
   }
-  const steps = ['onboarding_started', 'onboarding_complete', 'first_plan', 'first_decision', 'first_completed'];
+  const steps = [
+    'onboarding_started',
+    'onboarding_complete',
+    'first_plan',
+    'first_decision',
+    'first_completed',
+  ];
   const names: Record<string, string> = {
     onboarding_started: 'onboarding commencé',
     onboarding_complete: 'onboarding terminé',
@@ -288,7 +319,9 @@ export async function recordVisit(req: VisitReq, res: VisitRes) {
       {
         day,
         visits: { [visit.k]: FieldValue.increment(1) },
-        ...(visit.lang && visit.k === 'landing' ? { visitsLang: { [visit.lang]: FieldValue.increment(1) } } : {}),
+        ...(visit.lang && visit.k === 'landing'
+          ? { visitsLang: { [visit.lang]: FieldValue.increment(1) } }
+          : {}),
       },
       { merge: true },
     );
