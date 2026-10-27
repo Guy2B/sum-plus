@@ -140,7 +140,7 @@ vérification du jeton d'identité, CORS restreint).
    `PUBLIC_APP_URL=https://lifeos.guybeaho.com`,
    `ALLOWED_ORIGINS=https://sum-plus-app.web.app,https://guy2b.github.io`, `OPEN_ACCESS=true`,
    et pour les réseaux sociaux `OAUTH_REDIRECT_URI=https://<site>.netlify.app/api/oauth/callback`
-   + `LINKEDIN_CLIENT_ID/SECRET`, `X_CLIENT_ID/SECRET`, `TIKTOK_CLIENT_KEY/SECRET`.
+   - `LINKEDIN_CLIENT_ID/SECRET`, `X_CLIENT_ID/SECRET`, `TIKTOK_CLIENT_KEY/SECRET`.
 4. `npx netlify-cli deploy --prod` (bundle local de `netlify/functions/api.ts`).
 5. Web : `VITE_FUNCTIONS_URL=https://<site>.netlify.app/api` dans `apps/web/.env.production`.
 

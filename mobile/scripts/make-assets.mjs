@@ -33,7 +33,12 @@ await Promise.all([
   png(glyph(1024, 1, PAPER, INK), 'icon-only.png'),
   // Adaptive icon: the system masks the shape; keep the Σ inside the 66 % safe zone.
   png(glyph(1024, 0.62, PAPER), 'icon-foreground.png'),
-  png(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024"><rect width="1024" height="1024" fill="${INK}"/></svg>`), 'icon-background.png'),
+  png(
+    Buffer.from(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024"><rect width="1024" height="1024" fill="${INK}"/></svg>`,
+    ),
+    'icon-background.png',
+  ),
   // Splash: calm paper background (light) / ink (dark), small Σ.
   png(glyph(2732, 0.18, INK, PAPER), 'splash.png'),
   png(glyph(2732, 0.18, PAPER, INK), 'splash-dark.png'),

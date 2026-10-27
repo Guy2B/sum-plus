@@ -20,7 +20,10 @@ if (!email) {
   process.exit(1);
 }
 
-const tools = join(process.env.APPDATA ?? join(process.env.HOME ?? '', '.npm-global'), 'npm/node_modules/firebase-tools/lib/');
+const tools = join(
+  process.env.APPDATA ?? join(process.env.HOME ?? '', '.npm-global'),
+  'npm/node_modules/firebase-tools/lib/',
+);
 const require = createRequire(import.meta.url);
 const { getAccessToken } = require(join(tools, 'auth'));
 const { configstore } = require(join(tools, 'configstore'));
@@ -30,10 +33,18 @@ if (!refresh) {
   process.exit(1);
 }
 const { access_token: token } = await getAccessToken(refresh, []);
-const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', 'X-Goog-User-Project': project };
+const headers = {
+  Authorization: `Bearer ${token}`,
+  'Content-Type': 'application/json',
+  'X-Goog-User-Project': project,
+};
 const base = `https://identitytoolkit.googleapis.com/v1/projects/${project}/accounts`;
 
-const lookup = await fetch(`${base}:lookup`, { method: 'POST', headers, body: JSON.stringify({ email: [email] }) });
+const lookup = await fetch(`${base}:lookup`, {
+  method: 'POST',
+  headers,
+  body: JSON.stringify({ email: [email] }),
+});
 const user = (await lookup.json()).users?.[0];
 if (!user) {
   console.error(`No account for ${email} in ${project}. Sign in to the app once first.`);
@@ -51,4 +62,6 @@ if (!res.ok) {
   console.error('Update failed:', res.status, await res.text());
   process.exit(1);
 }
-console.log(`${revoke ? 'Revoked' : 'Granted'} admin for ${email} (${project}). Sign out and back in to apply.`);
+console.log(
+  `${revoke ? 'Revoked' : 'Granted'} admin for ${email} (${project}). Sign out and back in to apply.`,
+);
