@@ -799,6 +799,10 @@ function apply(next: Lang) {
     target.searchParams.set('lang', next);
     a.href = target.pathname.split('/').pop() + target.search;
   });
+  // "by Al.G.B.r." opens the studio (algbr.de) in the same language; it has no Spanish version.
+  $$<HTMLAnchorElement>('a.by-algbr').forEach((a) => {
+    a.href = `https://algbr.de/${next === 'es' ? 'en' : next}/`;
+  });
   try {
     localStorage.setItem('sigma-site-lang', next);
   } catch {
