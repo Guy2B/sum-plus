@@ -3284,11 +3284,23 @@ main {
   }
 }
 
-/* The sidebar logo is a link (back to the presentation page): keep "by ALGBr" above 4.5:1 contrast. */
-.sidebar .brand .byline {
+/* The logo links home; "by Al.G.B.r." links to the studio. Both stay above 4.5:1 contrast. */
+.brand-home {
+  color: inherit;
+  text-decoration: none;
+}
+.brand-home:hover .nsxt {
   opacity: 0.85;
 }
-.sidebar a.brand:hover .nsxt {
+.by-algbr {
+  color: inherit;
+  text-decoration: none;
+}
+.by-algbr:hover,
+.by-algbr:focus-visible {
+  text-decoration: underline;
+}
+.sidebar .brand .byline {
   opacity: 0.85;
 }
 
