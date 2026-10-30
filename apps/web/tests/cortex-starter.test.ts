@@ -45,3 +45,29 @@ describe('dictation into notes', () => {
     expect(sentence('   ')).toBe('');
   });
 });
+
+describe('starter habits follow the language', () => {
+  it('renames untouched starter habits, never renamed ones', async () => {
+    const store = await import('../src/data/store');
+    const { relocalizeStarters } = await import('../src/cortex/starter');
+    const { ensureCortexLocale } = await import('../src/cortex/i18n');
+    await store.initStore();
+    await ensureCortexLocale('en');
+    const a = await store.create('habits', {
+      name: 'Drink water',
+      unit: 'glasses',
+      cadence: 'daily',
+      domain: 'personal',
+    } as never);
+    const b = await store.create('habits', {
+      name: 'Water, lots of it',
+      cadence: 'daily',
+      domain: 'personal',
+    } as never);
+    await store.updateSettings({ locale: 'fr' });
+    await relocalizeStarters();
+    const get = (id: string) => store.snapshot.value.habits.find((h) => h.id === id)!;
+    expect(get(a.id)).toMatchObject({ name: 'Boire de l’eau', unit: 'verres' });
+    expect(get(b.id).name).toBe('Water, lots of it');
+  });
+});

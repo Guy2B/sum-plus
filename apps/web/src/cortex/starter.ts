@@ -7,13 +7,13 @@
  *   them freely; they never come back.
  */
 import type { Habit } from '../domain/types';
-import { authUser, create, entitlement, snapshot, syncState } from '../data/store';
+import { authUser, create, entitlement, snapshot, syncState, update } from '../data/store';
 import { getKV, setKV } from '../data/db';
 import { clearDemo, hasDemoData } from '../data/seed';
 import { isDemoRecord } from '../domain/demo';
 import { FREE_LIMITS, isPro } from '../domain/entitlements';
 import { cloudConfigured } from '../config';
-import { ct, type CortexKey } from './i18n';
+import { allTranslations, ct, type CortexKey } from './i18n';
 import { cadenceFor } from './data';
 
 const FLAG = 'cortex:starters';
@@ -99,4 +99,25 @@ export async function prepareWorkspace(): Promise<void> {
     } as Habit);
   }
   await setKV(FLAG, new Date().toISOString());
+}
+
+/**
+ * The starter habits follow the app's language as long as the person has not
+ * renamed them: "Drink water" becomes "Boire de l’eau" after switching to French.
+ */
+export async function relocalizeStarters(): Promise<number> {
+  let n = 0;
+  for (const s of STARTER_HABITS) {
+    const names = await allTranslations(s.name);
+    const units = s.unit ? await allTranslations(s.unit) : [];
+    const name = ct(s.name);
+    for (const h of snapshot.value.habits) {
+      if (h.deletedAt || h.name === name || !names.includes(h.name)) continue;
+      const patch: Partial<Habit> = { name };
+      if (s.unit && h.unit && units.includes(h.unit)) patch.unit = ct(s.unit);
+      await update('habits', h.id, patch);
+      n += 1;
+    }
+  }
+  return n;
 }

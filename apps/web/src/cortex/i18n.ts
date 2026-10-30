@@ -50,3 +50,11 @@ export function fmtDuration(min: number): string {
   if (!h) return ct('unit.min', { m: r });
   return r ? ct('unit.hm', { h, m: String(r).padStart(2, '0') }) : ct('unit.h', { h });
 }
+
+/** Every locale's value of `key` (loads the dictionaries it needs). */
+export async function allTranslations(key: CortexKey): Promise<string[]> {
+  await Promise.all((['en', 'de', 'es'] as const).map((l) => ensureCortexLocale(l).catch(() => undefined)));
+  return Object.values(loaded)
+    .map((d) => d?.[key])
+    .filter((v): v is string => typeof v === 'string');
+}
