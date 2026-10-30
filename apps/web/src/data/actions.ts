@@ -2,6 +2,7 @@
  * User actions on decisions. Each one updates the underlying record and
  * logs feedback so the behaviour profile can learn (after enough evidence).
  */
+import { habitTarget } from '../domain/habits';
 import { computed, signal } from '@preact/signals';
 import { track } from '../services/telemetry';
 import type { Decision } from '../domain/decision';
@@ -108,9 +109,11 @@ export async function completeDecision(d: Decision, minutes?: number): Promise<v
     case 'finance':
       await update('finance', id, { status: 'paid' });
       break;
-    case 'habits':
-      await create('habitLogs', { habitId: id, date: isoDay() });
+    case 'habits': {
+      const h = snapshot.value.habits.find((x) => x.id === id);
+      await create('habitLogs', { habitId: id, date: isoDay(), value: h ? habitTarget(h) : 1 });
       break;
+    }
     case 'schoolItems':
       await update('schoolItems', id, { done: true });
       break;

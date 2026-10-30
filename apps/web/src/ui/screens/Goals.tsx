@@ -3,6 +3,7 @@ import { LimitNotice } from '../pro';
 import type { Goal, Habit } from '../../domain/types';
 import { create, snapshot, update, clock, entitlement, remove } from '../../data/store';
 import { habitDueOn, habitStreak } from '../../domain/wellbeing';
+import { habitTarget } from '../../domain/habits';
 import { withinLimit, FREE_LIMITS } from '../../domain/entitlements';
 import { isoDay, addDays } from '../../domain/dates';
 import { t, fmtDate } from '../../i18n';
@@ -222,17 +223,21 @@ export function Goals() {
                     const key = isoDay(d);
                     const log = logs.find((l) => l.habitId === h.id && l.date === key);
                     const due = habitDueOn(h, d) || h.cadence === 'weekly';
+                    // Cortex can write partial quantities or a passed day: only a reached target is a tick.
+                    const ticked = Boolean(log && !log.skipped && (log.value ?? 1) >= habitTarget(h));
                     return (
                       <td key={key}>
                         <input
                           type="checkbox"
                           disabled={!due || key > today}
-                          checked={Boolean(log)}
+                          checked={ticked}
                           aria-label={`${h.name} ${fmtDate(d)}`}
                           onChange={() =>
                             void (log
-                              ? remove('habitLogs', log.id)
-                              : create('habitLogs', { habitId: h.id, date: key }))
+                              ? ticked
+                                ? remove('habitLogs', log.id)
+                                : update('habitLogs', log.id, { value: habitTarget(h), skipped: false })
+                              : create('habitLogs', { habitId: h.id, date: key, value: habitTarget(h) }))
                           }
                         />
                       </td>

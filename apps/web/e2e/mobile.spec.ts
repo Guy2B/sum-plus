@@ -22,3 +22,15 @@ test('mobile layout: bottom navigation, drawer, no horizontal overflow', async (
   await expect(page.locator('.sidebar.open')).toHaveCount(0);
   expect(errors).toEqual([]);
 });
+
+test('Cortex on mobile: bottom navigation, no horizontal overflow', async ({ page }) => {
+  const errors = watchErrors(page);
+  for (const view of ['today', 'planning', 'habits', 'notes', 'review', 'tasks']) {
+    await page.goto(`/cortex.html#${view}`);
+    await expect(page.locator('#main h1')).toBeVisible();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(overflow, `horizontal overflow on Cortex #${view}`).toBeLessThanOrEqual(1);
+  }
+  await expect(page.locator('.bottom-nav')).toBeVisible();
+  expect(errors).toEqual([]);
+});

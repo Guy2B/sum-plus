@@ -20,7 +20,12 @@ export type Feature =
   | 'calendarSync'
   | 'unlimitedCoach'
   | 'unlimitedProjects'
-  | 'unlimitedHabits';
+  | 'unlimitedHabits'
+  // Cortex (included in Pro)
+  | 'routines'
+  | 'writing'
+  | 'unlimitedNotes'
+  | 'reviewHistory';
 
 export const PRO_FEATURES: ReadonlySet<Feature> = new Set<Feature>([
   'finance',
@@ -36,6 +41,10 @@ export const PRO_FEATURES: ReadonlySet<Feature> = new Set<Feature>([
   'unlimitedCoach',
   'unlimitedProjects',
   'unlimitedHabits',
+  'routines',
+  'writing',
+  'unlimitedNotes',
+  'reviewHistory',
 ]);
 
 export const FREE_LIMITS = Object.freeze({
@@ -43,6 +52,7 @@ export const FREE_LIMITS = Object.freeze({
   projects: 1,
   habits: 3,
   mailAccounts: 1,
+  notes: 50,
 });
 
 export interface Entitlement {

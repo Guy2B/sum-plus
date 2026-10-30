@@ -67,6 +67,9 @@ export interface Project extends Doc {
   milestones: Milestone[];
   /** The goal this project serves (goal → project → action chain). */
   goalId?: string | null;
+  /** Cortex grouping: professional, writing (chapters, characters) or personal. */
+  area?: 'pro' | 'writing' | 'personal';
+  color?: number;
 }
 
 export interface FinanceEntry extends Doc {
@@ -134,16 +137,32 @@ export interface CalendarEvent extends Doc {
   source?: SourceRef | null;
 }
 
+export type DayMoment = 'am' | 'mid' | 'pm' | 'any';
+
 export interface Habit extends Doc {
   name: string;
   cadence: 'daily' | 'weekdays' | 'weekly';
   domain: 'work' | 'health' | 'learning' | 'personal';
   archived?: boolean;
+  /** Scheduled weekdays, 0 = Monday … 6 = Sunday. Absent: derived from `cadence`. */
+  days?: number[];
+  /** Daily quantity to reach (8 glasses). Absent or 1: a yes/no habit. */
+  target?: number;
+  unit?: string;
+  /** Moment of the day the habit belongs to (Cortex groups by it). */
+  moment?: DayMoment;
+  icon?: string;
+  color?: number;
+  order?: number;
 }
 
 export interface HabitLog extends Doc {
   habitId: string;
   date: ISODate;
+  /** Quantity logged that day. Absent: 1 (a plain check). */
+  value?: number;
+  /** The day was deliberately passed (illness, travel): it neither counts nor breaks the streak. */
+  skipped?: boolean;
 }
 
 export interface Goal extends Doc {
@@ -484,6 +503,66 @@ export interface DecisionRecord extends Doc {
   minutes?: number | null;
 }
 
+/* ------------------------------- Cortex ---------------------------------- */
+
+export type BlockCategory = 'focus' | 'meeting' | 'admin' | 'writing' | 'personal' | 'sport' | 'break';
+
+/** A time block on a day, in minutes from local midnight. */
+export interface TimeBlock {
+  id: string;
+  title: string;
+  start: number;
+  end: number;
+  category: BlockCategory;
+  done: boolean;
+  note?: string;
+  taskId?: string | null;
+}
+
+export interface DayPriority {
+  title: string;
+  done: boolean;
+  taskId?: string | null;
+}
+
+/** One planned day (id = its date). Written by Cortex; read by NEXT for the evening review. */
+export interface DayPlan extends Doc {
+  date: ISODate;
+  intention: string;
+  priorities: DayPriority[];
+  blocks: TimeBlock[];
+  review: { energy: number | null; wins: string; next: string };
+}
+
+/** A free-form note of the second brain. `[[Title]]` links notes together. */
+export interface Note extends Doc {
+  title: string;
+  body: string;
+  kind: 'note' | 'idea';
+  projectId?: string | null;
+  pinned?: boolean;
+  tags: string[];
+  /** Captured and not yet filed. */
+  inbox?: boolean;
+}
+
+export type ChapterStatus = 'idea' | 'draft' | 'revision' | 'final';
+
+export interface Chapter extends Doc {
+  projectId: string;
+  title: string;
+  status: ChapterStatus;
+  words: number;
+  order: number;
+}
+
+export interface Character extends Doc {
+  projectId: string;
+  name: string;
+  role: string;
+  notes: string;
+}
+
 export interface CollectionMap {
   tasks: Task;
   projects: Project;
@@ -508,6 +587,10 @@ export interface CollectionMap {
   coachMessages: CoachMessage;
   missions: Mission;
   decisionLog: DecisionRecord;
+  days: DayPlan;
+  notes: Note;
+  chapters: Chapter;
+  characters: Character;
 }
 
 export type CollectionName = keyof CollectionMap;
@@ -536,6 +619,10 @@ export const COLLECTIONS: readonly CollectionName[] = [
   'coachMessages',
   'missions',
   'decisionLog',
+  'days',
+  'notes',
+  'chapters',
+  'characters',
 ] as const;
 
 /**

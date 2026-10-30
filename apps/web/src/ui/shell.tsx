@@ -330,6 +330,11 @@ export function Shell({ children, banner }: { children: ComponentChildren; banne
             <span>{t('palette.title')}</span>
             <kbd class="hide-sm">Ctrl K</kbd>
           </button>
+          {/* Cortex: the sister app (planning, habits, second brain) on the same data. */}
+          <a class="sidebar-action" href="cortex.html">
+            <Icon name="calendar" size={18} />
+            <span>{t('nav.cortex')}</span>
+          </a>
         </div>
         <NavList onPick={() => (drawerOpen.value = false)} />
         <div class="sidebar-foot">

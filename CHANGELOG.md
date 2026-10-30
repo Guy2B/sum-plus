@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased · Cortex
+
+- **Cortex** (`/cortex.html`), NEXT's sister app on the same data, account and engine: Today dashboard (Σ's decisions as priorities, agenda, habits, tasks, evening review), Planning (drag-and-drop time blocks, calendar events, "Let Σ plan my day", routines, focus mode), Habits (quantities, chosen days, moments, passed days, streaks, 20-week history, trends), inbox, tasks, projects, linked notes with backlinks, writing (chapters, characters), weekly review. Four languages, light and dark, phone layout.
+- Shared model: habits gain days, quantity, moment, icon, colour; habit logs gain value and passed days; projects gain area and colour; new synced collections `days`, `notes`, `chapters`, `characters`. NEXT's engine and habit grid honour the new habit rules (`domain/habits.ts`).
+- NEXT sidebar links to Cortex; Pro lists Cortex.
+
 ## 1.0.0 — 2026-09-30 · Production rebuild
 
 Complete rebuild of Σ Life OS on a single, tested runtime, replacing the V1–V8 layered app (111 scripts) and the unused "engine" modules.

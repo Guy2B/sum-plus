@@ -94,6 +94,7 @@ export default defineConfig({
       input: {
         index: resolve(__dirname, 'index.html'),
         app: resolve(__dirname, 'app.html'),
+        cortex: resolve(__dirname, 'cortex.html'),
         privacy: resolve(__dirname, 'legal/privacy.html'),
         terms: resolve(__dirname, 'legal/terms.html'),
         support: resolve(__dirname, 'legal/support.html'),

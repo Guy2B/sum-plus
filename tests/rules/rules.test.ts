@@ -116,6 +116,19 @@ describe('sync collections', () => {
     await assertFails(deleteDoc(doc(env.authenticatedContext('bob').firestore(), 'users/alice/tasks/t1')));
   });
 
+  it('syncs Cortex collections (days, notes, chapters, characters) like any record', async () => {
+    await grant('alice', { plan: 'pro', status: 'active' });
+    const db = env.authenticatedContext('alice').firestore();
+    for (const [c, id] of [
+      ['days', '2026-09-30'],
+      ['notes', 'n1'],
+      ['chapters', 'c1'],
+      ['characters', 'p1'],
+    ])
+      await assertSucceeds(setDoc(doc(db, `users/alice/${c}/${id}`), record(id!)));
+    await assertFails(getDoc(doc(env.authenticatedContext('bob').firestore(), 'users/alice/notes/n1')));
+  });
+
   it('lets owners erase their own records (account deletion)', async () => {
     const db = env.authenticatedContext('alice').firestore();
     await assertSucceeds(deleteDoc(doc(db, 'users/alice/tasks/t1')));
