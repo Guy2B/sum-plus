@@ -191,7 +191,8 @@ describe('Cortex day planning', () => {
 });
 
 describe('Cortex notes', () => {
-  const note = (title: string, body = '') => doc({ title, body, kind: 'note', tags: [] } as unknown as Note) as Note;
+  const note = (title: string, body = '') =>
+    doc({ title, body, kind: 'note', tags: [] } as unknown as Note) as Note;
 
   it('extracts [[links]], finds targets case-insensitively and backlinks', () => {
     const a = note('Plan', 'See [[Characters]] and [[characters]] and [[Plan B]]');
@@ -239,5 +240,49 @@ describe('Cortex weekly review', () => {
     expect(r.days[3]!.future).toBe(true);
     expect(r.projects).toEqual([{ id: 'p1', count: 1 }]);
     expect(r.energyAvg).toBe(4);
+  });
+});
+
+describe('review fixes: weekly habits, back-filled days, one log per day', () => {
+  it('keeps weekly habits out of the per-day counts and perfect days', () => {
+    const daily = habit();
+    const weekly = habit({ cadence: 'weekly' });
+    const logs: HabitLog[] = [];
+    for (let i = 1; i <= 29; i++) logs.push(log(daily, `2026-09-${String(i).padStart(2, '0')}`));
+    logs.push(log(weekly, '2026-09-29'));
+    const idx = indexLogs(logs);
+    expect(habitsOnDay([daily, weekly], idx, new Date('2026-10-01T09:00:00'))).toEqual({ due: 1, done: 0 });
+    expect(perfectDays([daily, weekly], idx, NOW)).toBe(29);
+    expect(isHabitDue(weekly, NOW)).toBe(false); // Wednesday: NEXT shows weekly habits on Mondays
+    expect(streak(weekly, idx, NOW)).toBe(1);
+  });
+
+  it('counts back-filled days before creation in the best streak', () => {
+    const h = habit();
+    (h as { createdAt: string }).createdAt = new Date('2026-09-28T09:00:00').toISOString();
+    const logs = Array.from({ length: 15 }, (_, i) => log(h, `2026-09-${String(15 + i).padStart(2, '0')}`));
+    const idx = indexLogs(logs);
+    expect(streak(h, idx, NOW)).toBe(15);
+    expect(bestStreak(h, idx, NOW)).toBe(15);
+  });
+});
+
+describe('habit writes (shared by NEXT and Cortex)', () => {
+  it('folds duplicate logs into one, so an undo never resurrects an older log', async () => {
+    const { initStore, create, snapshot } = await import('../src/data/store');
+    const { writeHabitDay } = await import('../src/data/habits');
+    await initStore();
+    const h = await create('habits', { name: 'Water', cadence: 'daily', domain: 'health', target: 8 });
+    await create('habitLogs', { habitId: h.id, date: '2026-09-30', value: 3 });
+    await new Promise((r) => setTimeout(r, 5));
+    await create('habitLogs', { habitId: h.id, date: '2026-09-30', value: 8 });
+    const live = () => snapshot.value.habitLogs.filter((l) => !l.deletedAt && l.habitId === h.id);
+    await writeHabitDay(h, '2026-09-30', { value: 0 });
+    expect(live()).toEqual([]);
+    await writeHabitDay(h, '2026-09-30', { value: 2 });
+    expect(live().map((l) => l.value)).toEqual([2]);
+    await writeHabitDay(h, '2026-09-30', { value: 0, skipped: true });
+    expect(live()).toHaveLength(1);
+    expect(live()[0]).toMatchObject({ skipped: true, value: 0 });
   });
 });

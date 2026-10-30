@@ -5,13 +5,24 @@ import type { BlockCategory, Habit, ISODate, Task } from '../../domain/types';
 import { clock, create, entitlement, snapshot, update } from '../../data/store';
 import { isoDay } from '../../domain/dates';
 import { withinLimit } from '../../domain/entitlements';
-import { habitTarget, habitsOnDay, isHabitDue, skippedOn, streak, valueOn } from '../../domain/habits';
+import {
+  doneThisWeek,
+  habitTarget,
+  habitsOnDay,
+  isHabitDue,
+  isWeekly,
+  skippedOn,
+  streak,
+  valueOn,
+} from '../../domain/habits';
 import { Icon } from '../../ui/icons';
 import { fmtDate, fmtLongDate } from '../../i18n';
 import { toast } from '../../ui/components';
 import { ct, fmtDuration, type CortexKey } from '../i18n';
 import {
+  busyOn,
   currentBlock,
+  isForDay,
   dayStats,
   freeSlot,
   hhmm,
@@ -270,7 +281,7 @@ export async function planTask(t: Task, date: ISODate, start?: number): Promise<
   const win = dayWindow.value;
   const len = t.estimateMinutes || 30;
   const from = date === today.value ? Math.max(win.start, minutesOfDay(clock.value)) : win.start;
-  const s = start ?? freeSlot(d.blocks, len, from, win.end);
+  const s = start ?? freeSlot(busyOn(d, snapshot.value.events, date), len, from, win.end);
   if (s == null) {
     toast(ct('plan.noSlot'), 'info');
     return;
@@ -383,8 +394,10 @@ export function HabitRow({
   const day = parseDay(date);
   const v = valueOn(idx, h, date);
   const target = habitTarget(h);
-  const done = v >= target;
-  const due = isHabitDue(h, day);
+  const weekly = isWeekly(h);
+  // A weekly habit is open all week and done once it was done any day of it.
+  const done = v >= target || (weekly && doneThisWeek(idx, h, day));
+  const due = weekly || isHabitDue(h, day);
   const passed = skippedOn(idx, h, date);
   const st = streak(h, idx, clock.value);
   const counter = target > 1;
@@ -435,6 +448,7 @@ export function HabitRow({
               {h.unit ? ` ${h.unit}` : ''}
             </span>
           )}
+          {weekly && <span class="cx-pill">{ct('habits.weekly')}</span>}
           {passed ? (
             <span class="cx-pill">{ct('habits.passed')}</span>
           ) : (
@@ -613,7 +627,11 @@ export function PrioritiesPanel({ date, id }: { date: ISODate; id?: string }) {
               onInput={(e) =>
                 void editDay(
                   date,
-                  (x) => (x.priorities[i]!.title = (e.target as HTMLInputElement).value),
+                  (x) => {
+                    // A retyped priority is no longer linked: ticking it must never complete another task.
+                    x.priorities[i]!.title = (e.target as HTMLInputElement).value;
+                    x.priorities[i]!.taskId = null;
+                  },
                   600,
                 )
               }
@@ -656,7 +674,7 @@ async function placePriorities(date: ISODate) {
       const title = p.title.trim();
       if (!title || p.done || x.blocks.some((b) => b.title === title)) continue;
       const from = date === today.value ? Math.max(win.start, minutesOfDay(new Date())) : win.start;
-      const s = freeSlot(x.blocks, 60, from, win.end);
+      const s = freeSlot(busyOn(x, snapshot.value.events, date), 60, from, win.end);
       if (s == null) break;
       x.blocks.push({
         id: `b${Date.now().toString(36)}${n}`,
@@ -707,8 +725,7 @@ export function EveningReview({ date, id }: { date: ISODate; id?: string }) {
   const h = habitsOnDay(liveHabits.value, habitIndex.value, parseDay(date));
   const carry =
     tp.filter((p) => !p.done && !p.taskId).length +
-    liveTasks.value.filter((t) => t.status !== 'done' && t.dueDate && String(t.dueDate).slice(0, 10) <= date)
-      .length;
+    liveTasks.value.filter((t) => isForDay(t, date, today.value)).length;
   return (
     <Panel id={id} title={ct('review.evening')}>
       <p class="cx-sum">
@@ -809,11 +826,9 @@ export async function prepareTomorrow(date: ISODate): Promise<void> {
     openTitles.add(title.toLowerCase());
     n++;
   }
-  for (const t of liveTasks.value) {
-    if (t.status === 'done' || !t.dueDate || String(t.dueDate).slice(0, 10) > date) continue;
-    await update('tasks', t.id, { dueDate: next });
-    n++;
-  }
+  // Open tasks of the day are not moved: overdue ones show up tomorrow by themselves,
+  // and their real deadlines (and NEXT's lateness signals) stay intact.
+  n += liveTasks.value.filter((t) => isForDay(t, date, today.value)).length;
   const first = d.review.next.trim();
   if (first && !getDay(next).priorities.some((p) => p.title.trim())) {
     await editDay(next, (x) => (x.priorities[0]!.title = first.slice(0, 120)));

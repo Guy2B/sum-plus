@@ -1,6 +1,6 @@
 /** Today: the dashboard where NEXT's decisions, the plan, habits and tasks meet. */
 import { clock } from '../../../data/store';
-import { habitsOnDay, isHabitDue } from '../../../domain/habits';
+import { habitsOnDay, isHabitDue, isWeekly } from '../../../domain/habits';
 import { fmtDate } from '../../../i18n';
 import { Icon } from '../../../ui/icons';
 import { ct, fmtDuration } from '../../i18n';
@@ -40,7 +40,7 @@ export function Today() {
   const late = forToday.filter((x) => isLate(x, k));
   const rest = forToday.filter((x) => !isLate(x, k));
   const doneToday = tasks.filter((x) => completedOn(x, k));
-  const habits = liveHabits.value.filter((x) => isHabitDue(x, parseDay(k)));
+  const habits = liveHabits.value.filter((x) => isHabitDue(x, parseDay(k)) || isWeekly(x));
   const recent = [...liveNotes.value].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 4);
   const blank = isBlank();
   return (

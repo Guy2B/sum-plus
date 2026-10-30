@@ -339,6 +339,9 @@ export const cfr = {
   'habits.moment': 'Moment',
   'habits.days': 'Jours',
   'habits.everyDay': 'Tous les jours',
+  'habits.weeklyHint':
+    'Habitude hebdomadaire : une fois par semaine, n’importe quel jour. Choisissez des jours pour la changer.',
+  'habits.weekly': 'Hebdo',
   'habits.weekdays': 'Semaine',
   'habits.weekend': 'Week-end',
   'habits.errorName': 'Donnez un nom à votre habitude.',

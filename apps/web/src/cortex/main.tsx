@@ -12,7 +12,7 @@ import { toast } from '../ui/components';
 import { t } from '../i18n';
 import { CortexApp } from './ui/App';
 import { ensureCortexLocale } from './i18n';
-import { flushNotes } from './data';
+import { flushDays, flushNotes } from './data';
 
 async function boot() {
   installGlobalHandlers();
@@ -26,8 +26,12 @@ async function boot() {
   }
   void initAuth();
   // Never lose the last keystrokes of a note when the tab goes away.
-  window.addEventListener('pagehide', flushNotes);
-  document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && flushNotes());
+  const flushAll = () => {
+    flushNotes();
+    flushDays();
+  };
+  window.addEventListener('pagehide', flushAll);
+  document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && flushAll());
 
   if ('serviceWorker' in navigator && import.meta.env.PROD) {
     const { registerSW } = await import('virtual:pwa-register');

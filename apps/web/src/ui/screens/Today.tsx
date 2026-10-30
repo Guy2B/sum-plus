@@ -1,4 +1,4 @@
-import { settings, snapshot, capacity, clock, create, remove, updateSettings } from '../../data/store';
+import { settings, snapshot, capacity, clock, updateSettings } from '../../data/store';
 import { setTelemetry, track } from '../../services/telemetry';
 import { PulseCard } from '../pulse';
 import { DayChangeBanner, Freshness } from '../sources-status';
@@ -8,6 +8,8 @@ import { hasDemoData, clearDemo } from '../../data/seed';
 import { getEdition } from '../../domain/editions';
 import { eventsOn, isTodayTask } from '../../domain/planning';
 import { habitDueOn } from '../../domain/wellbeing';
+import { doneOn, habitTarget, indexLogs } from '../../domain/habits';
+import { writeHabitDay } from '../../data/habits';
 import { isoDay } from '../../domain/dates';
 import { SignalChecklist } from '../signal-setup';
 import { FirstResult } from '../first-result';
@@ -391,19 +393,16 @@ export function Today() {
               </div>
               <ul class="check-list">
                 {habits.map((h) => {
-                  const log = snapshot.value.habitLogs.find(
-                    (l) => !l.deletedAt && l.habitId === h.id && l.date === today,
-                  );
+                  // Quantities and passed days (written by Cortex) count as ticked only once reached.
+                  const ticked = doneOn(indexLogs(snapshot.value.habitLogs), h, today);
                   return (
                     <li key={h.id}>
                       <label>
                         <input
                           type="checkbox"
-                          checked={Boolean(log)}
+                          checked={ticked}
                           onChange={() =>
-                            void (log
-                              ? remove('habitLogs', log.id)
-                              : create('habitLogs', { habitId: h.id, date: today }))
+                            void writeHabitDay(h, today, { value: ticked ? 0 : habitTarget(h) })
                           }
                         />
                         <span>{h.name}</span>

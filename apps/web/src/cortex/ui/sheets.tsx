@@ -257,7 +257,8 @@ function TaskSheet({ id }: { id: string }) {
     await update('tasks', t.id, {
       title: title.trim(),
       projectId: pid || null,
-      dueDate: due || null,
+      // Keep an existing due time unless the date itself was changed.
+      dueDate: due === (t.dueDate ? String(t.dueDate).slice(0, 10) : '') ? (t.dueDate ?? null) : due || null,
       priority: prio,
       estimateMinutes: est,
       notes,
@@ -410,6 +411,8 @@ function HabitSheet({ id }: { id: string | null }) {
   const [target, setTarget] = useState(String((h?.target ?? 1) > 1 ? h!.target : 8));
   const [unit, setUnit] = useState(h?.unit ?? '');
   const [moment, setMoment] = useState<DayMoment>(h?.moment ?? 'any');
+  const weekly = Boolean(h && h.cadence === 'weekly' && !h.days?.length);
+  const [daysTouched, setDaysTouched] = useState(false);
   const [days, setDays] = useState<number[]>(
     h?.days?.length ? h.days : h?.cadence === 'weekdays' ? [0, 1, 2, 3, 4] : [0, 1, 2, 3, 4, 5, 6],
   );
@@ -430,6 +433,11 @@ function HabitSheet({ id }: { id: string | null }) {
       days: [...days].sort(),
       cadence: cadenceFor(days),
     };
+    // A NEXT weekly habit stays weekly unless the person really picks days.
+    if (weekly && !daysTouched) {
+      delete fields.days;
+      delete fields.cadence;
+    }
     if (h) await update('habits', h.id, fields);
     else {
       if (!withinLimit('habits', liveHabits.value.length, entitlement.value)) {
@@ -442,7 +450,11 @@ function HabitSheet({ id }: { id: string | null }) {
     close();
     toast(ct(h ? 'habits.saved' : 'habits.added'), 'good');
   };
-  const toggleDay = (d: number) => setDays(days.includes(d) ? days.filter((x) => x !== d) : [...days, d]);
+  const pickDays = (next: number[]) => {
+    setDaysTouched(true);
+    setDays(next);
+  };
+  const toggleDay = (d: number) => pickDays(days.includes(d) ? days.filter((x) => x !== d) : [...days, d]);
   return (
     <Modal open onClose={close} title={ct(h ? 'habits.edit' : 'habits.new')}>
       <form
@@ -536,6 +548,7 @@ function HabitSheet({ id }: { id: string | null }) {
         </div>
         <div class="field">
           <span class="cx-label">{ct('habits.days')}</span>
+          {weekly && !daysTouched && <p class="cx-hint">{ct('habits.weeklyHint')}</p>}
           <div class="cx-days">
             {[0, 1, 2, 3, 4, 5, 6].map((d) => (
               <button
@@ -550,13 +563,13 @@ function HabitSheet({ id }: { id: string | null }) {
             ))}
           </div>
           <div class="cx-chips">
-            <button type="button" onClick={() => setDays([0, 1, 2, 3, 4, 5, 6])}>
+            <button type="button" onClick={() => pickDays([0, 1, 2, 3, 4, 5, 6])}>
               {ct('habits.everyDay')}
             </button>
-            <button type="button" onClick={() => setDays([0, 1, 2, 3, 4])}>
+            <button type="button" onClick={() => pickDays([0, 1, 2, 3, 4])}>
               {ct('habits.weekdays')}
             </button>
-            <button type="button" onClick={() => setDays([5, 6])}>
+            <button type="button" onClick={() => pickDays([5, 6])}>
               {ct('habits.weekend')}
             </button>
           </div>

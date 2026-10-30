@@ -101,6 +101,11 @@ export function eventBlocks(events: CalendarEvent[], date: ISODate): EventBlock[
   return out.sort((a, b) => a.start - b.start);
 }
 
+/** Everything that occupies time that day: planned blocks and calendar events. */
+export function busyOn(day: { blocks: TimeBlock[] } | undefined, events: CalendarEvent[], date: ISODate) {
+  return [...(day?.blocks ?? []), ...eventBlocks(events, date)];
+}
+
 /** Visible window: the configured day, widened to whatever is planned outside it. */
 export function viewRange(
   blocks: { start: number; end: number }[],
@@ -128,7 +133,7 @@ export function freeSlot(
   let t = ceilTo(from);
   for (const b of [...busy].sort((a, c) => a.start - c.start)) {
     if (b.end <= t) continue;
-    if (b.start - t >= len) return t;
+    if (b.start - t >= len) return t + len <= dayEnd ? t : null;
     t = Math.max(t, ceilTo(b.end));
   }
   return t + len <= dayEnd ? t : null;
@@ -238,7 +243,11 @@ export function blocksFromPlan(
 /* ---------------------------------- tasks --------------------------------- */
 
 export const isOpen = (t: Task): boolean => !t.deletedAt && t.status !== 'done';
-const dueDay = (t: Task): ISODate | null => (t.dueDate ? String(t.dueDate).slice(0, 10) : null);
+/** Due day in local time, exactly as NEXT reads it (`isoDay(toDate(...))`). */
+const dueDay = (t: Task): ISODate | null => {
+  const d = toDate(t.dueDate);
+  return d ? isoDay(d) : null;
+};
 
 /**
  * Tasks belonging to a day. Today follows NEXT exactly (essential, starred,

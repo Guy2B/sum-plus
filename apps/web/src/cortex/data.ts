@@ -9,6 +9,7 @@ import { newId } from '../domain/ids';
 import { isoDay } from '../domain/dates';
 import { parseCapture } from '../domain/capture';
 import { habitTarget, indexLogs, logOn } from '../domain/habits';
+import { writeHabitDay } from '../data/habits';
 import { dayOf, emptyDay } from './model';
 
 /* --------------------------------- reads ---------------------------------- */
@@ -91,9 +92,19 @@ export async function editDay(date: ISODate, fn: (d: DayPlan) => void, debounce 
 async function flushDay(date: ISODate): Promise<void> {
   const d = pending.get(date);
   if (!d) return;
+  clearTimeout(timers.get(date));
   timers.delete(date);
-  await writeDay(d);
-  if (pending.get(date) === d) pending.delete(date);
+  try {
+    await writeDay(d);
+  } finally {
+    // A failed write must not hide later remote updates of that day behind a stale copy.
+    if (pending.get(date) === d) pending.delete(date);
+  }
+}
+
+/** Writes every pending day now (tab hidden or closed). */
+export function flushDays(): void {
+  for (const date of [...pending.keys()]) void flushDay(date);
 }
 
 export const newBlockId = (): string => newId('b');
@@ -114,19 +125,18 @@ export async function setBlockDone(date: ISODate, blockId: string, done: boolean
       const b = d.blocks.find((x) => x.id === blockId);
       if (b) b.done = done;
     }),
-    t && (t.status === 'done') !== done ? setTaskDone(t, done, { fromBlock: true }) : Promise.resolve(),
+    t && (t.status === 'done') !== done ? setTaskDone(t, done) : Promise.resolve(),
   ]);
 }
 
 /* ---------------------------------- tasks --------------------------------- */
 
-export async function setTaskDone(t: Task, done: boolean, opts: { fromBlock?: boolean } = {}): Promise<void> {
+export async function setTaskDone(t: Task, done: boolean): Promise<void> {
   await update('tasks', t.id, {
     status: done ? 'done' : 'todo',
     completedAt: done ? new Date().toISOString() : null,
     essential: done ? false : t.essential,
   });
-  if (opts.fromBlock) return;
   // Keep linked blocks (any day) in step.
   for (const d of snapshot.value.days) {
     if (d.deletedAt || !d.blocks.some((b) => b.taskId === t.id && b.done !== done)) continue;
@@ -185,25 +195,12 @@ export async function logHabit(h: Habit, date: ISODate, delta?: number): Promise
   if (log?.skipped && delta == null) next = 0;
   else if (target === 1 && delta == null) next = current >= 1 ? 0 : 1;
   else next = Math.max(0, Math.min(999, current + (delta ?? 1)));
-  if (log)
-    await update('habitLogs', log.id, {
-      value: next,
-      skipped: false,
-      deletedAt: next ? null : new Date().toISOString(),
-    });
-  else if (next) await create('habitLogs', { habitId: h.id, date, value: next });
+  await writeHabitDay(h, date, { value: next });
   return { completed: current < target && next >= target };
 }
 
 export async function setHabitSkipped(h: Habit, date: ISODate, skipped: boolean): Promise<void> {
-  const log = logOn(habitIndex.value, h, date);
-  if (log)
-    await update('habitLogs', log.id, {
-      skipped,
-      value: 0,
-      deletedAt: skipped ? null : new Date().toISOString(),
-    });
-  else if (skipped) await create('habitLogs', { habitId: h.id, date, value: 0, skipped: true });
+  await writeHabitDay(h, date, { value: 0, skipped });
 }
 
 /** Cadence kept in step with `days` so NEXT's own screens read the habit correctly. */

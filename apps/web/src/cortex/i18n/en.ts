@@ -339,6 +339,8 @@ export const cen: Record<CortexKey, string> = {
   'habits.moment': 'Time of day',
   'habits.days': 'Days',
   'habits.everyDay': 'Every day',
+  'habits.weeklyHint': 'Weekly habit: once a week, any day. Pick days to change it.',
+  'habits.weekly': 'Weekly',
   'habits.weekdays': 'Weekdays',
   'habits.weekend': 'Weekend',
   'habits.errorName': 'Give your habit a name.',

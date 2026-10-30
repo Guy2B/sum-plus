@@ -926,6 +926,7 @@ function NoteEditor({ note }: { note: Note }) {
         id="n-body"
         ref={area}
         class="cx-note-body"
+        maxLength={100000}
         value={body}
         placeholder={ct('note.bodyPlaceholder')}
         aria-label={ct('note.body')}

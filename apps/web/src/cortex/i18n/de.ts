@@ -342,6 +342,9 @@ export const cde: Record<CortexKey, string> = {
   'habits.moment': 'Tageszeit',
   'habits.days': 'Tage',
   'habits.everyDay': 'Jeden Tag',
+  'habits.weeklyHint':
+    'Wöchentliche Gewohnheit: einmal pro Woche, an einem beliebigen Tag. Wähle Tage, um das zu ändern.',
+  'habits.weekly': 'Wöchentlich',
   'habits.weekdays': 'Werktags',
   'habits.weekend': 'Wochenende',
   'habits.errorName': 'Gib deiner Gewohnheit einen Namen.',

@@ -199,7 +199,7 @@ function Detail({ h, ordered }: { h: Habit | null; ordered: Habit[] }) {
     const d = addDays(start, i);
     const k = isoDay(d);
     const v = valueOn(idx, h, k);
-    const since = h.createdAt.slice(0, 10);
+    const since = isoDay(new Date(h.createdAt));
     let c = 'miss';
     if (k > tk) c = 'fut';
     else if (k < since && !v) c = 'pre';

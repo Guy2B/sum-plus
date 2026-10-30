@@ -21,10 +21,13 @@ export function habitDays(h: Habit): number[] {
 
 export const habitTarget = (h: Habit): number => Math.max(1, Math.round(h.target ?? 1));
 
-/** Due that day (weekly habits are due any day of the week until done). */
+/** A once-a-week habit (any day of the week) rather than one tied to weekdays. */
+export const isWeekly = (h: Habit): boolean => h.cadence === 'weekly' && !h.days?.length;
+
+/** Due that day. Weekly habits surface on Mondays, as NEXT always did. */
 export function isHabitDue(h: Habit, day: Date): boolean {
   if (h.archived || h.deletedAt) return false;
-  if (h.cadence === 'weekly' && !h.days?.length) return true;
+  if (isWeekly(h)) return weekdayIndex(day) === 0;
   return habitDays(h).includes(weekdayIndex(day));
 }
 
@@ -57,15 +60,19 @@ export const skippedOn = (idx: HabitLogIndex, h: Habit, date: ISODate): boolean 
 export const doneOn = (idx: HabitLogIndex, h: Habit, date: ISODate): boolean =>
   valueOn(idx, h, date) >= habitTarget(h);
 
-/** First day the habit exists, as an ISO date. */
-const since = (h: Habit): ISODate => h.createdAt.slice(0, 10);
+/** First day the habit exists, in local time. */
+const since = (h: Habit): ISODate => isoDay(new Date(h.createdAt));
 
-/** Does this day count towards the habit (scheduled, not passed, not before it existed)? */
+/**
+ * Does this day count towards a day-based habit (scheduled, not passed, not
+ * before it existed)? Weekly habits are measured per week, never per day.
+ */
 function counts(idx: HabitLogIndex, h: Habit, day: Date): boolean {
+  if (isWeekly(h)) return false;
   const k = isoDay(day);
   if (skippedOn(idx, h, k)) return false;
   if (k < since(h) && valueOn(idx, h, k) === 0) return false;
-  return h.cadence === 'weekly' && !h.days?.length ? true : habitDays(h).includes(weekdayIndex(day));
+  return habitDays(h).includes(weekdayIndex(day));
 }
 
 /** Consecutive completed scheduled days ending today; an open today does not break it. */
@@ -95,9 +102,17 @@ function weeklyStreak(h: Habit, idx: HabitLogIndex, now: Date): number {
   return n;
 }
 
+/** First day with any record or the creation day, whichever is earlier (back-filled days count). */
+function firstDay(h: Habit, idx: HabitLogIndex): ISODate {
+  let first = since(h);
+  for (const l of idx.values()) if (l.habitId === h.id && l.date < first) first = l.date;
+  return first;
+}
+
 export function bestStreak(h: Habit, idx: HabitLogIndex, now: Date): number {
+  if (isWeekly(h)) return weeklyStreak(h, idx, now);
   const end = isoDay(now);
-  let day = new Date(`${since(h)}T12:00:00`);
+  let day = new Date(`${firstDay(h, idx)}T12:00:00`);
   let cur = 0;
   let best = 0;
   for (let i = 0; i < 5000 && isoDay(day) <= end; i++) {
@@ -140,8 +155,7 @@ export function habitsOnDay(habits: Habit[], idx: HabitLogIndex, day: Date): Day
   let due = 0;
   let done = 0;
   for (const h of habits) {
-    if (h.archived || h.deletedAt || !counts(idx, h, day) || !isHabitDue(h, day)) continue;
-    if (k < since(h) && valueOn(idx, h, k) === 0) continue;
+    if (h.archived || h.deletedAt || !counts(idx, h, day)) continue;
     due += 1;
     if (doneOn(idx, h, k)) done += 1;
   }
@@ -150,7 +164,7 @@ export function habitsOnDay(habits: Habit[], idx: HabitLogIndex, day: Date): Day
 
 /** Consecutive days where every due habit was completed (today counts once complete). */
 export function perfectDays(habits: Habit[], idx: HabitLogIndex, now: Date): number {
-  const live = habits.filter((h) => !h.archived && !h.deletedAt);
+  const live = habits.filter((h) => !h.archived && !h.deletedAt && !isWeekly(h));
   if (!live.length) return 0;
   const first = live.reduce((m, h) => (since(h) < m ? since(h) : m), isoDay(now));
   const today = isoDay(now);
@@ -165,4 +179,10 @@ export function perfectDays(habits: Habit[], idx: HabitLogIndex, now: Date): num
     else if (k !== today) break;
   }
   return n;
+}
+
+/** Weekly habits: done at least once in the Monday-to-Sunday week of `day`. */
+export function doneThisWeek(idx: HabitLogIndex, h: Habit, day: Date): boolean {
+  const monday = addDays(day, -weekdayIndex(day));
+  return [0, 1, 2, 3, 4, 5, 6].some((d) => doneOn(idx, h, isoDay(addDays(monday, d))));
 }
