@@ -13,7 +13,8 @@ import { t } from '../i18n';
 import { CortexApp } from './ui/App';
 import { ensureCortexLocale } from './i18n';
 import { flushDays, flushNotes } from './data';
-import { prepareWorkspace } from './starter';
+import { prepareWorkspace, relocalizeStarters } from './starter';
+import { effect } from '@preact/signals';
 
 async function boot() {
   installGlobalHandlers();
@@ -26,7 +27,17 @@ async function boot() {
     toast(t('error.storage'), 'bad');
   }
   void initAuth();
-  void prepareWorkspace().catch((err: unknown) => reportError(err, { where: 'cortex-starters' }));
+  void prepareWorkspace()
+    .catch((err: unknown) => reportError(err, { where: 'cortex-starters' }))
+    .finally(() =>
+      // Starter habits follow the language (now and after every switch).
+      effect(() => {
+        const l = settings.value.locale;
+        void ensureCortexLocale(l)
+          .then(() => relocalizeStarters())
+          .catch(() => undefined);
+      }),
+    );
   // Never lose the last keystrokes of a note when the tab goes away.
   const flushAll = () => {
     flushNotes();
