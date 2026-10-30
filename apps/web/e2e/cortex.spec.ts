@@ -67,6 +67,58 @@ test.describe('Cortex', () => {
     expect(errors).toEqual([]);
   });
 
+  test('dictation: speak a note, it is saved with its first words as title', async ({ page }) => {
+    const errors = watchErrors(page);
+    // A stand-in for the browser's speech recognition.
+    await page.addInitScript(() => {
+      class FakeRecognition {
+        lang = '';
+        continuous = false;
+        interimResults = false;
+        onresult: ((e: unknown) => void) | null = null;
+        onerror: ((e: unknown) => void) | null = null;
+        onend: (() => void) | null = null;
+        start() {
+          (window as unknown as { __rec: FakeRecognition }).__rec = this;
+        }
+        stop() {
+          this.onend?.();
+        }
+        say(text: string) {
+          this.onresult?.({ resultIndex: 0, results: [{ isFinal: true, 0: { transcript: text } }] });
+        }
+      }
+      const w = window as unknown as Record<string, unknown>;
+      w.SpeechRecognition = FakeRecognition;
+      w.webkitSpeechRecognition = FakeRecognition;
+    });
+    await page.goto('/cortex.html#notes');
+    await page.locator('.page-actions').getByRole('button', { name: 'Dicter une note' }).click();
+    await expect(page.locator('#n-body')).toBeVisible();
+    await page.evaluate(() =>
+      (window as unknown as { __rec: { say(t: string): void } }).__rec.say(
+        'idée de chapitre sur le port de Douala',
+      ),
+    );
+    await expect(page.locator('#n-body')).toHaveValue('Idée de chapitre sur le port de Douala.');
+    await expect(page.locator('#n-title')).toHaveValue('Idée de chapitre sur le port de Douala');
+    await page.locator('.cx-note-bar').getByRole('button', { name: 'Arrêter la dictée' }).click();
+    await expect(
+      page.locator('.cx-note-bar').getByRole('button', { name: 'Dicter', exact: true }),
+    ).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+
+  test('the four NEXT languages are one tap away', async ({ page }) => {
+    await page.goto('/cortex.html');
+    await page.getByRole('button', { name: 'Deutsch' }).click();
+    await expect(page.getByRole('heading', { name: 'Willkommen bei Cortex' })).toBeVisible();
+    await page.getByRole('button', { name: 'Español' }).click();
+    await expect(page.getByRole('heading', { name: 'Te damos la bienvenida a Cortex' })).toBeVisible();
+    await page.getByRole('button', { name: 'Français' }).click();
+    await expect(page.getByRole('heading', { name: 'Bienvenue dans Cortex' })).toBeVisible();
+  });
+
   test('every view renders without errors or serious accessibility issues', async ({ page }) => {
     const errors = watchErrors(page);
     await page.goto('/cortex.html');

@@ -36,3 +36,12 @@ describe('Cortex first opening', () => {
     expect(live()).toEqual([]);
   });
 });
+
+describe('dictation into notes', () => {
+  it('turns each spoken phrase into a sentence appended to the note', async () => {
+    const { sentence } = await import('../src/cortex/data');
+    expect(sentence('  appeler le fournisseur demain ')).toBe('Appeler le fournisseur demain.');
+    expect(sentence('est-ce que ça marche ?')).toBe('Est-ce que ça marche ?');
+    expect(sentence('   ')).toBe('');
+  });
+});

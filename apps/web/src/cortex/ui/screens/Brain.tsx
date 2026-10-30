@@ -19,6 +19,7 @@ import {
   wordCount,
 } from '../../model';
 import {
+  appendToNote,
   createNote,
   editNote,
   flushNotes,
@@ -26,8 +27,17 @@ import {
   liveNotes,
   liveProjects,
   liveTasks,
+  noteDictated,
   today,
 } from '../../data';
+import {
+  dictation,
+  isDictating,
+  retarget,
+  speechSupported,
+  startDictation,
+  stopDictation,
+} from '../../voice';
 import { go, href, route } from '../../router';
 import { AddTask, Kpi, Panel, TaskRow, projectColor } from '../parts';
 import { captureFocus, sheet } from '../state';
@@ -735,6 +745,37 @@ async function newNote(fields: Partial<Note> = {}): Promise<void> {
   setTimeout(() => document.getElementById(fields.title ? 'n-body' : 'n-title')?.focus(), 60);
 }
 
+/**
+ * Speak a new note: listening starts on the click itself (browsers require a
+ * gesture), the note is created meanwhile and receives every phrase.
+ */
+function dictateNote(fields: Partial<Note> = {}): void {
+  if (!withinLimit('notes', liveNotes.value.length, entitlement.value)) {
+    openUpgrade('notes');
+    return;
+  }
+  let id: string | null = null;
+  const waiting: string[] = [];
+  const ok = startDictation('new-note', (text) => (id ? appendToNote(id, text) : waiting.push(text)));
+  if (!ok) return;
+  void createNote(fields).then((n) => {
+    id = n.id;
+    retarget(n.id);
+    waiting.forEach((t) => appendToNote(n.id, t));
+    go('notes', n.id);
+  });
+}
+
+function DictateButton({ fields }: { fields?: Partial<Note> }) {
+  if (!speechSupported()) return null;
+  return (
+    <button type="button" class="btn btn-secondary btn-md" onClick={() => dictateNote(fields)}>
+      <Icon name="mic" size={16} />
+      <span>{ct('voice.dictateNote')}</span>
+    </button>
+  );
+}
+
 function NoteList({ notes, current }: { notes: Note[]; current?: string | null }) {
   return (
     <ul class="cx-notelist">
@@ -788,6 +829,7 @@ export function Notes() {
           </p>
         </div>
         <div class="page-actions">
+          <DictateButton />
           <button type="button" class="btn btn-primary btn-md" onClick={() => void newNote()}>
             <Icon name="plus" size={16} />
             <span>{ct('note.new')}</span>
@@ -822,9 +864,12 @@ function NoNote() {
     <div class="cx-emptybox">
       <Icon name="note" size={28} />
       <p class="muted">{ct('notes.pick')}</p>
-      <button type="button" class="btn btn-primary btn-md" onClick={() => void newNote()}>
-        {ct('note.new')}
-      </button>
+      <div class="cx-row">
+        <button type="button" class="btn btn-primary btn-md" onClick={() => void newNote()}>
+          {ct('note.new')}
+        </button>
+        <DictateButton />
+      </div>
     </div>
   );
 }
@@ -834,6 +879,16 @@ function NoteEditor({ note }: { note: Note }) {
   const [body, setBody] = useState(note.body);
   const [tags, setTags] = useState(note.tags.map((t) => `#${t}`).join(' '));
   const area = useRef<HTMLTextAreaElement>(null);
+  // Dictated words show up at once, wherever the dictation was started.
+  const dictated = noteDictated.value;
+  useEffect(() => {
+    if (!dictated || dictated.id !== note.id) return;
+    setBody(dictated.body);
+    setTitle(dictated.title);
+  }, [dictated, note.id]);
+  const listening = isDictating(note.id);
+  // Leaving the note ends its dictation.
+  useEffect(() => () => (isDictating(note.id) ? stopDictation() : undefined), [note.id]);
   // Grow the writing area with its content.
   useEffect(() => {
     const el = area.current;
@@ -883,6 +938,20 @@ function NoteEditor({ note }: { note: Note }) {
         </select>
         <span class="cx-sp" />
         <span class="num muted cx-small">{ct('note.words', { count: wordCount(body) })}</span>
+        {speechSupported() && (
+          <button
+            type="button"
+            class={`icon-btn cx-mic ${listening ? 'on' : ''}`}
+            aria-pressed={listening}
+            aria-label={ct(listening ? 'voice.stop' : 'voice.dictate')}
+            title={ct(listening ? 'voice.stop' : 'voice.dictate')}
+            onClick={() =>
+              listening ? stopDictation() : startDictation(note.id, (t) => appendToNote(note.id, t))
+            }
+          >
+            <Icon name={listening ? 'stopSquare' : 'mic'} />
+          </button>
+        )}
         <button
           type="button"
           class={`icon-btn ${note.pinned ? 'on' : ''}`}
@@ -936,6 +1005,12 @@ function NoteEditor({ note }: { note: Note }) {
           editNote(note.id, { body: v });
         }}
       />
+      {listening && (
+        <p class="cx-interim" aria-live="polite">
+          <span class="cx-rec" aria-hidden="true" />
+          {dictation.value?.interim || ct('voice.listening')}
+        </p>
+      )}
       <input
         id="n-tags"
         class="cx-note-tags"
