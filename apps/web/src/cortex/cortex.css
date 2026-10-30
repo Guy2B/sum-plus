@@ -2678,3 +2678,69 @@ button.cx-rv-row:disabled {
     transition: none !important;
   }
 }
+
+/* Dictation */
+.cx-mic.on {
+  color: var(--bad, #c0392b);
+}
+.cx-mic.on svg {
+  animation: cx-pulse 1.2s ease-in-out infinite;
+}
+.cx-interim {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--text-2);
+  font-style: italic;
+}
+.cx-rec {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--bad, #c0392b);
+  animation: cx-pulse 1.2s ease-in-out infinite;
+}
+@keyframes cx-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cx-mic.on svg,
+  .cx-rec {
+    animation: none;
+  }
+}
+
+/* Language */
+.cx-lang {
+  display: flex;
+  gap: 2px;
+  padding: 4px 8px;
+}
+.cx-lang button {
+  flex: 1;
+  border: 1px solid transparent;
+  background: none;
+  border-radius: 6px;
+  padding: 3px 0;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  cursor: pointer;
+}
+.cx-lang button:hover {
+  color: var(--text);
+}
+.cx-lang button[aria-pressed='true'] {
+  color: var(--text);
+  border-color: var(--border);
+  background: var(--surface);
+}

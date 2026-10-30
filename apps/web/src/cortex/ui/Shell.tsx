@@ -5,14 +5,16 @@
  */
 import type { ComponentChildren } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { authUser, entitlement, settings, syncState } from '../../data/store';
+import { authUser, entitlement, settings, syncState, updateSettings } from '../../data/store';
+import type { Locale } from '../../domain/types';
 import { isPro, withinLimit } from '../../domain/entitlements';
 import { ByAlgbr } from '../../ui/by-algbr';
+import { dictation, isDictating, speechSupported, startDictation, stopDictation } from '../voice';
 import { Icon } from '../../ui/icons';
 import { ConfirmHost, ToastHost, toast } from '../../ui/components';
 import { SidebarPro, UpgradeModal } from '../../ui/pro';
 import { t } from '../../i18n';
-import { ct, type CortexKey } from '../i18n';
+import { ct, ensureCortexLocale, type CortexKey } from '../i18n';
 import {
   captureTask,
   createNote,
@@ -276,6 +278,7 @@ export function Shell({ children }: { children: ComponentChildren }) {
             <Icon name="external" size={14} />
           </a>
           <SyncLine />
+          <LangSwitch />
           <a href="app.html#account" class="account-chip">
             <span class="avatar" aria-hidden="true">
               {(s.name || user?.email || 'Σ').slice(0, 1).toUpperCase()}
@@ -348,6 +351,42 @@ export function Shell({ children }: { children: ComponentChildren }) {
   );
 }
 
+/* -------------------------------- language -------------------------------- */
+
+/** NEXT's four languages, one tap away; the choice is shared with NEXT. */
+const LANGS: [Locale, string, string][] = [
+  ['fr', 'FR', 'Français'],
+  ['en', 'EN', 'English'],
+  ['de', 'DE', 'Deutsch'],
+  ['es', 'ES', 'Español'],
+];
+
+function LangSwitch() {
+  const cur = settings.value.locale;
+  return (
+    <div class="cx-lang" role="group" aria-label={ct('lang.label')}>
+      {LANGS.map(([l, short, name]) => (
+        <button
+          type="button"
+          key={l}
+          lang={l}
+          aria-pressed={cur === l}
+          aria-label={name}
+          title={name}
+          onClick={() => {
+            if (cur === l) return;
+            void ensureCortexLocale(l)
+              .catch(() => undefined)
+              .then(() => updateSettings({ locale: l }));
+          }}
+        >
+          {short}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /* --------------------------------- capture -------------------------------- */
 
 function CaptureBar() {
@@ -357,7 +396,9 @@ function CaptureBar() {
     if (captureFocus.value) input.current?.focus();
   }, [captureFocus.value]);
   const inProject = route.value.id === 'project' ? route.value.param : null;
+  const listening = isDictating('capture');
   const submit = async () => {
+    if (isDictating('capture')) stopDictation();
     const v = text.trim();
     if (!v) return;
     const kind = captureKind.value;
@@ -394,13 +435,35 @@ function CaptureBar() {
         value={text}
         maxLength={300}
         autoComplete="off"
-        placeholder={ct(`capture.placeholder.${captureKind.value}` as CortexKey)}
+        placeholder={
+          listening
+            ? dictation.value?.interim || ct('voice.listening')
+            : ct(`capture.placeholder.${captureKind.value}` as CortexKey)
+        }
         aria-label={ct('capture.label')}
         onInput={(e) => setText((e.target as HTMLInputElement).value)}
         onKeyDown={(e) => {
           if (e.key === 'Escape') (e.target as HTMLInputElement).blur();
         }}
       />
+      {speechSupported() && (
+        <button
+          type="button"
+          class={`icon-btn cx-mic ${listening ? 'on' : ''}`}
+          aria-pressed={listening}
+          aria-label={ct(listening ? 'voice.stop' : 'voice.dictate')}
+          title={ct(listening ? 'voice.stop' : 'voice.dictate')}
+          onClick={() => {
+            if (listening) return stopDictation();
+            input.current?.focus();
+            startDictation('capture', (t) =>
+              setText((cur) => `${cur.trim()} ${t.trim()}`.trim().slice(0, 300)),
+            );
+          }}
+        >
+          <Icon name={listening ? 'stopSquare' : 'mic'} size={18} />
+        </button>
+      )}
       <div class="cx-ktype" role="group" aria-label={ct('capture.type')}>
         {(['task', 'note', 'idea'] as const).map((k) => (
           <button

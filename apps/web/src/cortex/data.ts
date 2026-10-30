@@ -241,6 +241,46 @@ export function editNote(id: string, patch: Partial<Note>, debounce = 500): void
   );
 }
 
+/** A dictated chunk as a sentence: capital first letter, closing punctuation. */
+export function sentence(text: string): string {
+  const t = text.trim().replace(/\s+/g, ' ');
+  if (!t) return '';
+  const cap = t.charAt(0).toLocaleUpperCase() + t.slice(1);
+  return /[.!?…:;]$/.test(cap) ? cap : `${cap}.`;
+}
+
+/** Last text dictated into a note, so an open editor shows it at once. */
+export const noteDictated = signal<{ id: string; title: string; body: string; seq: number } | null>(null);
+
+/**
+ * Appends dictated text to a note (after what is already typed, pending
+ * edits included). An untitled note takes its first words as title.
+ */
+export function appendToNote(id: string, text: string): void {
+  const t = sentence(text);
+  if (!t) return;
+  const saved = snapshot.value.notes.find((n) => n.id === id);
+  const pend = notePending.get(id);
+  const body = pend?.body ?? saved?.body ?? '';
+  const title = pend?.title ?? saved?.title ?? '';
+  const nextBody = body.trim() ? `${body.replace(/[ \t]+$/, '')}${/\n$/.test(body) ? '' : ' '}${t}` : t;
+  const patch: Partial<Note> = { body: nextBody };
+  if (!title.trim())
+    patch.title = t
+      .split(/\s+/)
+      .slice(0, 8)
+      .join(' ')
+      .replace(/[.,;:!?]+$/, '')
+      .slice(0, 120);
+  editNote(id, patch);
+  noteDictated.value = {
+    id,
+    title: patch.title ?? title,
+    body: nextBody,
+    seq: (noteDictated.value?.seq ?? 0) + 1,
+  };
+}
+
 export function flushNotes(): void {
   for (const [id, p] of notePending) {
     clearTimeout(noteTimers.get(id));
