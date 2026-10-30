@@ -43,6 +43,11 @@ test.describe('Cortex', () => {
       .click();
     const row = page.locator('.cx-task', { hasText: 'Envoyer le devis Müller' });
     await row.getByRole('button', { name: 'Planifier' }).click();
+    // The plan dialog pre-fills day, first free time, duration and kind: one click confirms.
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByText('Envoyer le devis Müller')).toBeVisible();
+    await expect(dialog.getByRole('button', { name: '30 min' })).toHaveAttribute('aria-pressed', 'true');
+    await dialog.getByRole('button', { name: /^Planifier à / }).click();
     const blockEl = page.locator('.cx-bk', { hasText: 'Envoyer le devis Müller' });
     await expect(blockEl).toBeVisible();
     await blockEl.getByRole('button', { name: 'Terminé' }).click();
@@ -107,6 +112,16 @@ test.describe('Cortex', () => {
       page.locator('.cx-note-bar').getByRole('button', { name: 'Dicter', exact: true }),
     ).toBeVisible();
     expect(errors).toEqual([]);
+  });
+
+  test('the planner explains itself until the person has planned once', async ({ page }) => {
+    await page.goto('/cortex.html#planning');
+    const guide = page.getByRole('heading', { name: 'Planifier votre journée en 3 gestes' });
+    await expect(guide).toBeVisible();
+    await page.getByRole('button', { name: 'J’ai compris' }).click();
+    await expect(guide).toBeHidden();
+    await page.getByRole('button', { name: 'Comment planifier ?' }).click();
+    await expect(guide).toBeVisible();
   });
 
   test('the four NEXT languages are one tap away', async ({ page }) => {

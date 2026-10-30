@@ -6,10 +6,10 @@ import { can, withinLimit } from '../../domain/entitlements';
 import { Modal, confirmDialog, toast } from '../../ui/components';
 import { Icon } from '../../ui/icons';
 import { ct, fmtDuration, type CortexKey } from '../i18n';
-import { CATEGORIES, freeSlot, hhmm, parseHHMM, shiftDay, sortBlocks } from '../model';
+import { CATEGORIES, busyOn, freeSlot, hhmm, parseHHMM, shiftDay, sortBlocks } from '../model';
 import { cadenceFor, dayWindow, editDay, getDay, liveHabits, liveProjects, newBlockId, today } from '../data';
-import { catVar, projectColor } from './parts';
-import { sheet } from './state';
+import { catVar, dayTitle, dateLong, defaultCategory, planTask, projectColor } from './parts';
+import { planDay, sheet } from './state';
 import { openUpgrade } from './pro';
 import { go } from '../router';
 import { sigmaPlan } from './Timeline';
@@ -30,6 +30,8 @@ export function Sheets() {
       return <ProjectSheet key={s.id ?? 'new'} id={s.id} area={s.area} />;
     case 'dayOptions':
       return <DayOptions date={s.date} />;
+    case 'plan':
+      return <PlanSheet key={`${s.date}-${s.taskId ?? 'pick'}`} date={s.date} taskId={s.taskId} />;
   }
 }
 
@@ -892,4 +894,263 @@ export function suggestStart(date: ISODate, len = 60): number | null {
   const now = new Date();
   const from = date === today.value ? Math.max(win.start, now.getHours() * 60 + now.getMinutes()) : win.start;
   return freeSlot(getDay(date).blocks, len, from, win.end);
+}
+
+/* ---------------------------------- plan ---------------------------------- */
+
+const DURATIONS = [15, 30, 45, 60, 90, 120];
+
+/** Up to `n` free starts for a block of `len` minutes, spaced through the day. */
+function freeStarts(date: ISODate, len: number, n = 4): number[] {
+  const win = dayWindow.value;
+  const now = new Date();
+  let from = date === today.value ? Math.max(win.start, now.getHours() * 60 + now.getMinutes()) : win.start;
+  const busy = busyOn(getDay(date), snapshot.value.events, date);
+  const out: number[] = [];
+  while (out.length < n) {
+    const s = freeSlot(busy, len, from, win.end);
+    if (s == null) break;
+    out.push(s);
+    from = s + Math.max(len, 60);
+  }
+  return out;
+}
+
+/**
+ * "Plan": what, which day, what time, how long, what kind. Every choice is
+ * pre-filled with the obvious answer, so one click is enough.
+ */
+function PlanSheet({ date: initial, taskId }: { date: ISODate; taskId: string | null }) {
+  const [id, setId] = useState<string | null>(taskId);
+  const t = id ? snapshot.value.tasks.find((x) => x.id === id && !x.deletedAt) : null;
+  return (
+    <Modal open onClose={close} title={t ? ct('planSheet.titleTask') : ct('planSheet.choose')}>
+      {t ? (
+        <PlanTask t={t} initial={initial} onBack={taskId ? null : () => setId(null)} />
+      ) : (
+        <PlanPick date={initial} onPick={setId} />
+      )}
+    </Modal>
+  );
+}
+
+function PlanPick({ date, onPick }: { date: ISODate; onPick: (id: string) => void }) {
+  const placed = new Set(
+    getDay(date)
+      .blocks.map((b) => b.taskId)
+      .filter(Boolean),
+  );
+  const open = snapshot.value.tasks
+    .filter((x) => !x.deletedAt && x.status !== 'done' && !placed.has(x.id))
+    .sort(
+      (a, b) =>
+        Number(b.scheduledFor === 'today') - Number(a.scheduledFor === 'today') ||
+        (a.dueDate ?? '9999').localeCompare(b.dueDate ?? '9999'),
+    )
+    .slice(0, 8);
+  const freeBlock = () => {
+    const at = suggestStart(date, 60) ?? dayWindow.value.start;
+    sheet.value = { kind: 'block', date, block: null, start: at, end: at + 60 };
+  };
+  return (
+    <div class="cx-form">
+      <p class="cx-label">{ct('planSheet.aTask')}</p>
+      {open.length ? (
+        <ul class="cx-pick">
+          {open.map((x) => (
+            <li key={x.id}>
+              <button type="button" onClick={() => onPick(x.id)}>
+                <b>{x.title}</b>
+                <span>
+                  {fmtDuration(x.estimateMinutes || 30)}
+                  {x.dueDate ? ` · ${dateLong(x.dueDate.slice(0, 10) as ISODate)}` : ''}
+                </span>
+                <Icon name="chevronRight" size={16} />
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="cx-empty">{ct('planSheet.noTask')}</p>
+      )}
+      <p class="cx-label">{ct('planSheet.other')}</p>
+      <ul class="cx-pick">
+        <li>
+          <button type="button" onClick={freeBlock}>
+            <b>{ct('planSheet.freeBlock')}</b>
+            <span>{ct('planSheet.freeBlockHint')}</span>
+            <Icon name="plus" size={16} />
+          </button>
+        </li>
+        {date === today.value && (
+          <li>
+            <button
+              type="button"
+              onClick={() => {
+                close();
+                void sigmaPlan(date);
+              }}
+            >
+              <b>{ct('sigma.planDay')}</b>
+              <span>{ct('planSheet.sigmaHint')}</span>
+              <Icon name="sigma" size={16} />
+            </button>
+          </li>
+        )}
+        <li>
+          <button type="button" onClick={() => (sheet.value = { kind: 'dayOptions', date })}>
+            <b>{ct('plan.routineOrCopy')}</b>
+            <span>{ct('planSheet.routineHint')}</span>
+            <Icon name="repeat" size={16} />
+          </button>
+        </li>
+      </ul>
+    </div>
+  );
+}
+
+function PlanTask({ t, initial, onBack }: { t: Task; initial: ISODate; onBack: (() => void) | null }) {
+  const tk = today.value;
+  const [date, setDate] = useState<ISODate>(initial < tk ? tk : initial);
+  const [len, setLen] = useState(t.estimateMinutes || 30);
+  const [cat, setCat] = useState<BlockCategory>(defaultCategory(t));
+  const slots = freeStarts(date, len);
+  const [picked, setPicked] = useState<number | null>(null);
+  const [custom, setCustom] = useState('');
+  const customMin = custom ? parseHHMM(custom) : null;
+  // A picked slot that no longer fits (other day, longer block) falls back to the first free one.
+  const start = customMin ?? (picked != null && slots.includes(picked) ? picked : (slots[0] ?? null));
+  const days: [ISODate, string][] = [
+    [tk, ct('date.today')],
+    [shiftDay(tk, 1), ct('date.tomorrow')],
+    [shiftDay(tk, 2), dayTitle(shiftDay(tk, 2))],
+  ];
+  const save = async () => {
+    if (start == null) return;
+    await planTask(t, date, start, { len, category: cat });
+    planDay.value = date;
+    close();
+  };
+  return (
+    <form
+      class="cx-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        void save();
+      }}
+    >
+      <p class="cx-plan-what">
+        <b>{t.title}</b>
+        {onBack && (
+          <button type="button" class="btn btn-ghost btn-sm" onClick={onBack}>
+            {ct('planSheet.back')}
+          </button>
+        )}
+      </p>
+
+      <div class="field">
+        <span class="cx-label">{ct('planSheet.when')}</span>
+        <div class="cx-chips cx-chips-pick" role="group" aria-label={ct('planSheet.when')}>
+          {days.map(([d, l]) => (
+            <button type="button" key={d} aria-pressed={date === d} onClick={() => setDate(d)}>
+              {l}
+            </button>
+          ))}
+          <label class="cx-chip-input">
+            <span class="sr-only">{ct('planSheet.otherDay')}</span>
+            <input
+              type="date"
+              min={tk}
+              value={date}
+              aria-label={ct('planSheet.otherDay')}
+              onInput={(e) => {
+                const v = (e.target as HTMLInputElement).value;
+                if (v) setDate(v as ISODate);
+              }}
+            />
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="cx-label">{ct('planSheet.at')}</span>
+        {slots.length ? (
+          <div class="cx-chips cx-chips-pick" role="group" aria-label={ct('planSheet.at')}>
+            {slots.map((m, i) => (
+              <button
+                type="button"
+                key={m}
+                aria-pressed={!custom && start === m}
+                onClick={() => {
+                  setCustom('');
+                  setPicked(m);
+                }}
+              >
+                {hhmm(m)}
+                {i === 0 && <small>{ct('planSheet.firstFree')}</small>}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p class="cx-empty">{ct('planSheet.noSlotDay')}</p>
+        )}
+        <label class="cx-inline">
+          <span>{ct('planSheet.otherTime')}</span>
+          <input
+            type="time"
+            step={300}
+            value={custom}
+            onInput={(e) => setCustom((e.target as HTMLInputElement).value)}
+          />
+        </label>
+      </div>
+
+      <div class="field">
+        <span class="cx-label">{ct('planSheet.duration')}</span>
+        <div class="cx-chips cx-chips-pick" role="group" aria-label={ct('planSheet.duration')}>
+          {DURATIONS.map((m) => (
+            <button type="button" key={m} aria-pressed={len === m} onClick={() => setLen(m)}>
+              {fmtDuration(m)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="cx-label">{ct('block.category')}</span>
+        <div class="cx-cats">
+          {CATEGORIES.map((c) => (
+            <button
+              type="button"
+              key={c}
+              style={{ '--c': catVar(c) }}
+              aria-pressed={cat === c}
+              onClick={() => setCat(c)}
+            >
+              <i />
+              {ct(`cat.${c}` as CortexKey)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div class="cx-foot">
+        <span class="cx-plan-sum muted">
+          {start != null
+            ? ct('planSheet.summary', {
+                day: `${dayTitle(date)} ${dateLong(date)}`,
+                start: hhmm(start),
+                end: hhmm(Math.min(24 * 60, start + len)),
+              })
+            : ''}
+        </span>
+        <button type="button" class="btn btn-ghost btn-md" onClick={close}>
+          {ct('common.cancel')}
+        </button>
+        <button type="submit" class="btn btn-primary btn-md" disabled={start == null}>
+          {start != null ? ct('planSheet.confirm', { time: hhmm(start) }) : ct('task.plan')}
+        </button>
+      </div>
+    </form>
+  );
 }

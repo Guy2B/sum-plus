@@ -248,7 +248,11 @@ export function TaskRow({
       </button>
       <span class="cx-task-actions">
         {plan && !done && !bk && date && (
-          <button type="button" class="btn btn-secondary btn-sm" onClick={() => void planTask(t, date)}>
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            onClick={() => (sheet.value = { kind: 'plan', date, taskId: t.id })}
+          >
             {ct('task.plan')}
           </button>
         )}
@@ -275,32 +279,43 @@ async function toggleStar(t: Task) {
   });
 }
 
+/** Writing projects get writing blocks; everything else is focus time. */
+export function defaultCategory(t: Task): BlockCategory {
+  const p = t.projectId ? liveProjects.value.find((x) => x.id === t.projectId) : null;
+  return p?.area === 'writing' ? 'writing' : 'focus';
+}
+
 /** Places a task in the first free slot of the day (or at `start`). */
-export async function planTask(t: Task, date: ISODate, start?: number): Promise<void> {
+export async function planTask(
+  t: Task,
+  date: ISODate,
+  start?: number,
+  opts: { len?: number; category?: BlockCategory } = {},
+): Promise<void> {
   const d = getDay(date);
   const win = dayWindow.value;
-  const len = t.estimateMinutes || 30;
+  const len = opts.len ?? (t.estimateMinutes || 30);
   const from = date === today.value ? Math.max(win.start, minutesOfDay(clock.value)) : win.start;
   const s = start ?? freeSlot(busyOn(d, snapshot.value.events, date), len, from, win.end);
   if (s == null) {
     toast(ct('plan.noSlot'), 'info');
     return;
   }
-  const p = t.projectId ? liveProjects.value.find((x) => x.id === t.projectId) : null;
   await editDay(date, (x) => {
     x.blocks.push({
       id: `b${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
       title: t.title,
       start: s,
       end: Math.min(24 * 60, s + len),
-      category: p?.area === 'writing' ? 'writing' : 'focus',
+      category: opts.category ?? defaultCategory(t),
       done: false,
       taskId: t.id,
     });
   });
-  if (t.status === 'inbox') {
-    await update('tasks', t.id, { status: 'todo' });
-  }
+  const patch: Partial<Task> = {};
+  if (t.status === 'inbox') patch.status = 'todo';
+  if (opts.len && opts.len !== t.estimateMinutes) patch.estimateMinutes = opts.len;
+  if (Object.keys(patch).length) await update('tasks', t.id, patch);
   toast(ct('plan.placedAt', { time: hhmm(s) }), 'good');
 }
 
@@ -901,7 +916,11 @@ export function NowCard() {
       </div>
       <div class="cx-now-actions">
         {!d.blocks.length && (
-          <button type="button" class="btn btn-secondary btn-md" onClick={() => go('planning')}>
+          <button
+            type="button"
+            class="btn btn-secondary btn-md"
+            onClick={() => (sheet.value = { kind: 'plan', date: today.value, taskId: null })}
+          >
             {ct('now.plan')}
           </button>
         )}

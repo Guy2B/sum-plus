@@ -610,6 +610,12 @@ button.cx-kpi:hover {
   font: 500 1.2rem var(--serif);
   color: var(--accent);
 }
+.cx-steps-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.cx-plan-guide .cx-hint {
+  margin: 0;
+}
 .cx-steps .done button::before {
   content: '\2713';
   font-family: inherit;
@@ -2634,6 +2640,9 @@ button.cx-rv-row:disabled {
   .cx-welcome-head > .btn {
     align-self: flex-end;
   }
+  .cx-steps-3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 @media (max-width: 620px) {
   .cx-now {
@@ -2743,4 +2752,95 @@ button.cx-rv-row:disabled {
   color: var(--text);
   border-color: var(--border);
   background: var(--surface);
+}
+
+/* Plan sheet */
+.cx-pick {
+  list-style: none;
+  margin: 0 0 6px;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.cx-pick button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  column-gap: 12px;
+  align-items: center;
+  text-align: left;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.cx-pick button:hover,
+.cx-pick button:focus-visible {
+  border-color: var(--border-strong);
+  background: var(--accent-soft);
+}
+.cx-pick b {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cx-pick span {
+  grid-row: 2;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.cx-pick svg {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  color: var(--muted);
+}
+.cx-plan-what {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+}
+.cx-chips-pick button[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+  font-weight: 600;
+}
+.cx-chips-pick button small {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+.cx-chip-input input:not(#_) {
+  min-height: 0;
+  height: 100%;
+  padding: 6px 8px;
+  font-size: 0.85rem;
+}
+.cx-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.cx-inline input:not(#_) {
+  width: auto;
+  min-height: 0;
+  padding: 6px 8px;
+}
+.cx-plan-sum {
+  margin-right: auto;
+  font-size: 0.85rem;
 }

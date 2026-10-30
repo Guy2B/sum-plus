@@ -1,5 +1,7 @@
 /** Planning: priorities, tasks to place, the timeline and the evening review of any day. */
 import { useEffect } from 'preact/hooks';
+import { signal } from '@preact/signals';
+import { snapshot } from '../../../data/store';
 import type { BlockCategory } from '../../../domain/types';
 import { fmtDate } from '../../../i18n';
 import { Icon } from '../../../ui/icons';
@@ -19,7 +21,7 @@ import {
   catVar,
   dayTitle,
 } from '../parts';
-import { Timeline } from '../Timeline';
+import { Timeline, sigmaPlan } from '../Timeline';
 import { focusBlock, planDay, sheet } from '../state';
 import { suggestStart } from '../sheets';
 import { quickFocus } from '../parts';
@@ -96,6 +98,15 @@ export function Planning() {
         <div class="page-actions">
           <button
             type="button"
+            class="btn btn-ghost btn-md"
+            aria-expanded={guideShown()}
+            onClick={() => (guideShown() ? hideGuide() : (guideOpen.value = true))}
+          >
+            <Icon name="help" size={16} />
+            <span>{ct('planGuide.help')}</span>
+          </button>
+          <button
+            type="button"
             class="icon-btn"
             aria-label={ct('plan.prev')}
             onClick={() => (planDay.value = shiftDay(k, -1))}
@@ -120,6 +131,8 @@ export function Planning() {
           </button>
         </div>
       </header>
+
+      {guideShown() && <PlanGuide date={k} touch={!hover} />}
 
       <WeekStrip
         date={k}
@@ -181,7 +194,7 @@ export function Planning() {
       </div>
 
       <div class="cx-plan">
-        <div class="cx-plan-side">
+        <div class="cx-plan-side" id="cx-plan-side">
           <PrioritiesPanel date={k} />
           <Panel title={ct('plan.toPlan')} count={toPlan.length}>
             {toPlan.length ? (
@@ -221,7 +234,7 @@ export function Planning() {
           <EveningReview date={k} />
         </div>
         <section class="card cx-panel cx-plan-tl" aria-labelledby="tl-t">
-          <div class="card-head">
+          <div class="card-head" id="cx-tl">
             <h2 id="tl-t">{ct('plan.timeline')}</h2>
             <div class="card-actions">
               <button type="button" class="btn btn-primary btn-sm" onClick={newBlock}>
@@ -243,5 +256,83 @@ export function Planning() {
         </section>
       </div>
     </div>
+  );
+}
+
+/* ---------------------------------- guide --------------------------------- */
+
+const GUIDE_KEY = 'cortex:plan-guide-hidden';
+function readHidden(): boolean {
+  try {
+    return localStorage.getItem(GUIDE_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+const guideHidden = signal(readHidden());
+/** Opened on demand with "How to plan?", even after it was dismissed. */
+const guideOpen = signal(false);
+
+/** Shown until the person has planned once or dismisses it; reopened from the header. */
+function guideShown(): boolean {
+  if (guideOpen.value) return true;
+  if (guideHidden.value) return false;
+  return !snapshot.value.days.some((d) => !d.deletedAt && d.blocks.length > 0);
+}
+
+function hideGuide() {
+  guideOpen.value = false;
+  guideHidden.value = true;
+  try {
+    localStorage.setItem(GUIDE_KEY, '1');
+  } catch {
+    /* private mode: hidden for this session only */
+  }
+}
+
+const scrollTo = (id: string) =>
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+/** How planning works, in three gestures, each one doable from here. */
+function PlanGuide({ date, touch }: { date: string; touch: boolean }) {
+  const steps: { title: CortexKey; hint: CortexKey; go: () => void }[] = [
+    { title: 'planGuide.s1', hint: 'planGuide.s1Hint', go: () => scrollTo('cx-plan-side') },
+    {
+      title: 'planGuide.s2',
+      hint: touch ? 'planGuide.s2HintTouch' : 'planGuide.s2HintMouse',
+      go: () => scrollTo('cx-tl'),
+    },
+    {
+      title: 'planGuide.s3',
+      hint: 'planGuide.s3Hint',
+      go: () => {
+        if (date !== today.value) planDay.value = today.value;
+        void sigmaPlan(today.value).then(() => scrollTo('cx-tl'));
+      },
+    },
+  ];
+  return (
+    <section class="card cx-welcome cx-plan-guide" aria-labelledby="cx-pg-t">
+      <div class="cx-welcome-head">
+        <div>
+          <h2 id="cx-pg-t">{ct('planGuide.title')}</h2>
+          <p class="muted">{ct('planGuide.body')}</p>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" onClick={hideGuide}>
+          {ct('planGuide.hide')}
+        </button>
+      </div>
+      <ol class="cx-steps cx-steps-3">
+        {steps.map((st) => (
+          <li key={st.title}>
+            <button type="button" onClick={st.go}>
+              <b>{ct(st.title)}</b>
+              <span>{ct(st.hint)}</span>
+            </button>
+          </li>
+        ))}
+      </ol>
+      <p class="cx-hint">{ct('planGuide.after')}</p>
+    </section>
   );
 }
