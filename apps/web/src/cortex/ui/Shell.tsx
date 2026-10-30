@@ -261,6 +261,17 @@ export function Shell({ children }: { children: ComponentChildren }) {
             <span>{ct('search.title')}</span>
             <kbd class="hide-sm">Ctrl K</kbd>
           </button>
+          <button
+            type="button"
+            class="sidebar-action"
+            onClick={() => {
+              drawerOpen.value = false;
+              sheet.value = { kind: 'import' };
+            }}
+          >
+            <Icon name="download" size={18} />
+            <span>{ct('import.action')}</span>
+          </button>
         </div>
         <nav class="nav" aria-label={ct('nav.label')}>
           <NavGroup items={MAIN} />

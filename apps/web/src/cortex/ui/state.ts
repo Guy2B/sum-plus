@@ -17,7 +17,8 @@ export type Sheet =
   | { kind: 'habit'; id: string | null }
   | { kind: 'project'; id: string | null; area?: 'pro' | 'writing' | 'personal' }
   | { kind: 'dayOptions'; date: ISODate }
-  | { kind: 'plan'; date: ISODate; taskId: string | null };
+  | { kind: 'plan'; date: ISODate; taskId: string | null }
+  | { kind: 'import'; tab?: 'message' | 'file' | 'connect' };
 
 export const sheet = signal<Sheet | null>(null);
 export const paletteOpen = signal(false);
