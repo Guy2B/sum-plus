@@ -124,6 +124,21 @@ test.describe('Cortex', () => {
     await expect(guide).toBeVisible();
   });
 
+  test('import: an appointment pasted from WhatsApp lands in the planner', async ({ page }) => {
+    const errors = watchErrors(page);
+    await page.goto('/cortex.html#planning');
+    await page.locator('.page-actions').getByRole('button', { name: 'Importer' }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog
+      .getByRole('textbox', { name: 'Un message' })
+      .fill('[30/10/26, 09:12] Marc: On se voit demain à 15h au Café Lou');
+    await expect(dialog.getByText('Rendez-vous trouvé')).toBeVisible();
+    await expect(dialog.locator('#imp-time')).toHaveValue('15:00');
+    await dialog.getByRole('button', { name: 'Ajouter au planning' }).click();
+    await expect(page.locator('.cx-ev, .cx-bk', { hasText: 'On se voit au Café Lou' }).first()).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+
   test('the four NEXT languages are one tap away', async ({ page }) => {
     await page.goto('/cortex.html');
     await page.getByRole('button', { name: 'Deutsch' }).click();

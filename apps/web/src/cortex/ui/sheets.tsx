@@ -13,6 +13,7 @@ import { planDay, sheet } from './state';
 import { openUpgrade } from './pro';
 import { go } from '../router';
 import { sigmaPlan } from './Timeline';
+import { ImportSheet } from './import';
 
 const close = () => (sheet.value = null);
 
@@ -30,6 +31,8 @@ export function Sheets() {
       return <ProjectSheet key={s.id ?? 'new'} id={s.id} area={s.area} />;
     case 'dayOptions':
       return <DayOptions date={s.date} />;
+    case 'import':
+      return <ImportSheet tab={s.tab} />;
     case 'plan':
       return <PlanSheet key={`${s.date}-${s.taskId ?? 'pick'}`} date={s.date} taskId={s.taskId} />;
   }
@@ -997,6 +1000,13 @@ function PlanPick({ date, onPick }: { date: ISODate; onPick: (id: string) => voi
             </button>
           </li>
         )}
+        <li>
+          <button type="button" onClick={() => (sheet.value = { kind: 'import' })}>
+            <b>{ct('import.fromPlan')}</b>
+            <span>{ct('import.fromPlanHint')}</span>
+            <Icon name="download" size={16} />
+          </button>
+        </li>
         <li>
           <button type="button" onClick={() => (sheet.value = { kind: 'dayOptions', date })}>
             <b>{ct('plan.routineOrCopy')}</b>

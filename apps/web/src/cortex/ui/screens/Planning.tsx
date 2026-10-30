@@ -98,6 +98,14 @@ export function Planning() {
         <div class="page-actions">
           <button
             type="button"
+            class="btn btn-secondary btn-md"
+            onClick={() => (sheet.value = { kind: 'import' })}
+          >
+            <Icon name="download" size={16} />
+            <span>{ct('import.action')}</span>
+          </button>
+          <button
+            type="button"
             class="btn btn-ghost btn-md"
             aria-expanded={guideShown()}
             onClick={() => (guideShown() ? hideGuide() : (guideOpen.value = true))}
