@@ -29,6 +29,7 @@ export const PRO_FEATURES = [
   'health',
   'household',
   'driveBackup',
+  'cortex',
 ] as const;
 
 export function openUpgrade(from: ProTrigger) {

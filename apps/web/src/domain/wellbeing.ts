@@ -1,5 +1,6 @@
 import type { Habit, HabitLog, HealthMetric } from './types';
-import { addDays, isoDay, WEEKDAY_KEYS } from './dates';
+import { addDays, isoDay } from './dates';
+import { indexLogs, isHabitDue, streak } from './habits';
 
 const alive = <T extends { deletedAt?: string | null }>(rows: T[]) => rows.filter((r) => !r.deletedAt);
 
@@ -71,37 +72,10 @@ export function healthTrend(metrics: HealthMetric[], now: Date, days = 14): Heal
 }
 
 export function habitDueOn(h: Habit, day: Date): boolean {
-  if (h.archived || h.deletedAt) return false;
-  const wd = WEEKDAY_KEYS[day.getDay()];
-  if (h.cadence === 'weekdays') return wd !== 'sat' && wd !== 'sun';
-  if (h.cadence === 'weekly') return wd === 'mon';
-  return true;
+  return isHabitDue(h, day);
 }
 
 /** Consecutive completed periods counting back from today; an open today does not break it. */
 export function habitStreak(h: Habit, logs: HabitLog[], now: Date): number {
-  const done = new Set(
-    alive(logs)
-      .filter((l) => l.habitId === h.id)
-      .map((l) => l.date),
-  );
-  if (h.cadence === 'weekly') {
-    let streak = 0;
-    for (let w = 0; w < 104; w++) {
-      const monday = addDays(now, -((now.getDay() + 6) % 7) - w * 7);
-      const hit = [0, 1, 2, 3, 4, 5, 6].some((d) => done.has(isoDay(addDays(monday, d))));
-      if (hit) streak += 1;
-      else if (w > 0) break;
-    }
-    return streak;
-  }
-  let streak = 0;
-  for (let i = 0; i < 400; i++) {
-    const day = addDays(now, -i);
-    if (h.cadence === 'weekdays' && !habitDueOn(h, day)) continue;
-    if (done.has(isoDay(day))) streak += 1;
-    else if (i === 0) continue;
-    else break;
-  }
-  return streak;
+  return streak(h, indexLogs(logs), now);
 }

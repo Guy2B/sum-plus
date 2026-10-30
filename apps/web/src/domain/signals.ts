@@ -7,7 +7,8 @@ import type {
   Snapshot,
 } from './types';
 import { planMission, sessionToLog } from './missions';
-import { addDays, hoursUntil, isoDay, toDate, WEEKDAY_KEYS } from './dates';
+import { addDays, hoursUntil, isoDay, toDate } from './dates';
+import { doneOn, indexLogs, isHabitDue, skippedOn } from './habits';
 
 export type SourceType =
   | 'task'
@@ -262,16 +263,11 @@ export function buildSignals(
     }
   }
 
-  const weekday = WEEKDAY_KEYS[now.getDay()];
-  const loggedToday = new Set(
-    alive(snap.habitLogs)
-      .filter((l) => l.date === today)
-      .map((l) => l.habitId),
-  );
+  // Done, or deliberately passed today: nothing to propose.
+  const habitIdx = indexLogs(snap.habitLogs);
   for (const h of alive(snap.habits)) {
-    if (h.archived || loggedToday.has(h.id)) continue;
-    if (h.cadence === 'weekdays' && (weekday === 'sat' || weekday === 'sun')) continue;
-    if (h.cadence === 'weekly') continue;
+    if (h.archived || h.cadence === 'weekly' || !isHabitDue(h, now)) continue;
+    if (doneOn(habitIdx, h, today) || skippedOn(habitIdx, h, today)) continue;
     out.push({
       id: `habits:${h.id}`,
       sourceType: 'habit',

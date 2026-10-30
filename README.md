@@ -9,6 +9,7 @@ NEXT turns the signals you authorise (tasks, calendar, mail, social, money, ener
 | Path                               | What it is                                                                                            |
 | ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | `apps/web`                         | The product: PWA (Vite + Preact + TypeScript), landing page and legal pages                           |
+| `apps/web/src/cortex`              | Cortex (`/cortex.html`): planning, habits and second brain on the same data and engine                |
 | `apps/web/src/domain`              | Pure, tested business logic: decision engine, planning, coach, finance, ICS, backup, legacy migration |
 | `apps/web/src/data`                | IndexedDB persistence and reactive state (signals)                                                    |
 | `apps/web/src/services`            | Firebase, sync, connectors (Google, Microsoft, IMAP, social), AI, payments, monitoring                |
@@ -43,6 +44,7 @@ CI runs all of the above plus Lighthouse budgets, gitleaks and `npm audit` on ev
 
 ## Documentation
 
+- [Cortex](docs/CORTEX.md): the planning and second-brain app built on NEXT
 - [Architecture](docs/ARCHITECTURE.md) — data model, sync, decision engine, security model
 - [Deployment & operations](docs/DEPLOYMENT.md) — Firebase, secrets, CI/CD, monitoring, rollback
 - [Connectors](docs/CONNECTORS.md) — Google, Microsoft, IMAP, LinkedIn, X, TikTok, Meta, Lemon Squeezy

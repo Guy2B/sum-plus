@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'preact/hooks';
 import { LimitNotice } from '../pro';
 import type { Goal, Habit } from '../../domain/types';
-import { create, snapshot, update, clock, entitlement, remove } from '../../data/store';
+import { create, snapshot, update, clock, entitlement } from '../../data/store';
 import { habitDueOn, habitStreak } from '../../domain/wellbeing';
+import { habitTarget, indexLogs, logOn } from '../../domain/habits';
+import { writeHabitDay } from '../../data/habits';
 import { withinLimit, FREE_LIMITS } from '../../domain/entitlements';
 import { isoDay, addDays } from '../../domain/dates';
 import { t, fmtDate } from '../../i18n';
@@ -150,6 +152,7 @@ export function Goals() {
   const achieved = snapshot.value.goals.filter((g) => !g.deletedAt && g.status === 'achieved');
   const habits = snapshot.value.habits.filter((h) => !h.deletedAt && !h.archived);
   const logs = snapshot.value.habitLogs.filter((l) => !l.deletedAt);
+  const logIndex = indexLogs(logs);
   const canAddHabit = withinLimit('habits', habits.length, entitlement.value);
   const tasks = snapshot.value.tasks.filter((x) => !x.deletedAt);
   const week = Array.from({ length: 7 }, (_, i) => addDays(now, i - 6));
@@ -220,20 +223,18 @@ export function Goals() {
                   </th>
                   {week.map((d) => {
                     const key = isoDay(d);
-                    const log = logs.find((l) => l.habitId === h.id && l.date === key);
+                    const log = logOn(logIndex, h, key);
                     const due = habitDueOn(h, d) || h.cadence === 'weekly';
+                    // Cortex can write partial quantities or a passed day: only a reached target is a tick.
+                    const ticked = Boolean(log && !log.skipped && (log.value ?? 1) >= habitTarget(h));
                     return (
                       <td key={key}>
                         <input
                           type="checkbox"
                           disabled={!due || key > today}
-                          checked={Boolean(log)}
+                          checked={ticked}
                           aria-label={`${h.name} ${fmtDate(d)}`}
-                          onChange={() =>
-                            void (log
-                              ? remove('habitLogs', log.id)
-                              : create('habitLogs', { habitId: h.id, date: key }))
-                          }
+                          onChange={() => void writeHabitDay(h, key, { value: ticked ? 0 : habitTarget(h) })}
                         />
                       </td>
                     );

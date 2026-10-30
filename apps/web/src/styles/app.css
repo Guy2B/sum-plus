@@ -670,6 +670,9 @@ input[type='range'] {
   text-align: left;
   cursor: pointer;
 }
+.sidebar-action:is(a) {
+  text-decoration: none;
+}
 .sidebar-action:hover {
   background: var(--sidebar-hover);
 }
