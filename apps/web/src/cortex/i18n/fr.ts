@@ -154,6 +154,23 @@ export const cfr = {
   'voice.unsupported': 'La dictée n’est pas disponible dans ce navigateur. Essayez Chrome, Edge ou Safari.',
   'voice.denied': 'Micro refusé. Autorisez-le dans les réglages du navigateur.',
   'voice.error': 'La dictée s’est interrompue. Réessayez.',
+  'planGuide.help': 'Comment planifier ?',
+  'planGuide.title': 'Planifier votre journée en 3 gestes',
+  'planGuide.body':
+    'Le planning donne une heure à ce qui compte. Choisissez, placez, ou laissez Σ le faire pour vous.',
+  'planGuide.s1': 'Choisissez quoi faire',
+  'planGuide.s1Hint': 'Vos 3 priorités et la liste « À planifier », à gauche.',
+  'planGuide.s2': 'Donnez-lui une heure',
+  'planGuide.s2HintMouse':
+    'Glissez une tâche dans le planning, ou cliquez-glissez sur la grille pour créer un bloc.',
+  'planGuide.s2HintTouch':
+    'Touchez « Planifier » sur une tâche, ou touchez un créneau libre pour créer un bloc.',
+  'planGuide.s3': 'Ou laissez Σ planifier',
+  'planGuide.s3Hint':
+    'Σ place vos décisions et vos tâches du jour dans vos créneaux libres. Vous ajustez ensuite.',
+  'planGuide.after':
+    'Ensuite, cochez « Terminé » sur chaque bloc : une tâche liée est aussi cochée dans NEXT.',
+  'planGuide.hide': 'J’ai compris',
   'starter.sport': 'Sport 30 min',
   'starter.water': 'Boire de l’eau',
   'starter.waterUnit': 'verres',

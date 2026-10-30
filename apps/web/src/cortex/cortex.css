@@ -610,6 +610,12 @@ button.cx-kpi:hover {
   font: 500 1.2rem var(--serif);
   color: var(--accent);
 }
+.cx-steps-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.cx-plan-guide .cx-hint {
+  margin: 0;
+}
 .cx-steps .done button::before {
   content: '\2713';
   font-family: inherit;
@@ -2633,6 +2639,9 @@ button.cx-rv-row:disabled {
   }
   .cx-welcome-head > .btn {
     align-self: flex-end;
+  }
+  .cx-steps-3 {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 @media (max-width: 620px) {

@@ -156,6 +156,22 @@ export const cde: Record<CortexKey, string> = {
   'voice.unsupported': 'Diktieren ist in diesem Browser nicht verfügbar. Probiere Chrome, Edge oder Safari.',
   'voice.denied': 'Mikrofon blockiert. Erlaube es in den Browser-Einstellungen.',
   'voice.error': 'Das Diktat wurde unterbrochen. Versuch es noch einmal.',
+  'planGuide.help': 'Wie plane ich?',
+  'planGuide.title': 'Plane deinen Tag in 3 Schritten',
+  'planGuide.body':
+    'Der Zeitplan gibt dem Wichtigen eine Uhrzeit. Auswählen, einplanen oder Σ machen lassen.',
+  'planGuide.s1': 'Wähle, was zu tun ist',
+  'planGuide.s1Hint': 'Deine 3 Prioritäten und die Liste „Einzuplanen“, links.',
+  'planGuide.s2': 'Gib ihm eine Uhrzeit',
+  'planGuide.s2HintMouse':
+    'Zieh eine Aufgabe in den Zeitplan oder klick und zieh im Raster, um einen Block anzulegen.',
+  'planGuide.s2HintTouch': 'Tippe bei einer Aufgabe auf „Planen“ oder tippe auf ein freies Zeitfenster.',
+  'planGuide.s3': 'Oder lass Σ planen',
+  'planGuide.s3Hint':
+    'Σ legt deine Entscheidungen und heutigen Aufgaben in deine freie Zeit. Danach passt du an.',
+  'planGuide.after':
+    'Hake danach jeden Block mit „Erledigt“ ab: eine verknüpfte Aufgabe ist auch in NEXT erledigt.',
+  'planGuide.hide': 'Verstanden',
   'starter.sport': 'Sport 30 Min.',
   'starter.water': 'Wasser trinken',
   'starter.waterUnit': 'Gläser',

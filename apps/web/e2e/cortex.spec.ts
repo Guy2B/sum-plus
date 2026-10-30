@@ -109,6 +109,16 @@ test.describe('Cortex', () => {
     expect(errors).toEqual([]);
   });
 
+  test('the planner explains itself until the person has planned once', async ({ page }) => {
+    await page.goto('/cortex.html#planning');
+    const guide = page.getByRole('heading', { name: 'Planifier votre journée en 3 gestes' });
+    await expect(guide).toBeVisible();
+    await page.getByRole('button', { name: 'J’ai compris' }).click();
+    await expect(guide).toBeHidden();
+    await page.getByRole('button', { name: 'Comment planifier ?' }).click();
+    await expect(guide).toBeVisible();
+  });
+
   test('the four NEXT languages are one tap away', async ({ page }) => {
     await page.goto('/cortex.html');
     await page.getByRole('button', { name: 'Deutsch' }).click();
