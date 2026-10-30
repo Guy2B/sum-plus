@@ -55,8 +55,8 @@ export default defineConfig({
       registerType: 'prompt',
       injectRegister: false,
       manifest: {
-        name: 'NEXT by ALGBr',
-        short_name: 'NEXT by ALGBr',
+        name: 'NEXT by Al.G.B.r.',
+        short_name: 'NEXT by Al.G.B.r.',
         description: 'Explainable daily decisions from your tasks, calendar, mail and life signals.',
         lang: 'fr',
         start_url: 'app.html',

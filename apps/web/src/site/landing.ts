@@ -800,7 +800,7 @@ function apply(next: Lang) {
     a.href = target.pathname.split('/').pop() + target.search;
   });
   // "by Al.G.B.r." opens the studio (algbr.de) in the same language; it has no Spanish version.
-  $$<HTMLAnchorElement>('a.by-algbr').forEach((a) => {
+  $$<HTMLAnchorElement>('a.by-algbr, a.byline-link').forEach((a) => {
     a.href = `https://algbr.de/${next === 'es' ? 'en' : next}/`;
   });
   try {
