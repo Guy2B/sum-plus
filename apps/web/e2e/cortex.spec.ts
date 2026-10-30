@@ -43,6 +43,11 @@ test.describe('Cortex', () => {
       .click();
     const row = page.locator('.cx-task', { hasText: 'Envoyer le devis Müller' });
     await row.getByRole('button', { name: 'Planifier' }).click();
+    // The plan dialog pre-fills day, first free time, duration and kind: one click confirms.
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByText('Envoyer le devis Müller')).toBeVisible();
+    await expect(dialog.getByRole('button', { name: '30 min' })).toHaveAttribute('aria-pressed', 'true');
+    await dialog.getByRole('button', { name: /^Planifier à / }).click();
     const blockEl = page.locator('.cx-bk', { hasText: 'Envoyer le devis Müller' });
     await expect(blockEl).toBeVisible();
     await blockEl.getByRole('button', { name: 'Terminé' }).click();
