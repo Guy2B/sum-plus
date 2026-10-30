@@ -555,11 +555,15 @@ button.cx-kpi:hover {
 /* Welcome */
 .cx-welcome {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
-  gap: 20px;
-  align-items: center;
+  gap: 16px;
   background: var(--accent-soft);
   border-color: transparent;
+}
+.cx-welcome-head {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
 }
 .cx-welcome h2 {
   font-size: 1.15rem;
@@ -567,13 +571,21 @@ button.cx-kpi:hover {
 }
 .cx-welcome p {
   margin: 0;
+  max-width: 62ch;
+}
+.cx-welcome-progress {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent);
 }
 .cx-steps {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
   counter-reset: s;
 }
@@ -597,6 +609,15 @@ button.cx-kpi:hover {
   content: counter(s);
   font: 500 1.2rem var(--serif);
   color: var(--accent);
+}
+.cx-steps .done button::before {
+  content: '\2713';
+  font-family: inherit;
+  color: var(--good, var(--accent));
+}
+.cx-steps .done b {
+  text-decoration: line-through;
+  color: var(--muted);
 }
 .cx-steps button:hover {
   border-color: var(--border-strong);
@@ -2568,8 +2589,8 @@ button.cx-rv-row:disabled {
   .cx-tl-scroll {
     max-height: 70vh;
   }
-  .cx-welcome {
-    grid-template-columns: minmax(0, 1fr);
+  .cx-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 @media (max-width: 820px) {
@@ -2604,7 +2625,14 @@ button.cx-rv-row:disabled {
     padding: 14px 16px 24px;
   }
   .cx-steps {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .cx-welcome-head {
+    flex-direction: column-reverse;
+    gap: 4px;
+  }
+  .cx-welcome-head > .btn {
+    align-self: flex-end;
   }
 }
 @media (max-width: 620px) {

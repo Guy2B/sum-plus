@@ -4,6 +4,7 @@ import { recordFounderDay } from '../services/founder';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { signal } from '@preact/signals';
 import { t } from '../i18n';
+import { ByAlgbr } from './by-algbr';
 import { Icon } from './icons';
 import { ROUTES, navigate, route, type RouteDef } from './router';
 import { authUser, entitlement, settings, snapshot, syncState } from '../data/store';
@@ -304,15 +305,17 @@ export function Shell({ children, banner }: { children: ComponentChildren; banne
         {t('a11y.skip')}
       </a>
       <aside class={`sidebar ${drawerOpen.value ? 'open' : ''}`} aria-label={t('nav.label')}>
-        <a class="brand" href="./" aria-label={t('nav.site')} title={t('nav.site')}>
+        <div class="brand">
           <div>
-            <span class="nsxt" aria-hidden="true">
-              n<b>Σ</b>xt
-            </span>{' '}
-            <small class="byline">by ALGBr</small>
+            <a class="brand-home" href="./" aria-label={t('nav.site')} title={t('nav.site')}>
+              <span class="nsxt" aria-hidden="true">
+                n<b>Σ</b>xt
+              </span>
+            </a>{' '}
+            <ByAlgbr />
             <small class="muted">{ed.name}</small>
           </div>
-        </a>
+        </div>
         <div class="sidebar-actions">
           <button type="button" class="sidebar-action" onClick={newCapture}>
             <Icon name="edit" size={18} />
@@ -363,12 +366,14 @@ export function Shell({ children, banner }: { children: ComponentChildren; banne
           >
             <Icon name="menu" />
           </button>
-          <a class="topbar-brand" href="./" aria-label={t('nav.site')}>
-            <span class="nsxt" aria-hidden="true">
-              n<b>Σ</b>xt
-            </span>{' '}
-            <small class="byline">by ALGBr</small>
-          </a>
+          <span class="topbar-brand">
+            <a class="brand-home" href="./" aria-label={t('nav.site')}>
+              <span class="nsxt" aria-hidden="true">
+                n<b>Σ</b>xt
+              </span>
+            </a>{' '}
+            <ByAlgbr />
+          </span>
           <span class="topbar-title">{current ? navLabel(current) : 'Σ'}</span>
           <button
             type="button"

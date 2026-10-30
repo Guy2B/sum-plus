@@ -3,6 +3,7 @@
  * first plan. Captures describing a test, an interview or a talk with a date
  * become missions; everything else becomes a task.
  */
+import { ByAlgbr } from '../by-algbr';
 import { useEffect, useState } from 'preact/hooks';
 import type { EditionKey, Locale } from '../../domain/types';
 import { detectMission, parseCapture } from '../../domain/capture';
@@ -165,7 +166,7 @@ export function Onboarding() {
           <span class="nsxt" role="img" aria-label="NEXT">
             n<b>Σ</b>xt
           </span>{' '}
-          <small class="byline">by ALGBr</small>
+          <ByAlgbr />
         </div>
         <ol class="steps" aria-label={t('onboarding.progress')}>
           {step >= 0 &&

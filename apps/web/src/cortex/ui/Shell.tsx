@@ -7,6 +7,7 @@ import type { ComponentChildren } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { authUser, entitlement, settings, syncState } from '../../data/store';
 import { isPro, withinLimit } from '../../domain/entitlements';
+import { ByAlgbr } from '../../ui/by-algbr';
 import { Icon } from '../../ui/icons';
 import { ConfirmHost, ToastHost, toast } from '../../ui/components';
 import { SidebarPro, UpgradeModal } from '../../ui/pro';
@@ -224,12 +225,15 @@ export function Shell({ children }: { children: ComponentChildren }) {
         {t('a11y.skip')}
       </a>
       <aside class={`sidebar ${drawerOpen.value ? 'open' : ''}`} aria-label={ct('nav.label')}>
-        <a class="brand" href={href('today')} aria-label="Cortex">
+        <div class="brand">
           <div>
-            <Brand /> <small class="byline">by ALGBr</small>
+            <a class="brand-home" href={href('today')} aria-label="Cortex">
+              <Brand />
+            </a>{' '}
+            <ByAlgbr />
             <small class="muted">{ct('brand.tagline')}</small>
           </div>
-        </a>
+        </div>
         <div class="sidebar-actions">
           <button
             type="button"
@@ -295,9 +299,12 @@ export function Shell({ children }: { children: ComponentChildren }) {
           >
             <Icon name="menu" />
           </button>
-          <a class="topbar-brand" href={href('today')} aria-label="Cortex">
-            <Brand />
-          </a>
+          <span class="topbar-brand">
+            <a class="brand-home" href={href('today')} aria-label="Cortex">
+              <Brand />
+            </a>{' '}
+            <ByAlgbr />
+          </span>
           <span class="topbar-title">{cur ? ct(cur.label) : 'Cortex'}</span>
           <button
             type="button"

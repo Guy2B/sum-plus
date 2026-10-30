@@ -1,3 +1,4 @@
+import { ByAlgbr } from '../by-algbr';
 import { useEffect, useState } from 'preact/hooks';
 import { FounderCard } from '../pro';
 import { setTelemetry, track } from '../../services/telemetry';
@@ -567,7 +568,7 @@ export function Account() {
       <Data />
       <Card title={t('account.about')}>
         <p class="small muted">
-          NEXT by ALGBr · Powered by Σ · {APP_VERSION} ·{' '}
+          NEXT <ByAlgbr plain /> · Powered by Σ · {APP_VERSION} ·{' '}
           <a href="legal/privacy.html" target="_blank" rel="noopener">
             {t('legal.privacy')}
           </a>{' '}

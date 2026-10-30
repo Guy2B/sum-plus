@@ -1,9 +1,10 @@
 /** Today: the dashboard where NEXT's decisions, the plan, habits and tasks meet. */
-import { clock } from '../../../data/store';
+import { signal } from '@preact/signals';
+import { clock, snapshot } from '../../../data/store';
 import { habitsOnDay, isHabitDue, isWeekly } from '../../../domain/habits';
 import { fmtDate } from '../../../i18n';
 import { Icon } from '../../../ui/icons';
-import { ct, fmtDuration } from '../../i18n';
+import { ct, fmtDuration, type CortexKey } from '../../i18n';
 import { completedOn, dayStats, isForDay, isLate, parseDay, sortTasks } from '../../model';
 import { getDay, habitIndex, liveHabits, liveNotes, liveProjects, liveTasks, today } from '../../data';
 import { go } from '../../router';
@@ -18,7 +19,6 @@ import {
   PrioritiesPanel,
   TaskRow,
   habitsByMoment,
-  isBlank,
   projectColor,
 } from '../parts';
 import { sheet } from '../state';
@@ -42,7 +42,6 @@ export function Today() {
   const doneToday = tasks.filter((x) => completedOn(x, k));
   const habits = liveHabits.value.filter((x) => isHabitDue(x, parseDay(k)) || isWeekly(x));
   const recent = [...liveNotes.value].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 4);
-  const blank = isBlank();
   return (
     <div class="cx-page">
       <header class="page-header">
@@ -58,7 +57,7 @@ export function Today() {
         </div>
       </header>
 
-      {blank && <Welcome />}
+      <Guide />
 
       <NowCard />
 
@@ -175,7 +174,7 @@ export function Today() {
         </div>
 
         <div class="cx-stack">
-          <Panel title={ct('nav.habits')} count={`${h.done}/${h.due}`}>
+          <Panel title={ct('nav.habits')} count={`${h.done}/${h.due}`} id="today-habits">
             {habits.length ? (
               <>
                 {habitsByMoment(habits).map(([m, list]) => (
@@ -245,33 +244,72 @@ export function Today() {
   );
 }
 
-/** First visit: three concrete first steps (no fake data). */
-function Welcome() {
+/* ---------------------------------- guide --------------------------------- */
+
+const GUIDE_KEY = 'cortex:guide-hidden';
+const readHidden = (): boolean => {
+  try {
+    return localStorage.getItem(GUIDE_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
+const guideHidden = signal(readHidden());
+function hideGuide() {
+  guideHidden.value = true;
+  try {
+    localStorage.setItem(GUIDE_KEY, '1');
+  } catch {
+    /* private mode: hidden for this session only */
+  }
+}
+
+const scrollTo = (id: string) =>
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+/**
+ * Explains what Cortex is for and walks through its four uses, ticking each
+ * one off from real data. Disappears once all four are done, or on demand.
+ */
+function Guide() {
+  if (guideHidden.value) return null;
+  const k = today.value;
+  const d = getDay(k);
+  const steps = [
+    {
+      done: d.priorities.some((p) => p.title.trim()),
+      go: () => {
+        scrollTo('today-pri');
+        document.getElementById(`top-${k}-0`)?.focus({ preventScroll: true });
+      },
+    },
+    { done: d.blocks.length > 0, go: () => go('planning') },
+    { done: snapshot.value.habitLogs.some((l) => !l.deletedAt), go: () => scrollTo('today-habits') },
+    { done: liveNotes.value.length > 0, go: () => go('notes') },
+  ];
+  const done = steps.filter((s) => s.done).length;
+  if (done === steps.length) return null;
   return (
     <section class="card cx-welcome" aria-labelledby="cx-welcome-t">
-      <div>
-        <h2 id="cx-welcome-t">{ct('welcome.title')}</h2>
-        <p class="muted">{ct('welcome.body')}</p>
+      <div class="cx-welcome-head">
+        <div>
+          <h2 id="cx-welcome-t">{ct('welcome.title')}</h2>
+          <p class="muted">{ct('welcome.body')}</p>
+          <b class="cx-welcome-progress">{ct('welcome.progress', { done, total: steps.length })}</b>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" onClick={hideGuide}>
+          {ct('welcome.hide')}
+        </button>
       </div>
       <ol class="cx-steps">
-        <li>
-          <button type="button" onClick={() => document.getElementById('top-' + today.value + '-0')?.focus()}>
-            <b>{ct('welcome.step1')}</b>
-            <span>{ct('welcome.step1Hint')}</span>
-          </button>
-        </li>
-        <li>
-          <button type="button" onClick={() => go('planning')}>
-            <b>{ct('welcome.step2')}</b>
-            <span>{ct('welcome.step2Hint')}</span>
-          </button>
-        </li>
-        <li>
-          <button type="button" onClick={() => (sheet.value = { kind: 'habit', id: null })}>
-            <b>{ct('welcome.step3')}</b>
-            <span>{ct('welcome.step3Hint')}</span>
-          </button>
-        </li>
+        {steps.map((s, i) => (
+          <li key={i} class={s.done ? 'done' : ''}>
+            <button type="button" onClick={s.go}>
+              <b>{ct(`welcome.step${i + 1}` as CortexKey)}</b>
+              <span>{ct(`welcome.step${i + 1}Hint` as CortexKey)}</span>
+            </button>
+          </li>
+        ))}
       </ol>
     </section>
   );

@@ -12,6 +12,7 @@ test.describe('Cortex', () => {
     const errors = watchErrors(page);
     await page.goto('/cortex.html');
     await expect(page.getByRole('heading', { name: 'Bienvenue dans Cortex' })).toBeVisible();
+    await expect(page.locator('.cx-welcome-progress')).toHaveText('0/4 pour bien démarrer');
 
     // Capture lands in the inbox, then is filed for today.
     await capture(page, 'Envoyer le devis Müller 30min');
@@ -30,11 +31,10 @@ test.describe('Cortex', () => {
       .getByRole('link', { name: /Habitudes/ })
       .first()
       .click();
-    await page.locator('.page-actions').getByRole('button', { name: 'Habitude' }).click();
-    await page.getByLabel('Nom').fill('Lire 20 minutes');
-    await page.getByRole('dialog').getByRole('button', { name: 'Ajouter' }).click();
-    await page.getByRole('button', { name: 'Lire 20 minutes : à faire' }).click();
-    await expect(page.getByRole('button', { name: 'Lire 20 minutes : fait' })).toBeVisible();
+    // Everyday habits are ready from the first opening (free plan: the first three).
+    await expect(page.getByRole('button', { name: 'Boire de l’eau : 0 sur 8' })).toBeVisible();
+    await page.getByRole('button', { name: 'Au lit avant 23 h : à faire' }).click();
+    await expect(page.getByRole('button', { name: 'Au lit avant 23 h : fait' })).toBeVisible();
 
     // Planning: place the task, tick its block, and the task is done in NEXT too.
     await page
